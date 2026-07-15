@@ -5,9 +5,15 @@ import { AuthContext } from '../context/AuthContext';
 export default function Sidebar() {
   const { user, logout } = useContext(AuthContext);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const location = useLocation();
 
   if (!user) return null;
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await logout();
+  };
 
   const studentLinks = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
@@ -52,8 +58,10 @@ export default function Sidebar() {
       </nav>
       <div className="p-4 border-t border-border-light">
         <div className={`flex flex-col gap-2`}>
-          <button onClick={logout} className={`flex items-center py-2 text-on-surface-variant hover:text-primary transition-colors ${isSidebarOpen ? 'px-4 gap-3' : 'justify-center px-0'}`}>
-            <span className="material-symbols-outlined">logout</span>
+          <button onClick={handleLogout} disabled={isLoggingOut} className={`flex items-center py-2 text-on-surface-variant hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isSidebarOpen ? 'px-4 gap-3' : 'justify-center px-0'}`}>
+            <span className={`material-symbols-outlined ${isLoggingOut ? 'animate-spin' : ''}`}>
+              {isLoggingOut ? 'progress_activity' : 'logout'}
+            </span>
             <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0 hidden'}`}>Logout</span>
           </button>
         </div>

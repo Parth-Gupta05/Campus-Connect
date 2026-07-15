@@ -1,32 +1,53 @@
 import React, { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
 
-export default function SignIn() {
+export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      setError('');
-      const user = await login(email, password, rememberMe);
-      if (user.role === 'admin') navigate('/admin');
-      else navigate('/dashboard');
+      const response = await axios.post('/auth/register', {
+        email,
+        password,
+        role: 'student'
+      });
+
+      login(response.data);
+      navigate('/profile');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(
+        err.response?.data?.message || 
+        'Failed to create account. Please try again.'
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-body-lg">
       <main className="flex-1 flex flex-col md:flex-row">
-        {/* Left Side: Branding / Visuals */}
+        {/* Left Side (Visuals) */}
         <div className="hidden md:flex flex-col w-1/2 p-12 relative overflow-hidden bg-surface-container-lowest border-r border-border-light justify-center">
           <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
             <div className="absolute top-[-10%] left-[-10%] w-2/3 h-2/3 bg-ai-gradient-start rounded-full blur-[120px]"></div>
@@ -39,34 +60,34 @@ export default function SignIn() {
               </div>
               <span className="font-display-hero text-headline-md text-primary tracking-tight">Campus Connect</span>
             </div>
-            <h1 className="font-display-hero text-display-hero text-on-surface mb-6 leading-tight">Your academic journey, unified.</h1>
+            <h1 className="font-display-hero text-display-hero text-on-surface mb-6 leading-tight">Start your legacy.</h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant mb-12">
-              Access your digital portfolio, seamlessly sync your coding metrics, and discover opportunities powered by intelligent matching.
+              Join thousands of students building their digital portfolios and tracking their engineering metrics in one unified platform.
             </p>
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined">robot_2</span>
+                  <span className="material-symbols-outlined">workspace_premium</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-on-surface">AI-powered Insights</h3>
-                  <p className="text-sm text-on-surface-variant">Automated skill extraction</p>
+                  <h3 className="font-bold text-on-surface">Verified Credentials</h3>
+                  <p className="text-sm text-on-surface-variant">Secure digital certificates</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined">hub</span>
+                  <span className="material-symbols-outlined">trending_up</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-on-surface">Smart Matching</h3>
-                  <p className="text-sm text-on-surface-variant">Connect with perfect projects</p>
+                  <h3 className="font-bold text-on-surface">Growth Analytics</h3>
+                  <p className="text-sm text-on-surface-variant">Visualize your trajectory</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side: Form */}
+        {/* Right Side (Form) */}
         <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 bg-surface">
           <div className="w-full max-w-md">
             {/* Mobile Branding */}
@@ -79,8 +100,8 @@ export default function SignIn() {
 
             <div className="bg-surface-container-lowest p-8 md:p-10 rounded-3xl border border-border-light shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="text-center mb-8">
-                <h2 className="font-display-hero text-headline-lg text-on-surface mb-2 tracking-tight">Welcome Back</h2>
-                <p className="text-body-md text-on-surface-variant">Sign in to your digital campus identity.</p>
+                <h2 className="font-display-hero text-headline-lg text-on-surface mb-2 tracking-tight">Create Account</h2>
+                <p className="text-body-md text-on-surface-variant">Join Campus Connect today.</p>
               </div>
 
               {error && (
@@ -140,32 +161,52 @@ export default function SignIn() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      id="remember" 
-                      className="rounded text-primary focus:ring-primary w-4 h-4" 
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
+                <div>
+                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="confirmPassword">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
+                      <span className="material-symbols-outlined text-[18px]">lock_reset</span>
+                    </div>
+                    <input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      required
+                      className="w-full pl-10 pr-10 p-3.5 bg-surface border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline-variant"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     />
-                    <label htmlFor="remember" className="text-sm text-on-surface-variant cursor-pointer">Remember me</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-outline hover:text-primary transition-colors focus:outline-none"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
                   </div>
-                  <a href="#" className="text-sm text-primary font-medium hover:underline">Forgot Password?</a>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-primary text-on-primary py-3.5 rounded-xl font-button-text hover:bg-primary-container transition-colors shadow-sm mt-6 flex items-center justify-center gap-2"
+                  disabled={loading}
+                  className="w-full bg-primary text-on-primary py-3.5 rounded-xl font-button-text hover:bg-primary-container transition-colors disabled:opacity-70 shadow-sm mt-6 flex items-center justify-center gap-2"
                 >
-                  Sign In <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  {loading ? (
+                    <span className="material-symbols-outlined animate-spin">refresh</span>
+                  ) : (
+                    <>Sign Up <span className="material-symbols-outlined text-[18px]">person_add</span></>
+                  )}
                 </button>
               </form>
 
               <div className="mt-8 text-center text-body-md text-on-surface-variant">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-primary font-semibold hover:underline">
-                  Sign Up
+                Already have an account?{' '}
+                <Link to="/signin" className="text-primary font-semibold hover:underline">
+                  Sign In
                 </Link>
               </div>
             </div>
