@@ -1,0 +1,491 @@
+{
+  "id": "ACoAAE12kWYBw0xicPnCuLe_QwpwXks5O21q8q8",
+  "publicIdentifier": "asmit-bagkar-79a2a4303",
+  "linkedinUrl": "https://www.linkedin.com/in/asmit-bagkar-79a2a4303",
+  "firstName": "ASMIT",
+  "lastName": "BAGKAR",
+  "emails": [],
+  "headline": "Final-Year CS Engineering Student @ TCET | Aspiring Data Analyst & BI Professional | SQL, PowerBI, Python | 5-Star HackerRank (SQL)",
+  "openToWork": false,
+  "hiring": false,
+  "premium": false,
+  "influencer": false,
+  "memorialized": false,
+  "creator": false,
+  "location": {
+    "linkedinText": "Mumbai Metropolitan Region",
+    "countryCode": "IN",
+    "parsed": {
+      "text": "Mumbai, India",
+      "countryCode": "IN",
+      "regionCode": null,
+      "country": "India",
+      "countryFull": "India",
+      "state": "Maharashtra",
+      "city": "Mumbai"
+    }
+  },
+  "objectUrn": "1299616102",
+  "registeredAt": "2024-04-08T06:45:34.781Z",
+  "topSkills": [
+    "SQL",
+    "Python (Programming Language)",
+    "Microsoft Power BI",
+    "Microsoft Excel",
+    "Tableau"
+  ],
+  "connectionsCount": 34,
+  "followerCount": 34,
+  "verified": false,
+  "about": "I am a final-year Computer Science engineering student specializing in the logical architecture of data. While many focus purely on writing syntax, I am deeply passionate about the structural logic behind data and how it can be used to solve real-world operational bottlenecks.\nMy recent work includes architecting automated data-cleaning pipelines, building high-performance data management engines, and analyzing e-commerce revenue trends using SQL and PowerBI. Beyond formal projects, I regularly run predictive probability models and manage strict resource constraints, sharpening my ability to forecast risk and optimize outcomes under pressure.\nI am actively seeking entry-level opportunities in Business Intelligence, Data Operations, or Business Analytics where I can leverage structured data to drive efficiency and strategic decision-making.\nCore Competencies: SQL | PowerBI | Advanced Excel | Data Preprocessing | Business Intelligence | Python",
+  "currentPosition": [],
+  "profileTopEducation": [
+    {
+      "schoolName": "Thakur College Of Engineering and Technology",
+      "schoolLinkedinUrl": "https://www.linkedin.com/company/11448647/",
+      "schoolId": "11448647",
+      "degree": "Bachelor of Engineering",
+      "fieldOfStudy": "Computer Science",
+      "period": "Jan 2023 - Jan 2027",
+      "startDate": {
+        "month": "Jan",
+        "year": 2023,
+        "text": "Jan 2023"
+      },
+      "endDate": {
+        "month": "Jan",
+        "year": 2027,
+        "text": "Jan 2027"
+      },
+      "schoolLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_200_200/company-logo_200_200/0/1631391930064?e=1785974400&v=beta&t=0N8ZKMwcPWRiCr_2BzJJotaN0GfL88oq8dPNJorAkbg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_100_100/company-logo_100_100/0/1631391930064?e=1785974400&v=beta&t=_3pryI0PUMXkycQWaCcngC25wQWbRWz1KzhOyhPYk1I",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    }
+  ],
+  "profileActions": [],
+  "profilePicture": {
+    "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-crop_800_800/B4DZ8uKYTYGkAI-/0/1783185904209?e=1785974400&v=beta&t=9LK3WV2YyH-SXgH6UH7tNrv_3SoG9lZ-F9LrYT6g7C4",
+    "sizes": [
+      {
+        "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-crop_800_800/B4DZ8uKYTYGkAI-/0/1783185904209?e=1785974400&v=beta&t=9LK3WV2YyH-SXgH6UH7tNrv_3SoG9lZ-F9LrYT6g7C4",
+        "width": 800,
+        "height": 800
+      },
+      {
+        "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-scale_400_400/B4DZ8uKYTYGkAg-/0/1783185904209?e=1785974400&v=beta&t=DPfcOPmZvRe7gh3VeEQKIpJOcKQJtJ8JiWZOgb6afq0",
+        "width": 400,
+        "height": 400
+      },
+      {
+        "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-scale_200_200/B4DZ8uKYTYGkAc-/0/1783185904209?e=1785974400&v=beta&t=0hjaSPAnmg8khq1vVATqIq5uovD_EooeKPvCwUpWSTs",
+        "width": 200,
+        "height": 200
+      },
+      {
+        "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-scale_100_100/B4DZ8uKYTYGkAY-/0/1783185904209?e=1785974400&v=beta&t=sXd01tYh9iNXys9terwQAwqbwaT3yoATjujZKNLEmO4",
+        "width": 100,
+        "height": 100
+      }
+    ]
+  },
+  "coverPicture": null,
+  "photo": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-crop_800_800/B4DZ8uKYTYGkAI-/0/1783185904209?e=1785974400&v=beta&t=9LK3WV2YyH-SXgH6UH7tNrv_3SoG9lZ-F9LrYT6g7C4",
+  "profileLocales": [
+    {
+      "country": "US",
+      "language": "en"
+    }
+  ],
+  "primaryLocale": {
+    "country": "US",
+    "language": "en"
+  },
+  "multiLocaleHeadline": [
+    {
+      "headline": "Final-Year CS Engineering Student @ TCET | Aspiring Data Analyst & BI Professional | SQL, PowerBI, Python | 5-Star HackerRank (SQL)",
+      "locale": "en_US"
+    }
+  ],
+  "services": null,
+  "experience": [
+    {
+      "position": "Analysis Specialist",
+      "location": "Mumbai Metropolitan Region",
+      "employmentType": "Full-time",
+      "workplaceType": "On-site",
+      "companyName": "Asmit Enterprises",
+      "companyLinkedinUrl": "https://www.linkedin.com/search/results/all/?keywords=Asmit+Enterprises",
+      "duration": "3 mos",
+      "description": "Analyzed historical e-commerce datasets using SQL and PowerBI to identify seasonal sales bottlenecks and visualize revenue trends. Also created a software that predicts which contracts to accept based on provided and historical data.",
+      "skills": null,
+      "startDate": {
+        "month": "Nov",
+        "year": 2025,
+        "text": "Nov 2025"
+      },
+      "endDate": {
+        "month": "Jan",
+        "year": 2026,
+        "text": "Jan 2026"
+      }
+    }
+  ],
+  "education": [
+    {
+      "schoolName": "Thakur College Of Engineering and Technology",
+      "schoolLinkedinUrl": "https://www.linkedin.com/company/11448647/",
+      "schoolId": "11448647",
+      "degree": "Bachelor of Engineering",
+      "fieldOfStudy": "Computer Science",
+      "period": "Jan 2023 - Jan 2027",
+      "startDate": {
+        "month": "Jan",
+        "year": 2023,
+        "text": "Jan 2023"
+      },
+      "endDate": {
+        "month": "Jan",
+        "year": 2027,
+        "text": "Jan 2027"
+      },
+      "schoolLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_200_200/company-logo_200_200/0/1631391930064?e=1785974400&v=beta&t=0N8ZKMwcPWRiCr_2BzJJotaN0GfL88oq8dPNJorAkbg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_100_100/company-logo_100_100/0/1631391930064?e=1785974400&v=beta&t=_3pryI0PUMXkycQWaCcngC25wQWbRWz1KzhOyhPYk1I",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    }
+  ],
+  "certifications": [
+    {
+      "title": "Program with PL/SQL",
+      "issuedBy": "HackerRank",
+      "issuedAt": "Issued Jun 2026 · Expires Dec 2026",
+      "link": "https://www.hackerrank.com/certificates/42f3c399b64b",
+      "issuedByLink": "https://www.linkedin.com/company/435210/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D560BAQE8MivsmbT7Ig/company-logo_400_400/company-logo_400_400/0/1705561459405/hackerrank_logo?e=1785974400&v=beta&t=JRtnJi4kW_mU-zIv3LxAvOvZ8-uRbl7yC-zpF7WNvPk",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D560BAQE8MivsmbT7Ig/company-logo_400_400/company-logo_400_400/0/1705561459405/hackerrank_logo?e=1785974400&v=beta&t=JRtnJi4kW_mU-zIv3LxAvOvZ8-uRbl7yC-zpF7WNvPk",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D560BAQE8MivsmbT7Ig/company-logo_200_200/company-logo_200_200/0/1705561459405/hackerrank_logo?e=1785974400&v=beta&t=1-KsXaewixyC9fN4bF6iw1TMsAqyqPay_6fRkedkmUk",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D560BAQE8MivsmbT7Ig/company-logo_100_100/company-logo_100_100/0/1705561459405/hackerrank_logo?e=1785974400&v=beta&t=qT2tligf18S1O-qhIeb0CZixsjmDEiZzm69PVfKQAf0",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    }
+  ],
+  "projects": [
+    {
+      "title": "Data-Cleaning Platform",
+      "duration": null,
+      "startDate": null,
+      "endDate": null,
+      "description": "Architected an automated data-cleaning pipeline using structural parsing to efficiently ingest, format, and optimize chaotic datasets for downstream analytics."
+    }
+  ],
+  "volunteering": [],
+  "receivedRecommendations": [],
+  "skills": [
+    {
+      "name": "Tableau"
+    },
+    {
+      "name": "Pandas (Software)"
+    },
+    {
+      "name": "Microsoft Office"
+    },
+    {
+      "name": "Microsoft Power BI"
+    },
+    {
+      "name": "Python (Programming Language)"
+    },
+    {
+      "name": "Microsoft Excel"
+    },
+    {
+      "name": "SQL"
+    },
+    {
+      "name": "Data Preparation"
+    },
+    {
+      "name": "Database Analysis"
+    },
+    {
+      "name": "Trend Analysis"
+    },
+    {
+      "name": "Engineering Education"
+    },
+    {
+      "name": "Job Analysis"
+    },
+    {
+      "name": "Supply Chain Operations"
+    },
+    {
+      "name": "Platform Architecture"
+    },
+    {
+      "name": "Spatial Modeling"
+    },
+    {
+      "name": "Datasets"
+    },
+    {
+      "name": "Spreadsheets"
+    },
+    {
+      "name": "Database Management System (DBMS)"
+    },
+    {
+      "name": "Relational Data Modeling"
+    },
+    {
+      "name": "Data Cleaning"
+    },
+    {
+      "name": "Data Pipelines"
+    },
+    {
+      "name": "Developer Tools"
+    },
+    {
+      "name": "Spatial Data"
+    }
+  ],
+  "publications": [],
+  "courses": [],
+  "patents": [],
+  "honorsAndAwards": [],
+  "languages": [],
+  "organizations": [],
+  "causes": [],
+  "featured": null,
+  "composeOptionType": "UPSELL",
+  "moreProfiles": [
+    {
+      "id": "ACoAADHxlEIB7wzxPbdQ-UZY1sl3DjxMW4IUxqI",
+      "firstName": "Sonu ",
+      "lastName": "Gupta",
+      "position": "Aspiring Data Analyst | Power BI | SQL | Excel | Python | Data Visualization | Ex-Journalist",
+      "publicIdentifier": "sonugupta1211",
+      "linkedinUrl": "https://www.linkedin.com/in/sonugupta1211"
+    },
+    {
+      "id": "ACoAADiX4pAB7G9C0jWCBSakNN0JQBuxBwUQWYI",
+      "firstName": "Pranav",
+      "lastName": "Bhavsar",
+      "position": "Data Analyst - Private Equity @ Morningstar | Foreign Exchange (FX) Trading",
+      "publicIdentifier": "pranavkbhavsar",
+      "linkedinUrl": "https://www.linkedin.com/in/pranavkbhavsar"
+    },
+    {
+      "id": "ACoAAFb1XJQBxXD_tsIVl5FaVIvU3xL6VY_b-qw",
+      "firstName": "Hanshika",
+      "lastName": "Kottala",
+      "position": "Data Analyst | SQL | Python | Power BI | Machine Learning & NLP | EDA | Turning Data into Insights | 2026 Graduate",
+      "publicIdentifier": "hanshika-kottala-90470a348",
+      "linkedinUrl": "https://www.linkedin.com/in/hanshika-kottala-90470a348"
+    },
+    {
+      "id": "ACoAAD-YjK4B1ekkuKaP0cSvVwYi6kAAiCTAQhY",
+      "firstName": "Vishnu Ram Sachin",
+      "lastName": "D",
+      "position": "Data Analyst Intern @AtliQ Technologies | MySQL · Power BI · Excel | Turning Unstructured Business Data Into Decisions That Actually Make Sense |",
+      "publicIdentifier": "vishnu-ram-sachin-d-",
+      "linkedinUrl": "https://www.linkedin.com/in/vishnu-ram-sachin-d-"
+    },
+    {
+      "id": "ACoAAFDu-NsBgHZ8HLTYnZSC9GFr4tqJ7fKLHBI",
+      "firstName": "Khushi",
+      "lastName": "Chandel",
+      "position": "TCET’27 | PYTHON |Data Analyst",
+      "publicIdentifier": "khushi-chandel-24b8a231a",
+      "linkedinUrl": "https://www.linkedin.com/in/khushi-chandel-24b8a231a"
+    },
+    {
+      "id": "ACoAAEPUiykBBho3FNbfHJoyfKoNH8Yx0TzLIG4",
+      "firstName": "Harsh",
+      "lastName": "Pandey",
+      "position": "Artificial Intelligence And Data Science Enthusiast | TCET’27",
+      "publicIdentifier": "harsh-pandey-489146279",
+      "linkedinUrl": "https://www.linkedin.com/in/harsh-pandey-489146279"
+    },
+    {
+      "id": "ACoAAFKMFYwBagwWok1QpIxo1ubzZo7_hmmp_Rs",
+      "firstName": "Reetika",
+      "lastName": "Yadav",
+      "position": "1st Place Winner-Knowcode 3.0 Hackathon’26 @KJSIT | Computer Engineering @TCET’27 | Data Analyst",
+      "publicIdentifier": "reetika-yadav-a38979327",
+      "linkedinUrl": "https://www.linkedin.com/in/reetika-yadav-a38979327"
+    },
+    {
+      "id": "ACoAAFJaEhIBXCqW4Wh2Xw284uHg8hAdxzKy2vk",
+      "firstName": "Vedika",
+      "lastName": "Gugale",
+      "position": "Computer Engineering Student | 5⭐ Problem Solving (HackerRank) | 90+ DSA Problems on LeetCode | Skilled in Java, Python, C++ | Exploring ML, GenAI & UI/UX",
+      "publicIdentifier": "vedika-gugale-06a859326",
+      "linkedinUrl": "https://www.linkedin.com/in/vedika-gugale-06a859326"
+    },
+    {
+      "id": "ACoAAFy-6ToBuqhrzqxIYp_ZpXU7ub6rrM3KHq8",
+      "firstName": "GAYATHRI",
+      "lastName": "M",
+      "position": "Junior Data Analyst | Excel • SQL • Power BI • Python (Basics) | Passionate About Data Cleaning, Visualization & Insights. ",
+      "publicIdentifier": "gayathri-analytics",
+      "linkedinUrl": "https://www.linkedin.com/in/gayathri-analytics"
+    },
+    {
+      "id": "ACoAAErvUioBweERROQzGeRgwaBceoZYDP_C4zI",
+      "firstName": "Hemangi",
+      "lastName": "Jha",
+      "position": "Data Analyst Intern | TCET’27 | AI&DS UG",
+      "publicIdentifier": "hemangi-jha-2620492b1",
+      "linkedinUrl": "https://www.linkedin.com/in/hemangi-jha-2620492b1"
+    },
+    {
+      "id": "ACoAAAZOFwMBKnHAaJsY5eFV5xJvAe_XAt0-QDk",
+      "firstName": "Léonid",
+      "lastName": "Igor Zohoungbogbo",
+      "position": "Finance & Operations Manager | Corporate Finance | OHADA/SYSCOHADA | IPSAS | Audit & Internal Control | UN System Experience--",
+      "publicIdentifier": "l%C3%A9onid-igor-zohoungbogbo-a2b5132b",
+      "linkedinUrl": "https://www.linkedin.com/in/l%C3%A9onid-igor-zohoungbogbo-a2b5132b"
+    },
+    {
+      "id": "ACoAAF80utgBIIgZFGf7365wry0PNkJpEWO6imA",
+      "firstName": "turquin",
+      "lastName": "Kilikwa",
+      "position": "--",
+      "publicIdentifier": "turquin-kilikwa-420b1a386",
+      "linkedinUrl": "https://www.linkedin.com/in/turquin-kilikwa-420b1a386"
+    },
+    {
+      "id": "ACoAAGM1JT0B9jVRucaEd2aGJfIRn9afZaS7yZM",
+      "firstName": "Bavon",
+      "lastName": "KADIMA MULUMBA",
+      "position": "--",
+      "publicIdentifier": "bavon-kadima-mulumba-3114b63a5",
+      "linkedinUrl": "https://www.linkedin.com/in/bavon-kadima-mulumba-3114b63a5"
+    },
+    {
+      "id": "ACoAAGQKWXIBaIQ5GAtzes2timX7Z8GHuQed2wM",
+      "firstName": "Merdie",
+      "lastName": "Masuama",
+      "position": "--",
+      "publicIdentifier": "merdie-masuama-26a1143aa",
+      "linkedinUrl": "https://www.linkedin.com/in/merdie-masuama-26a1143aa"
+    },
+    {
+      "id": "ACoAAGTEFHkBowPUbXyoDq3D3uAzwzeQDIW9CwY",
+      "firstName": "Bienvenu",
+      "lastName": "Iwanda",
+      "position": "--",
+      "publicIdentifier": "bienvenu-iwanda-2752043b2",
+      "linkedinUrl": "https://www.linkedin.com/in/bienvenu-iwanda-2752043b2"
+    },
+    {
+      "id": "ACoAAGffurUBSiBpYJr2RZsUqUsnMCe-mcV6OAo",
+      "firstName": "Pierre",
+      "lastName": "Jonathan Bikanda",
+      "position": "--",
+      "publicIdentifier": "pierre-jonathan-bikanda-b5976b407",
+      "linkedinUrl": "https://www.linkedin.com/in/pierre-jonathan-bikanda-b5976b407"
+    },
+    {
+      "id": "ACoAAGbe3FgBDEUU9iUmLJvrNllVerGPQ49JH6w",
+      "firstName": "Patient",
+      "lastName": "ILUNGA",
+      "position": "--",
+      "publicIdentifier": "patient-ilunga-b88bb1401",
+      "linkedinUrl": "https://www.linkedin.com/in/patient-ilunga-b88bb1401"
+    },
+    {
+      "id": "ACoAAF6-bV8BS75BeByqzGQsr4Bs0598sPtVb6Y",
+      "firstName": "Franck",
+      "lastName": "Kamunga",
+      "position": "--",
+      "publicIdentifier": "franck-kamunga-73b3bb384",
+      "linkedinUrl": "https://www.linkedin.com/in/franck-kamunga-73b3bb384"
+    },
+    {
+      "id": "ACoAAEqoGMQBplGYyV2F7Fvd4w2iz9eRS0dQc6g",
+      "firstName": "Parlem",
+      "lastName": "Nzau",
+      "position": "Informaticien de gestion | Déclarant en douane | Gestion des stocks & Retail",
+      "publicIdentifier": "parlem-nzau-b705772ab",
+      "linkedinUrl": "https://www.linkedin.com/in/parlem-nzau-b705772ab"
+    },
+    {
+      "id": "ACoAAF6TMa4BVj0AahiaSuGoXZtsC-oI2o-SWbg",
+      "firstName": "Athanase",
+      "lastName": "Edungu",
+      "position": "--",
+      "publicIdentifier": "athanase-edungu-b52473383",
+      "linkedinUrl": "https://www.linkedin.com/in/athanase-edungu-b52473383"
+    }
+  ],
+  "interests": [
+    {
+      "interestName": "Companies",
+      "elements": [
+        {
+          "title": "Thakur College Of Engineering and Technology",
+          "subtitle": null,
+          "link": "https://www.linkedin.com/company/11448647/",
+          "caption": "2,975 followers",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M"
+          }
+        }
+      ]
+    }
+  ],
+  "originalQuery": {
+    "url": "https://www.linkedin.com/in/asmit-bagkar-79a2a4303/"
+  }
+}
