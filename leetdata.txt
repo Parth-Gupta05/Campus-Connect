@@ -1,0 +1,925 @@
+{
+  "profile": {
+    "totalSolved": 246,
+    "totalSubmissions": [
+      {
+        "difficulty": "All",
+        "count": 257,
+        "submissions": 605
+      },
+      {
+        "difficulty": "Easy",
+        "count": 151,
+        "submissions": 336
+      },
+      {
+        "difficulty": "Medium",
+        "count": 98,
+        "submissions": 244
+      },
+      {
+        "difficulty": "Hard",
+        "count": 8,
+        "submissions": 25
+      }
+    ],
+    "totalQuestions": 3991,
+    "easySolved": 149,
+    "totalEasy": 954,
+    "mediumSolved": 92,
+    "totalMedium": 2084,
+    "hardSolved": 5,
+    "totalHard": 953,
+    "ranking": 627018,
+    "contributionPoint": 555,
+    "reputation": 0,
+    "submissionCalendar": {
+      "1754092800": 2,
+      "1755302400": 2,
+      "1755475200": 1,
+      "1755648000": 1,
+      "1755907200": 1,
+      "1755993600": 3,
+      "1757721600": 1,
+      "1758153600": 1,
+      "1758844800": 4,
+      "1759017600": 2,
+      "1759190400": 2,
+      "1759363200": 1,
+      "1759449600": 1,
+      "1759536000": 3,
+      "1759622400": 2,
+      "1759708800": 1,
+      "1761436800": 5,
+      "1761523200": 1,
+      "1761609600": 2,
+      "1763164800": 3,
+      "1763251200": 1,
+      "1763337600": 2,
+      "1764374400": 1,
+      "1765238400": 5,
+      "1765324800": 3,
+      "1765411200": 7,
+      "1765497600": 3,
+      "1765584000": 8,
+      "1765670400": 2,
+      "1765756800": 2,
+      "1765843200": 2,
+      "1766016000": 1,
+      "1766102400": 3,
+      "1766188800": 3,
+      "1766275200": 1,
+      "1766361600": 1,
+      "1766448000": 3,
+      "1766534400": 4,
+      "1766620800": 6,
+      "1766707200": 4,
+      "1766793600": 1,
+      "1766880000": 8,
+      "1766966400": 1,
+      "1767052800": 1,
+      "1767139200": 1,
+      "1767225600": 1,
+      "1767312000": 3,
+      "1767398400": 15,
+      "1767484800": 5,
+      "1767571200": 1,
+      "1767657600": 1,
+      "1767744000": 1,
+      "1767830400": 1,
+      "1767916800": 1,
+      "1768003200": 1,
+      "1768176000": 1,
+      "1768348800": 1,
+      "1768521600": 1,
+      "1768694400": 1,
+      "1768867200": 1,
+      "1768953600": 1,
+      "1769040000": 3,
+      "1769126400": 2,
+      "1769558400": 1,
+      "1769644800": 3,
+      "1769817600": 5,
+      "1770076800": 1,
+      "1770681600": 1,
+      "1770854400": 1,
+      "1771113600": 1,
+      "1771200000": 3,
+      "1771632000": 8,
+      "1771718400": 29,
+      "1771804800": 1,
+      "1771891200": 1,
+      "1771977600": 5,
+      "1772323200": 4,
+      "1772755200": 3,
+      "1773100800": 1,
+      "1773187200": 9,
+      "1774396800": 4,
+      "1774656000": 2,
+      "1775174400": 1,
+      "1775260800": 2,
+      "1775779200": 2,
+      "1775865600": 4,
+      "1775952000": 3,
+      "1776038400": 2,
+      "1776211200": 1,
+      "1776297600": 1,
+      "1776384000": 3,
+      "1776470400": 1,
+      "1776556800": 8,
+      "1776643200": 4,
+      "1776988800": 4,
+      "1777161600": 4,
+      "1777766400": 15,
+      "1777852800": 1,
+      "1777939200": 1,
+      "1778284800": 16,
+      "1778371200": 30,
+      "1778457600": 8,
+      "1778716800": 5,
+      "1778803200": 1,
+      "1779148800": 1,
+      "1779408000": 1,
+      "1779494400": 11,
+      "1780185600": 3,
+      "1780790400": 5,
+      "1780876800": 1,
+      "1780963200": 5,
+      "1781136000": 10,
+      "1781222400": 8,
+      "1781481600": 3,
+      "1781654400": 8,
+      "1782086400": 21,
+      "1782259200": 2,
+      "1782691200": 1,
+      "1782777600": 9,
+      "1782950400": 2,
+      "1783036800": 6,
+      "1783123200": 20,
+      "1783296000": 4,
+      "1783382400": 2,
+      "1783468800": 2,
+      "1783555200": 4,
+      "1783641600": 8
+    },
+    "recentSubmissions": [
+      {
+        "title": "Binary Tree Zigzag Level Order Traversal",
+        "titleSlug": "binary-tree-zigzag-level-order-traversal",
+        "timestamp": "1783707697",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Zigzag Level Order Traversal",
+        "titleSlug": "binary-tree-zigzag-level-order-traversal",
+        "timestamp": "1783707644",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Zigzag Level Order Traversal",
+        "titleSlug": "binary-tree-zigzag-level-order-traversal",
+        "timestamp": "1783706443",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Same Tree",
+        "titleSlug": "same-tree",
+        "timestamp": "1783703611",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783666571",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783666550",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783665992",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783665944",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783621397",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783621225",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783621152",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Flatten Binary Tree to Linked List",
+        "titleSlug": "flatten-binary-tree-to-linked-list",
+        "timestamp": "1783575034",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Diameter of Binary Tree",
+        "titleSlug": "diameter-of-binary-tree",
+        "timestamp": "1783499722",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Balanced Binary Tree",
+        "titleSlug": "balanced-binary-tree",
+        "timestamp": "1783496630",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Maximum Depth of Binary Tree",
+        "titleSlug": "maximum-depth-of-binary-tree",
+        "timestamp": "1783446145",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Concatenate Non-Zero Digits and Multiply by Sum I",
+        "titleSlug": "concatenate-non-zero-digits-and-multiply-by-sum-i",
+        "timestamp": "1783440119",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Level Order Traversal",
+        "titleSlug": "binary-tree-level-order-traversal",
+        "timestamp": "1783360124",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Postorder Traversal",
+        "titleSlug": "binary-tree-postorder-traversal",
+        "timestamp": "1783357728",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Preorder Traversal",
+        "titleSlug": "binary-tree-preorder-traversal",
+        "timestamp": "1783357044",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      },
+      {
+        "title": "Binary Tree Inorder Traversal",
+        "titleSlug": "binary-tree-inorder-traversal",
+        "timestamp": "1783356660",
+        "statusDisplay": "Accepted",
+        "lang": "cpp",
+        "__typename": "SubmissionDumpNode"
+      }
+    ],
+    "matchedUserStats": {
+      "acSubmissionNum": [
+        {
+          "difficulty": "All",
+          "count": 246,
+          "submissions": 284
+        },
+        {
+          "difficulty": "Easy",
+          "count": 149,
+          "submissions": 174
+        },
+        {
+          "difficulty": "Medium",
+          "count": 92,
+          "submissions": 105
+        },
+        {
+          "difficulty": "Hard",
+          "count": 5,
+          "submissions": 5
+        }
+      ],
+      "totalSubmissionNum": [
+        {
+          "difficulty": "All",
+          "count": 257,
+          "submissions": 605
+        },
+        {
+          "difficulty": "Easy",
+          "count": 151,
+          "submissions": 336
+        },
+        {
+          "difficulty": "Medium",
+          "count": 98,
+          "submissions": 244
+        },
+        {
+          "difficulty": "Hard",
+          "count": 8,
+          "submissions": 25
+        }
+      ]
+    }
+  },
+  "badges": {
+    "badgesCount": 2,
+    "badges": [
+      {
+        "id": "10167110",
+        "displayName": "50 Days Badge 2026",
+        "icon": "https://assets.leetcode.com/static_assets/others/50_1080_1080.png",
+        "creationDate": "2026-04-24"
+      },
+      {
+        "id": "8973743",
+        "displayName": "50 Days Badge 2025",
+        "icon": "https://assets.leetcode.com/static_assets/others/lg2550.png",
+        "creationDate": "2025-12-20"
+      }
+    ],
+    "upcomingBadges": [
+      {
+        "name": "Jul LeetCoding Challenge",
+        "icon": "/static/images/badges/dcc-2026-7.png"
+      },
+      {
+        "name": "Aug LeetCoding Challenge",
+        "icon": "/static/images/badges/dcc-2026-8.png"
+      },
+      {
+        "name": "Sep LeetCoding Challenge",
+        "icon": "/static/images/badges/dcc-2026-9.png"
+      }
+    ],
+    "activeBadge": {
+      "id": "8973743",
+      "displayName": "50 Days Badge 2025",
+      "icon": "https://assets.leetcode.com/static_assets/others/lg2550.png",
+      "creationDate": "2025-12-20"
+    }
+  },
+  "solved": {
+    "solvedProblem": 246,
+    "easySolved": 149,
+    "mediumSolved": 92,
+    "hardSolved": 5,
+    "totalSubmissionNum": [
+      {
+        "difficulty": "All",
+        "count": 257,
+        "submissions": 605
+      },
+      {
+        "difficulty": "Easy",
+        "count": 151,
+        "submissions": 336
+      },
+      {
+        "difficulty": "Medium",
+        "count": 98,
+        "submissions": 244
+      },
+      {
+        "difficulty": "Hard",
+        "count": 8,
+        "submissions": 25
+      }
+    ],
+    "acSubmissionNum": [
+      {
+        "difficulty": "All",
+        "count": 246,
+        "submissions": 284
+      },
+      {
+        "difficulty": "Easy",
+        "count": 149,
+        "submissions": 174
+      },
+      {
+        "difficulty": "Medium",
+        "count": 92,
+        "submissions": 105
+      },
+      {
+        "difficulty": "Hard",
+        "count": 5,
+        "submissions": 5
+      }
+    ]
+  },
+  "contest": {
+    "contestAttend": 9,
+    "contestRating": 1528.8779459870198,
+    "contestGlobalRanking": 318921,
+    "totalParticipants": 875443,
+    "contestTopPercentage": 36.85,
+    "contestBadges": null,
+    "contestParticipation": [
+      {
+        "attended": true,
+        "rating": 1413.611,
+        "ranking": 32946,
+        "trendDirection": "DOWN",
+        "problemsSolved": 0,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 0,
+        "contest": {
+          "title": "Weekly Contest 490",
+          "startTime": 1771727400
+        }
+      },
+      {
+        "attended": true,
+        "rating": 1378.518,
+        "ranking": 22669,
+        "trendDirection": "DOWN",
+        "problemsSolved": 1,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 4641,
+        "contest": {
+          "title": "Biweekly Contest 179",
+          "startTime": 1774708200
+        }
+      },
+      {
+        "attended": true,
+        "rating": 1367.554,
+        "ranking": 18497,
+        "trendDirection": "DOWN",
+        "problemsSolved": 2,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 5416,
+        "contest": {
+          "title": "Weekly Contest 498",
+          "startTime": 1776565800
+        }
+      },
+      {
+        "attended": true,
+        "rating": 1380.854,
+        "ranking": 13352,
+        "trendDirection": "UP",
+        "problemsSolved": 2,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 5880,
+        "contest": {
+          "title": "Weekly Contest 499",
+          "startTime": 1777170600
+        }
+      },
+      {
+        "attended": true,
+        "rating": 1435.399,
+        "ranking": 6114,
+        "trendDirection": "UP",
+        "problemsSolved": 3,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 6911,
+        "contest": {
+          "title": "Weekly Contest 500",
+          "startTime": 1777775400
+        }
+      },
+      {
+        "attended": true,
+        "rating": 1462.551,
+        "ranking": 7805,
+        "trendDirection": "UP",
+        "problemsSolved": 2,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 7901,
+        "contest": {
+          "title": "Biweekly Contest 182",
+          "startTime": 1778337000
+        }
+      },
+      {
+        "attended": true,
+        "rating": 1497.268,
+        "ranking": 6609,
+        "trendDirection": "UP",
+        "problemsSolved": 3,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 10162,
+        "contest": {
+          "title": "Weekly Contest 501",
+          "startTime": 1778380200
+        }
+      },
+      {
+        "attended": true,
+        "rating": 1558.429,
+        "ranking": 3430,
+        "trendDirection": "UP",
+        "problemsSolved": 2,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 1434,
+        "contest": {
+          "title": "Weekly Contest 504",
+          "startTime": 1780194600
+        }
+      },
+      {
+        "attended": true,
+        "rating": 1528.878,
+        "ranking": 17853,
+        "trendDirection": "DOWN",
+        "problemsSolved": 2,
+        "totalProblems": 4,
+        "finishTimeInSeconds": 7713,
+        "contest": {
+          "title": "Biweekly Contest 186",
+          "startTime": 1783175400
+        }
+      }
+    ]
+  },
+  "submission": {
+    "count": 20,
+    "submission": [
+      {
+        "title": "Binary Tree Zigzag Level Order Traversal",
+        "titleSlug": "binary-tree-zigzag-level-order-traversal",
+        "timestamp": "1783707697",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Zigzag Level Order Traversal",
+        "titleSlug": "binary-tree-zigzag-level-order-traversal",
+        "timestamp": "1783707644",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Zigzag Level Order Traversal",
+        "titleSlug": "binary-tree-zigzag-level-order-traversal",
+        "timestamp": "1783706443",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Same Tree",
+        "titleSlug": "same-tree",
+        "timestamp": "1783703611",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783666571",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783666550",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783665992",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783665944",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783621397",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783621225",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Maximum Path Sum",
+        "titleSlug": "binary-tree-maximum-path-sum",
+        "timestamp": "1783621152",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Flatten Binary Tree to Linked List",
+        "titleSlug": "flatten-binary-tree-to-linked-list",
+        "timestamp": "1783575034",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Diameter of Binary Tree",
+        "titleSlug": "diameter-of-binary-tree",
+        "timestamp": "1783499722",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Balanced Binary Tree",
+        "titleSlug": "balanced-binary-tree",
+        "timestamp": "1783496630",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Maximum Depth of Binary Tree",
+        "titleSlug": "maximum-depth-of-binary-tree",
+        "timestamp": "1783446145",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Concatenate Non-Zero Digits and Multiply by Sum I",
+        "titleSlug": "concatenate-non-zero-digits-and-multiply-by-sum-i",
+        "timestamp": "1783440119",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Level Order Traversal",
+        "titleSlug": "binary-tree-level-order-traversal",
+        "timestamp": "1783360124",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Postorder Traversal",
+        "titleSlug": "binary-tree-postorder-traversal",
+        "timestamp": "1783357728",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Preorder Traversal",
+        "titleSlug": "binary-tree-preorder-traversal",
+        "timestamp": "1783357044",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Inorder Traversal",
+        "titleSlug": "binary-tree-inorder-traversal",
+        "timestamp": "1783356660",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      }
+    ]
+  },
+  "calendar": {
+    "activeYears": [
+      2024,
+      2025,
+      2026
+    ],
+    "streak": 24,
+    "totalActiveDays": 128,
+    "submissionCalendar": "{\"1767225600\": 1, \"1767312000\": 3, \"1767398400\": 15, \"1767484800\": 5, \"1767571200\": 1, \"1767657600\": 1, \"1767744000\": 1, \"1767830400\": 1, \"1767916800\": 1, \"1768003200\": 1, \"1768176000\": 1, \"1768348800\": 1, \"1768521600\": 1, \"1768694400\": 1, \"1768867200\": 1, \"1768953600\": 1, \"1769040000\": 3, \"1769126400\": 2, \"1769558400\": 1, \"1769644800\": 3, \"1769817600\": 5, \"1770076800\": 1, \"1770681600\": 1, \"1770854400\": 1, \"1771113600\": 1, \"1771200000\": 3, \"1771632000\": 8, \"1771718400\": 29, \"1771804800\": 1, \"1771891200\": 1, \"1771977600\": 5, \"1772323200\": 4, \"1772755200\": 3, \"1773100800\": 1, \"1773187200\": 9, \"1774396800\": 4, \"1774656000\": 2, \"1775174400\": 1, \"1775260800\": 2, \"1775779200\": 2, \"1775865600\": 4, \"1775952000\": 3, \"1776038400\": 2, \"1776211200\": 1, \"1776297600\": 1, \"1776384000\": 3, \"1776470400\": 1, \"1776556800\": 8, \"1776643200\": 4, \"1776988800\": 4, \"1777161600\": 4, \"1777766400\": 15, \"1777852800\": 1, \"1777939200\": 1, \"1778284800\": 16, \"1778371200\": 30, \"1778457600\": 8, \"1778716800\": 5, \"1778803200\": 1, \"1779148800\": 1, \"1779408000\": 1, \"1779494400\": 11, \"1780185600\": 3, \"1780790400\": 5, \"1780876800\": 1, \"1780963200\": 5, \"1781136000\": 10, \"1781222400\": 8, \"1781481600\": 3, \"1781654400\": 8, \"1782086400\": 21, \"1782259200\": 2, \"1782691200\": 1, \"1782777600\": 9, \"1782950400\": 2, \"1783036800\": 6, \"1783123200\": 20, \"1783296000\": 4, \"1783382400\": 2, \"1783468800\": 2, \"1783555200\": 4, \"1783641600\": 8, \"1752537600\": 4, \"1754092800\": 2, \"1755302400\": 2, \"1755475200\": 1, \"1755648000\": 1, \"1755907200\": 1, \"1755993600\": 3, \"1757721600\": 1, \"1758153600\": 1, \"1758844800\": 4, \"1759017600\": 2, \"1759190400\": 2, \"1759363200\": 1, \"1759449600\": 1, \"1759536000\": 3, \"1759622400\": 2, \"1759708800\": 1, \"1761436800\": 5, \"1761523200\": 1, \"1761609600\": 2, \"1763164800\": 3, \"1763251200\": 1, \"1763337600\": 2, \"1764374400\": 1, \"1765238400\": 5, \"1765324800\": 3, \"1765411200\": 7, \"1765497600\": 3, \"1765584000\": 8, \"1765670400\": 2, \"1765756800\": 2, \"1765843200\": 2, \"1766016000\": 1, \"1766102400\": 3, \"1766188800\": 3, \"1766275200\": 1, \"1766361600\": 1, \"1766448000\": 3, \"1766534400\": 4, \"1766620800\": 6, \"1766707200\": 4, \"1766793600\": 1, \"1766880000\": 8, \"1766966400\": 1, \"1767052800\": 1, \"1767139200\": 1}"
+  },
+  "skills": {
+    "fundamental": [
+      {
+        "tagName": "Array",
+        "tagSlug": "array",
+        "problemsSolved": 133
+      },
+      {
+        "tagName": "Matrix",
+        "tagSlug": "matrix",
+        "problemsSolved": 9
+      },
+      {
+        "tagName": "String",
+        "tagSlug": "string",
+        "problemsSolved": 26
+      },
+      {
+        "tagName": "Simulation",
+        "tagSlug": "simulation",
+        "problemsSolved": 18
+      },
+      {
+        "tagName": "Enumeration",
+        "tagSlug": "enumeration",
+        "problemsSolved": 9
+      },
+      {
+        "tagName": "Sorting",
+        "tagSlug": "sorting",
+        "problemsSolved": 34
+      },
+      {
+        "tagName": "Stack",
+        "tagSlug": "stack",
+        "problemsSolved": 12
+      },
+      {
+        "tagName": "Linked List",
+        "tagSlug": "linked-list",
+        "problemsSolved": 19
+      },
+      {
+        "tagName": "Two Pointers",
+        "tagSlug": "two-pointers",
+        "problemsSolved": 33
+      }
+    ],
+    "intermediate": [
+      {
+        "tagName": "Tree",
+        "tagSlug": "tree",
+        "problemsSolved": 11
+      },
+      {
+        "tagName": "Binary Tree",
+        "tagSlug": "binary-tree",
+        "problemsSolved": 11
+      },
+      {
+        "tagName": "Hash Table",
+        "tagSlug": "hash-table",
+        "problemsSolved": 45
+      },
+      {
+        "tagName": "Ordered Set",
+        "tagSlug": "ordered-set",
+        "problemsSolved": 1
+      },
+      {
+        "tagName": "Greedy",
+        "tagSlug": "greedy",
+        "problemsSolved": 14
+      },
+      {
+        "tagName": "Binary Search",
+        "tagSlug": "binary-search",
+        "problemsSolved": 29
+      },
+      {
+        "tagName": "Depth-First Search",
+        "tagSlug": "depth-first-search",
+        "problemsSolved": 9
+      },
+      {
+        "tagName": "Breadth-First Search",
+        "tagSlug": "breadth-first-search",
+        "problemsSolved": 4
+      },
+      {
+        "tagName": "Recursion",
+        "tagSlug": "recursion",
+        "problemsSolved": 11
+      },
+      {
+        "tagName": "Sliding Window",
+        "tagSlug": "sliding-window",
+        "problemsSolved": 7
+      },
+      {
+        "tagName": "Bit Manipulation",
+        "tagSlug": "bit-manipulation",
+        "problemsSolved": 18
+      },
+      {
+        "tagName": "Math",
+        "tagSlug": "math",
+        "problemsSolved": 45
+      },
+      {
+        "tagName": "Design",
+        "tagSlug": "design",
+        "problemsSolved": 1
+      },
+      {
+        "tagName": "Database",
+        "tagSlug": "database",
+        "problemsSolved": 25
+      }
+    ],
+    "advanced": [
+      {
+        "tagName": "Backtracking",
+        "tagSlug": "backtracking",
+        "problemsSolved": 1
+      },
+      {
+        "tagName": "Quickselect",
+        "tagSlug": "quickselect",
+        "problemsSolved": 3
+      },
+      {
+        "tagName": "Dynamic Programming",
+        "tagSlug": "dynamic-programming",
+        "problemsSolved": 11
+      },
+      {
+        "tagName": "Divide and Conquer",
+        "tagSlug": "divide-and-conquer",
+        "problemsSolved": 12
+      },
+      {
+        "tagName": "Union-Find",
+        "tagSlug": "union-find",
+        "problemsSolved": 1
+      },
+      {
+        "tagName": "Segment Tree",
+        "tagSlug": "segment-tree",
+        "problemsSolved": 2
+      },
+      {
+        "tagName": "Monotonic Stack",
+        "tagSlug": "monotonic-stack",
+        "problemsSolved": 2
+      }
+    ]
+  },
+  "languages": {
+    "languageProblemCount": [
+      {
+        "languageName": "C++",
+        "problemsSolved": 218
+      },
+      {
+        "languageName": "Java",
+        "problemsSolved": 1
+      },
+      {
+        "languageName": "MySQL",
+        "problemsSolved": 3
+      },
+      {
+        "languageName": "JavaScript",
+        "problemsSolved": 2
+      },
+      {
+        "languageName": "PostgreSQL",
+        "problemsSolved": 24
+      }
+    ]
+  }
+}
