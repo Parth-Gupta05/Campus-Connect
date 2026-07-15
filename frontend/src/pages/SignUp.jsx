@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { FiLoader } from 'react-icons/fi';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -190,13 +191,9 @@ export default function SignUp() {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-primary text-on-primary py-3.5 rounded-xl font-button-text hover:bg-primary-container transition-colors disabled:opacity-70 shadow-sm mt-6 flex items-center justify-center gap-2"
-                >
+                <button disabled={loading} type="submit" className="w-full bg-primary text-on-primary py-3 rounded-lg font-button-text hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2">
                   {loading ? (
-                    <span className="material-symbols-outlined animate-spin">refresh</span>
+                    <FiLoader className="animate-spin text-[24px]" />
                   ) : (
                     <>Sign Up <span className="material-symbols-outlined text-[18px]">person_add</span></>
                   )}
