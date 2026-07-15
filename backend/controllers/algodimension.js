@@ -190,6 +190,71 @@ const getleetcodedata = async (leetcodeuserid) => {
     }
 };
 
+const APIFY_TOKEN = process.env.APIFY_TOKEN;
+const ACTOR_ID = "harvestapi~linkedin-profile-scraper";
+
+async function getLinkedInData(linkedinUrl) {
+  try {
+    // linkedinUserId examples:
+    // "satyanadella"
+    // "karan-gupta-123456789"
+
+const input = {
+        urls: [linkedinUrl]
+    };
+
+    // Start Actor
+    const runResponse = await fetch(
+      `https://api.apify.com/v2/actors/${ACTOR_ID}/runs?token=${APIFY_TOKEN}&waitForFinish=120`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(input)
+      }
+    );
+
+    const run = await runResponse.json();
+
+    if (!run.data) {
+      console.error("Apify Actor Run Response:", run);
+      throw new Error(`Actor failed to start: ${run.message || (run.error && run.error.message) || JSON.stringify(run)}`);
+    }
+
+    console.log(`Actor Run Status: ${run.data.status}`);
+    console.log(`Dataset ID: ${run.data.defaultDatasetId}`);
+
+    const datasetId = run.data.defaultDatasetId;
+
+    // Fetch results
+    const datasetResponse = await fetch(
+      `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true&token=${APIFY_TOKEN}`
+    );
+
+    const profiles = await datasetResponse.json();
+    console.log("Dataset items length:", profiles.length);
+    console.log("Dataset items:", JSON.stringify(profiles, null, 2));
+
+    if (profiles.length === 0) {
+      console.log("Fetching actor run log...");
+      const logRes = await fetch(`https://api.apify.com/v2/actor-runs/${run.data.id}/log?token=${APIFY_TOKEN}`);
+      if (logRes.ok) {
+        const logText = await logRes.text();
+        console.log("--- ACTOR RUN LOG ---");
+        console.log(logText.slice(-2000)); // Print last 2000 characters of log
+        console.log("---------------------");
+      }
+    }
+
+    return profiles[0] || null;
+
+  } catch (err) {
+    console.error("Error in getLinkedInData:", err);
+    return null;
+  }
+}
+
 
 
 const fallbackMockData = (githubuserid) => ({
@@ -231,5 +296,6 @@ const fallbackMockData = (githubuserid) => ({
 module.exports = {
     createdimension,
     getgithubdata,
-    getleetcodedata
+    getleetcodedata,
+    getLinkedInData
 };
