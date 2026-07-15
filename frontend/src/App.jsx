@@ -4,7 +4,9 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentProfile from './pages/StudentProfile';
+import Certificates from './pages/Certificates';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function AdminPlaceholder() {
@@ -19,7 +21,8 @@ function AdminPlaceholder() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/signin" element={<SignIn />} />
@@ -37,6 +40,12 @@ function App() {
             </ProtectedRoute>
           } />
 
+          <Route path="/certificates" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <Certificates />
+            </ProtectedRoute>
+          } />
+
           <Route path="/admin" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <div className="flex bg-background min-h-screen text-on-surface">
@@ -46,6 +55,7 @@ function App() {
           } />
         </Routes>
       </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }
