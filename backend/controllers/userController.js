@@ -1,5 +1,12 @@
 const User = require('../models/User');
-const { getgithubdata, getleetcodedata } = require('./algodimension');
+const { getgithubdata, getleetcodedata, getLinkedInData } = require('./algodimension');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const getProfile = async (req, res) => {
   try {
@@ -34,7 +41,46 @@ const scrapeAndCacheMetrics = async (user) => {
     }
   }
 
-  user.scrapedData = { github: githubData, leetcode: leetcodeData };
+  let linkedinData = user.scrapedData?.linkedin || null;
+  if (user.linkedInUrl) {
+    const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+    const timeSinceLastLinkedInScrape = user.lastLinkedInScrapeAt 
+      ? Date.now() - new Date(user.lastLinkedInScrapeAt).getTime()
+      : Infinity;
+      
+    if (timeSinceLastLinkedInScrape > TWENTY_FOUR_HOURS_MS) {
+      try {
+        linkedinData = await getLinkedInData(user.linkedInUrl);
+        user.lastLinkedInScrapeAt = new Date();
+      } catch (err) {
+        console.warn('Failed to fetch linkedin data:', err.message);
+      }
+    }
+  }
+
+  user.scrapedData = { github: githubData, leetcode: leetcodeData, linkedin: linkedinData };
+  
+  // Merge LinkedIn certificates into resumeDetails.certificates
+  if (linkedinData && linkedinData.certifications) {
+    if (!user.resumeDetails) user.resumeDetails = {};
+    if (!user.resumeDetails.certificates) user.resumeDetails.certificates = [];
+    
+    linkedinData.certifications.forEach(cert => {
+      // Check if it already exists by title
+      const exists = user.resumeDetails.certificates.find(c => c.title === cert.title);
+      if (!exists) {
+        user.resumeDetails.certificates.push({
+          title: cert.title,
+          issuer: cert.issuedBy,
+          issueDate: cert.issuedAt,
+          credentialUrl: cert.link,
+          fileUrl: '',
+          isComplete: false
+        });
+      }
+    });
+  }
+
   user.lastScrapedAt = new Date();
   await user.save();
   return user;
@@ -102,7 +148,7 @@ const refreshMetrics = async (req, res) => {
 
 const updatePortfolio = async (req, res) => {
   try {
-    const { skills, education, experience, projects } = req.body;
+    const { skills, education, experience, projects, certificates, portfolioUrl } = req.body;
     
     let user = await User.findById(req.user.id);
     if (!user) {
@@ -110,10 +156,12 @@ const updatePortfolio = async (req, res) => {
     }
 
     user.resumeDetails = {
-      skills: skills || user.resumeDetails?.skills || [],
-      education: education || user.resumeDetails?.education || [],
-      experience: experience || user.resumeDetails?.experience || [],
-      projects: projects || user.resumeDetails?.projects || []
+      portfolioUrl: portfolioUrl !== undefined ? portfolioUrl : (user.resumeDetails && user.resumeDetails.portfolioUrl) || '',
+      skills: skills || (user.resumeDetails && user.resumeDetails.skills) || [],
+      education: education || (user.resumeDetails && user.resumeDetails.education) || [],
+      experience: experience || (user.resumeDetails && user.resumeDetails.experience) || [],
+      projects: projects || (user.resumeDetails && user.resumeDetails.projects) || [],
+      certificates: certificates || (user.resumeDetails && user.resumeDetails.certificates) || []
     };
 
     await user.save();
@@ -128,9 +176,99 @@ const updatePortfolio = async (req, res) => {
   }
 };
 
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const uploadStream = new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { resource_type: 'image', folder: 'avatars' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result.secure_url);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+    
+    const avatarUrl = await uploadStream;
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    user.avatarUrl = avatarUrl;
+    await user.save();
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({ message: 'Avatar uploaded successfully', user: userResponse, avatarUrl });
+  } catch (error) {
+    console.error('Error uploading avatar:', error);
+    res.status(500).json({ message: 'Server error uploading avatar' });
+  }
+};
+
+const uploadCertFile = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file provided' });
+    }
+
+    const uploadStream = new Promise((resolve, reject) => {
+      // Use resource_type 'image' to allow PDF to image conversion (thumbnails)
+      const stream = cloudinary.uploader.upload_stream(
+        { resource_type: 'image', folder: 'certificates' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result.secure_url);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+    
+    const fileUrl = await uploadStream;
+
+    res.json({ message: 'File uploaded successfully', fileUrl });
+  } catch (error) {
+    console.error('Error uploading cert file:', error);
+    res.status(500).json({ message: 'Server error uploading file', details: error.message || error });
+  }
+};
+
+const getResumePdf = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || !user.resumeUrl) {
+      return res.status(404).send('No resume found');
+    }
+
+    const response = await fetch(user.resumeUrl);
+    if (!response.ok) {
+      return res.status(response.status).send('Failed to fetch resume from storage');
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="resume.pdf"');
+
+    // Stream the response directly to the client
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    res.send(buffer);
+  } catch (error) {
+    console.error('Error proxying resume PDF:', error);
+    res.status(500).send('Server error');
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
   refreshMetrics,
-  updatePortfolio
+  updatePortfolio,
+  uploadAvatar,
+  uploadCertFile,
+  getResumePdf
 };
