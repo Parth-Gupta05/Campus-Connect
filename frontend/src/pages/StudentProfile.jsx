@@ -1,46 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import ReactMarkdown from 'react-markdown';
 import Sidebar from '../components/Sidebar';
 import { AuthContext } from '../context/AuthContext';
-
-const CountUp = ({ end }) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 100);
-    return () => clearTimeout(t);
-  }, []);
-
-  const valStr = String(end || 0);
-
-  return (
-    <span className="inline-flex" style={{ fontVariantNumeric: 'tabular-nums' }}>
-      {valStr.split('').map((char, i) => {
-        if (isNaN(char) || char === ' ') {
-          return <span key={i}>{char}</span>;
-        }
-        return (
-          <span key={i} className="inline-block h-[1em] overflow-hidden leading-none align-text-bottom relative">
-            <span
-              className="flex flex-col transition-transform duration-[1500ms] ease-[cubic-bezier(0.2,1,0.3,1)]"
-              style={{ 
-                transform: `translateY(calc(-${mounted ? char : '0'} * 1em))`,
-                transitionDelay: `${i * 100}ms`
-              }}
-            >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                <span key={num} className="h-[1em] flex items-center justify-center">
-                  {num}
-                </span>
-              ))}
-            </span>
-          </span>
-        );
-      })}
-    </span>
-  );
-};
+import { useToast } from '../context/ToastContext';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { SiLeetcode } from 'react-icons/si';
+import { FiLoader } from 'react-icons/fi';
 
 function ProfileSetupOverlay({ onComplete }) {
   const [formData, setFormData] = useState({
@@ -94,7 +59,7 @@ function ProfileSetupOverlay({ onComplete }) {
           </div>
 
           <button disabled={loading} type="submit" className="w-full mt-6 bg-primary text-on-primary py-3 rounded-lg font-button-text hover:bg-primary-container transition-colors disabled:opacity-70 flex justify-center items-center gap-2">
-            {loading ? <span className="material-symbols-outlined animate-spin">refresh</span> : 'Complete Setup'}
+            {loading ? <FiLoader className="animate-spin text-[24px]" /> : 'Complete Setup'}
           </button>
         </form>
       </div>
@@ -102,58 +67,268 @@ function ProfileSetupOverlay({ onComplete }) {
   );
 }
 
-function RepoModal({ repo, onClose }) {
-  if (!repo) return null;
+function PdfViewerModal({ url, onClose }) {
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-surface-container-lowest w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl shadow-ambient border border-border-light overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-border-light flex justify-between items-start bg-surface-container-lowest">
-          <div>
-            <h2 className="text-headline-md font-bold text-primary mb-2 flex items-center gap-2">
-              <span className="material-symbols-outlined">book</span>
-              {repo.name}
-            </h2>
-            <p className="text-body-md text-on-surface-variant">{repo.description || 'No description provided.'}</p>
-          </div>
-          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface transition-colors p-1 bg-surface-container-high rounded-full flex items-center justify-center">
+    <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex justify-center items-center p-4">
+      <div className="bg-surface-container-lowest w-full max-w-4xl h-[85vh] rounded-2xl shadow-ambient flex flex-col overflow-hidden relative">
+        <div className="flex justify-between items-center p-4 border-b border-border-light">
+          <h2 className="text-label-lg font-bold">Resume PDF</h2>
+          <button onClick={onClose} className="p-2 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors">
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
-        
-        <div className="p-4 bg-surface-container-low flex flex-wrap gap-4 text-sm text-on-surface-variant border-b border-border-light">
-          <div className="flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">code</span>{repo.language || 'Unknown'}</div>
-          <div className="flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">star</span>{repo.stargazers_count || 0} Stars</div>
-          <div className="flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">fork_right</span>{repo.forks_count || 0} Forks</div>
-          <a href={repo.html_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-primary hover:underline ml-auto">
-            View on GitHub <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-          </a>
-        </div>
-
-        <div className="p-6 overflow-y-auto flex-1 bg-surface">
-          <h3 className="text-label-lg font-bold text-on-surface mb-4 uppercase tracking-wider">README.md</h3>
-          {repo.readme ? (
-            <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none font-body-md text-on-surface">
-              <ReactMarkdown>{repo.readme}</ReactMarkdown>
+        <div className="flex-1 w-full bg-surface-container">
+          <iframe 
+            src={`http://localhost:5000/api/user/portfolio/resume/pdf?token=${localStorage.getItem('accessToken')}`} 
+            className="w-full h-full border-none" 
+            title="Resume PDF"
+          >
+            <div className="p-8 text-center text-on-surface-variant flex flex-col items-center justify-center h-full gap-4">
+              <span className="material-symbols-outlined text-[48px]">picture_as_pdf</span>
+              <p>Your browser cannot display this PDF inline.</p>
+              <a href={url} target="_blank" rel="noopener noreferrer" className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-container transition-colors">
+                Download PDF
+              </a>
             </div>
-          ) : (
-            <div className="text-center py-12 text-on-surface-variant flex flex-col items-center gap-3 bg-surface-container-lowest rounded-xl border border-border-light">
-               <span className="material-symbols-outlined text-[32px]">draft</span>
-               <p>No README.md found for this repository.</p>
-            </div>
-          )}
+          </iframe>
         </div>
       </div>
     </div>
   );
 }
 
+function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
+  const { showToast } = useToast();
+  const [skillsStr, setSkillsStr] = useState(profile?.resumeDetails?.skills?.join(', ') || '');
+  const [portfolioUrl, setPortfolioUrl] = useState(profile?.resumeDetails?.portfolioUrl || '');
+  const [education, setEducation] = useState(profile?.resumeDetails?.education || []);
+  const [experience, setExperience] = useState(profile?.resumeDetails?.experience || []);
+  const [projects, setProjects] = useState(profile?.resumeDetails?.projects || []);
+  const [loading, setLoading] = useState(false);
+  const [parsing, setParsing] = useState(false);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('resume', file);
+    
+    setParsing(true);
+    try {
+      const res = await axios.post('/user/parse-resume', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const { parsedData } = res.data;
+      if (parsedData) {
+        if (parsedData.skills) setSkillsStr(parsedData.skills.join(', '));
+        if (parsedData.education) setEducation(parsedData.education);
+        if (parsedData.experience) setExperience(parsedData.experience);
+        if (parsedData.projects) setProjects(parsedData.projects);
+      }
+      showToast('Resume parsed successfully! Review the auto-filled fields before saving.', 'success');
+    } catch (err) {
+      console.error('Error parsing resume', err);
+      showToast(err.response?.data?.message || 'Failed to parse resume', 'error');
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const payload = {
+        portfolioUrl,
+        skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean),
+        education,
+        experience,
+        projects
+      };
+      const res = await axios.put('/user/portfolio', payload);
+      onComplete(res.data.user);
+      onClose();
+      showToast('Resume saved successfully', 'success');
+    } catch (err) {
+      showToast('Failed to save resume details', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addEdu = () => setEducation([...education, { institution: '', degree: '', startYear: '', endYear: '' }]);
+  const addExp = () => setExperience([...experience, { company: '', role: '', startDate: '', endDate: '', description: '' }]);
+  const addProj = () => setProjects([...projects, { title: '', link: '', description: '' }]);
+
+  const updateEdu = (index, field, val) => {
+    const newEdu = [...education];
+    newEdu[index][field] = val;
+    setEducation(newEdu);
+  };
+  const updateExp = (index, field, val) => {
+    const newExp = [...experience];
+    newExp[index][field] = val;
+    setExperience(newExp);
+  };
+  const updateProj = (index, field, val) => {
+    const newProj = [...projects];
+    newProj[index][field] = val;
+    setProjects(newProj);
+  };
+
+  const removeEdu = (index) => setEducation(education.filter((_, i) => i !== index));
+  const removeExp = (index) => setExperience(experience.filter((_, i) => i !== index));
+  const removeProj = (index) => setProjects(projects.filter((_, i) => i !== index));
+
+  return (
+    <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-ambient max-w-3xl w-full border border-border-light max-h-[90vh] flex flex-col relative">
+        {/* Fixed Header */}
+        <div className="px-6 md:px-8 py-4 bg-surface-container-lowest border-b border-border-light flex justify-between items-center shrink-0 rounded-t-2xl">
+          <div>
+            <h2 className="text-headline-md font-bold text-on-surface mb-1">Update Resume</h2>
+            <p className="text-body-md text-on-surface-variant text-sm">
+              Manually enter your portfolio details or upload a PDF resume.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={onClose} className="p-2 bg-surface-variant text-on-surface-variant rounded-full hover:bg-outline-variant transition-colors">
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+            <button 
+              onClick={handleSave} 
+              disabled={loading} 
+              className="bg-primary text-on-primary px-6 py-2 rounded-lg font-button-text hover:bg-primary-container hover:text-on-primary-container transition-colors disabled:opacity-70 flex justify-center items-center gap-2 shadow-sm"
+            >
+              {loading ? <FiLoader className="animate-spin text-[20px]" /> : 'Save'}
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="p-6 md:p-8 overflow-y-auto">
+          {/* AI Resume Parser Area */}
+          <section className="mb-8 p-6 rounded-xl border border-primary/20 bg-primary/5 flex flex-col items-center text-center">
+          <span className="material-symbols-outlined text-[32px] text-primary mb-2">document_scanner</span>
+          <h3 className="font-bold text-label-lg text-on-surface mb-1">Auto-Fill with AI</h3>
+          <p className="text-sm text-on-surface-variant mb-4">Upload your PDF resume and let our AI extract your details.</p>
+          
+          <label className={`cursor-pointer bg-primary text-on-primary px-6 py-2 rounded-lg font-button-text flex items-center gap-2 transition-colors ${parsing ? 'opacity-70 pointer-events-none' : 'hover:bg-on-primary-fixed'}`}>
+            {parsing ? <FiLoader className="animate-spin text-[20px]" /> : <span className="material-symbols-outlined">upload</span>}
+            {parsing ? 'Parsing Resume...' : 'Upload PDF'}
+            <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} disabled={parsing} />
+          </label>
+          {profile?.resumeUrl && (
+             <button type="button" onClick={onPreviewPdf} className="mt-4 text-sm text-primary hover:underline flex items-center gap-1">
+               <span className="material-symbols-outlined text-[16px]">visibility</span> View Current PDF
+             </button>
+          )}
+        </section>
+
+        <form onSubmit={handleSave} className="space-y-8">
+          {/* Portfolio Link Section */}
+          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light">
+            <h3 className="font-bold text-label-lg text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary">link</span> Personal Portfolio</h3>
+            <input type="url" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="https://yourportfolio.com" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} />
+            <p className="text-xs text-on-surface-variant mt-2">Link to your personal website or portfolio.</p>
+          </section>
+
+          {/* Skills Section */}
+          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light">
+            <h3 className="font-bold text-label-lg text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary">psychology</span> Skills</h3>
+            <input type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="React, Node.js, Python, SQL" value={skillsStr} onChange={(e) => setSkillsStr(e.target.value)} />
+            <p className="text-xs text-on-surface-variant mt-2">Comma separated list of your technical skills.</p>
+          </section>
+
+          {/* Education Section */}
+          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-label-lg text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">school</span> Education</h3>
+              <button type="button" onClick={addEdu} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span> Add</button>
+            </div>
+            {education.map((edu, idx) => {
+              const getYearOfStudy = (start, end) => {
+                if (!start || !end) return '';
+                const currentYear = new Date().getFullYear();
+                const currentMonth = new Date().getMonth();
+                const startY = parseInt(start, 10);
+                const endY = parseInt(end, 10);
+                if (isNaN(startY) || isNaN(endY)) return '';
+                if (currentYear > endY || (currentYear === endY && currentMonth >= 5)) return 'Alumni';
+                if (currentYear < startY) return 'Incoming';
+                let yearsPassed = currentYear - startY;
+                if (currentMonth >= 7) yearsPassed++;
+                if (yearsPassed === 1) return '1st Year';
+                if (yearsPassed === 2) return '2nd Year';
+                if (yearsPassed === 3) return '3rd Year';
+                if (yearsPassed === 4) return '4th Year';
+                if (yearsPassed === 5) return '5th Year';
+                return `Year ${yearsPassed}`;
+              };
+              const yearText = getYearOfStudy(edu.startYear, edu.endYear);
+
+              return (
+                <div key={idx} className="bg-surface p-4 rounded-lg border border-border-light relative gap-4 grid grid-cols-1 md:grid-cols-2">
+                  <button type="button" onClick={() => removeEdu(idx)} className="absolute top-2 right-2 text-error"><span className="material-symbols-outlined text-[20px]">delete</span></button>
+                  <div><label className="text-xs font-bold text-on-surface-variant">Institution</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={edu.institution} onChange={e => updateEdu(idx, 'institution', e.target.value)} /></div>
+                  <div><label className="text-xs font-bold text-on-surface-variant flex items-center gap-2">Degree {yearText && <span className="text-primary font-medium px-1.5 py-0.5 bg-primary/10 rounded text-[10px]">{yearText}</span>}</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={edu.degree} onChange={e => updateEdu(idx, 'degree', e.target.value)} /></div>
+                  <div><label className="text-xs font-bold text-on-surface-variant">Start Year</label><input className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={edu.startYear} onChange={e => updateEdu(idx, 'startYear', e.target.value)} /></div>
+                  <div><label className="text-xs font-bold text-on-surface-variant">End Year</label><input className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={edu.endYear} onChange={e => updateEdu(idx, 'endYear', e.target.value)} /></div>
+                </div>
+              );
+            })}
+          </section>
+
+          {/* Experience Section */}
+          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-label-lg text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">work</span> Experience</h3>
+              <button type="button" onClick={addExp} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span> Add</button>
+            </div>
+            {experience.map((exp, idx) => (
+              <div key={idx} className="bg-surface p-4 rounded-lg border border-border-light relative gap-4 grid grid-cols-1 md:grid-cols-2">
+                <button type="button" onClick={() => removeExp(idx)} className="absolute top-2 right-2 text-error"><span className="material-symbols-outlined text-[20px]">delete</span></button>
+                <div><label className="text-xs font-bold text-on-surface-variant">Company</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.company} onChange={e => updateExp(idx, 'company', e.target.value)} /></div>
+                <div><label className="text-xs font-bold text-on-surface-variant">Role</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.role} onChange={e => updateExp(idx, 'role', e.target.value)} /></div>
+                <div><label className="text-xs font-bold text-on-surface-variant">Start Date</label><input className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.startDate} onChange={e => updateExp(idx, 'startDate', e.target.value)} /></div>
+                <div><label className="text-xs font-bold text-on-surface-variant">End Date</label><input className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.endDate} onChange={e => updateExp(idx, 'endDate', e.target.value)} /></div>
+                <div className="md:col-span-2"><label className="text-xs font-bold text-on-surface-variant">Description</label><textarea rows="2" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.description} onChange={e => updateExp(idx, 'description', e.target.value)} /></div>
+              </div>
+            ))}
+          </section>
+
+          {/* Projects Section */}
+          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-label-lg text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">rocket_launch</span> Projects</h3>
+              <button type="button" onClick={addProj} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span> Add</button>
+            </div>
+            {projects.map((proj, idx) => (
+              <div key={idx} className="bg-surface p-4 rounded-lg border border-border-light relative gap-4 grid grid-cols-1 md:grid-cols-2">
+                <button type="button" onClick={() => removeProj(idx)} className="absolute top-2 right-2 text-error"><span className="material-symbols-outlined text-[20px]">delete</span></button>
+                <div><label className="text-xs font-bold text-on-surface-variant">Title</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={proj.title} onChange={e => updateProj(idx, 'title', e.target.value)} /></div>
+                <div><label className="text-xs font-bold text-on-surface-variant">Link</label><input type="url" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" placeholder="https://" value={proj.link} onChange={e => updateProj(idx, 'link', e.target.value)} /></div>
+                <div className="md:col-span-2"><label className="text-xs font-bold text-on-surface-variant">Description</label><textarea rows="2" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={proj.description} onChange={e => updateProj(idx, 'description', e.target.value)} /></div>
+              </div>
+            ))}
+          </section>
+        </form>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentProfile() {
   const { user } = useContext(AuthContext);
+  const { showToast } = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [selectedRepo, setSelectedRepo] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [showPdf, setShowPdf] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -169,15 +344,24 @@ export default function StudentProfile() {
     fetchProfile();
   }, []);
 
-  const handleRefreshMetrics = async () => {
-    setRefreshing(true);
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    setUploadingAvatar(true);
     try {
-      const res = await axios.post('/user/refresh-metrics');
+      const res = await axios.post('/user/upload-avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setProfile(res.data.user);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to refresh metrics');
+      console.error('Error uploading avatar:', err);
+      showToast(err.response?.data?.message || 'Failed to upload avatar', 'error');
     } finally {
-      setRefreshing(false);
+      setUploadingAvatar(false);
     }
   };
 
@@ -185,8 +369,27 @@ export default function StudentProfile() {
     return (
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
         <Sidebar />
-        <main className="flex-1 relative overflow-y-auto flex justify-center items-center">
-          <span className="material-symbols-outlined animate-spin text-[48px] text-primary">autorenew</span>
+        <main className="flex-1 relative overflow-y-auto">
+          <header className="sticky top-0 w-full z-50 flex justify-between items-center px-gutter py-4 bg-surface/80 border-b border-outline-variant">
+            <div className="h-8 w-40 skeleton-box delay-100"></div>
+            <div className="w-8 h-8 rounded-full skeleton-box delay-100"></div>
+          </header>
+          
+          <div className="pt-8 pb-16 px-gutter max-w-container-max mx-auto w-full space-y-8">
+            <section className="flex flex-col md:flex-row gap-6">
+              <div className="flex-1 h-48 skeleton-box delay-200"></div>
+              <div className="w-full lg:w-80 h-48 skeleton-box delay-300 shrink-0"></div>
+            </section>
+            
+            <div className="w-full h-96 skeleton-box delay-400"></div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="h-24 skeleton-box delay-500"></div>
+              <div className="h-24 skeleton-box delay-500"></div>
+              <div className="h-24 skeleton-box delay-500"></div>
+              <div className="h-24 skeleton-box delay-500"></div>
+            </div>
+          </div>
         </main>
       </div>
     );
@@ -203,24 +406,62 @@ export default function StudentProfile() {
     );
   }
 
-  const github = profile.scrapedData?.github;
-  const leetcode = profile.scrapedData?.leetcode;
+  const skills = profile.resumeDetails?.skills || [];
+  const experience = profile.resumeDetails?.experience || [];
+  const education = profile.resumeDetails?.education || [];
+  const projects = profile.resumeDetails?.projects || [];
+  const manualCerts = profile.resumeDetails?.certificates || [];
+  const scrapedCerts = profile.scrapedData?.linkedin?.certifications || [];
+  
+  const certificatesMap = new Map();
+  scrapedCerts.forEach(cert => certificatesMap.set(cert.title, { isComplete: false }));
+  manualCerts.forEach(cert => certificatesMap.set(cert.title, cert));
+  
+  const allCertificates = Array.from(certificatesMap.values());
+  const hasIncompleteCerts = allCertificates.some(cert => !cert.isComplete);
+
+  const missingSections = [];
+  if (skills.length === 0) missingSections.push('Skills');
+  if (experience.length === 0) missingSections.push('Experience');
+  if (education.length === 0) missingSections.push('Education');
+  if (projects.length === 0) missingSections.push('Projects');
+  if (hasIncompleteCerts) missingSections.push('Certificates');
+
+  let profileStrength = 20; // base
+  if (skills.length > 0) profileStrength += 15;
+  if (experience.length > 0) profileStrength += 20;
+  if (education.length > 0) profileStrength += 15;
+  if (projects.length > 0) profileStrength += 15;
+  if (!hasIncompleteCerts) profileStrength += 15;
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
       <Sidebar />
       {!profile.isProfileComplete && <ProfileSetupOverlay onComplete={setProfile} />}
-      <RepoModal repo={selectedRepo} onClose={() => setSelectedRepo(null)} />
+      
+      {showEditor && (
+        <ResumeEditorModal 
+          profile={profile} 
+          onClose={() => setShowEditor(false)} 
+          onComplete={(updatedProfile) => setProfile(updatedProfile)} 
+          onPreviewPdf={() => setShowPdf(true)}
+        />
+      )}
+
+      {showPdf && profile.resumeUrl && (
+        <PdfViewerModal url={profile.resumeUrl} onClose={() => setShowPdf(false)} />
+      )}
       
       <main className="flex-1 relative overflow-y-auto">
         <header className="sticky top-0 w-full z-50 flex justify-between items-center px-gutter py-4 bg-surface/80 backdrop-blur-xl border-b border-outline-variant shadow-sm">
-          <div className="font-display-hero text-headline-md font-bold text-primary tracking-tight">Campus Connect</div>
+          <div className="font-display-hero text-headline-md font-bold text-primary tracking-tight">My Profile</div>
           <div className="flex items-center gap-4">
-            <button onClick={handleRefreshMetrics} disabled={refreshing} className="hidden sm:flex items-center gap-2 px-4 py-2 bg-surface-variant text-on-surface-variant font-button-text rounded-lg hover:bg-outline-variant transition-colors shadow-sm disabled:opacity-50">
-              <span className={`material-symbols-outlined ${refreshing ? 'animate-spin' : ''}`}>sync</span> Refresh Metrics
-            </button>
-            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center cursor-pointer shadow-sm">
-              <span className="material-symbols-outlined text-[20px]">person</span>
+            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-sm overflow-hidden border border-border-light">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="material-symbols-outlined text-[20px]">person</span>
+              )}
             </div>
           </div>
         </header>
@@ -229,147 +470,227 @@ export default function StudentProfile() {
           <div className="pt-8 pb-16 px-gutter max-w-container-max mx-auto w-full space-y-8">
             {/* Header Section */}
             <section className="flex flex-col md:flex-row items-center md:items-start gap-6 bg-surface-container-lowest p-6 rounded-2xl border border-border-light shadow-sm">
-              <div className="w-32 h-32 rounded-full bg-primary-container flex items-center justify-center shadow-ambient shrink-0 border-4 border-surface-container-lowest">
-                <span className="material-symbols-outlined text-[64px] text-on-primary-container">person</span>
+              <div className="relative group w-32 h-32 rounded-full bg-primary-container flex items-center justify-center shadow-ambient shrink-0 border-4 border-surface-container-lowest overflow-hidden">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="material-symbols-outlined text-[64px] text-on-primary-container">person</span>
+                )}
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <FiLoader className="animate-spin text-white text-[32px]" />
+                  </div>
+                )}
+                {!uploadingAvatar && (
+                  <label className="absolute inset-0 bg-black/50 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity z-10">
+                    <span className="material-symbols-outlined text-[24px]">photo_camera</span>
+                    <span className="text-[10px] font-medium mt-1">Upload</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                  </label>
+                )}
               </div>
               <div className="flex-1 text-center md:text-left pt-2">
                 <h1 className="font-display-hero text-headline-lg text-on-surface">{profile.name}</h1>
                 <p className="font-body-md text-body-lg text-on-surface-variant mb-4">{profile.email}</p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                  {profile.resumeDetails?.portfolioUrl && (
+                    <a href={profile.resumeDetails.portfolioUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
+                      <span className="material-symbols-outlined text-[18px]">language</span> Portfolio
+                    </a>
+                  )}
                   {profile.githubUsername && (
                     <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">code</span> GitHub
+                      <FaGithub className="text-[18px]" /> GitHub
                     </a>
                   )}
                   {profile.leetcodeUsername && (
                     <a href={`https://leetcode.com/u/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">terminal</span> LeetCode
+                      <SiLeetcode className="text-[18px]" /> LeetCode
                     </a>
                   )}
                   {profile.linkedInUrl && (
                     <a href={profile.linkedInUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">link</span> LinkedIn
+                      <FaLinkedin className="text-[18px]" /> LinkedIn
                     </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Profile Strength Widget */}
+              <div className="bg-white border border-border-light rounded-xl p-6 shadow-md w-full lg:w-80 shrink-0 relative overflow-hidden mt-6 md:mt-0">
+                <div className="absolute -right-8 -top-8 w-32 h-32 bg-ai-gradient-start rounded-full blur-2xl"></div>
+                <h3 className="font-label-caps text-label-caps uppercase text-on-surface-variant mb-4">Profile Strength</h3>
+                <div className="flex items-end justify-between mb-2">
+                  <span className="font-headline-lg text-headline-lg text-primary">{profileStrength}%</span>
+                </div>
+                <div className="w-full bg-surface-container-low h-2 rounded-full overflow-hidden mb-4">
+                  <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${profileStrength}%` }}></div>
+                </div>
+                {profileStrength < 100 && missingSections.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {missingSections.map(section => (
+                      <span key={section} className="text-[10px] font-bold bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded border border-border-light">
+                        {section}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="mt-6 flex flex-col gap-3">
+                  <button 
+                    onClick={() => setShowEditor(true)}
+                    className="w-full bg-primary text-on-primary py-2 rounded-lg font-button-text hover:bg-on-primary-fixed transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">edit_document</span> Update Resume
+                  </button>
+                  {profile.resumeDetails?.portfolioUrl && (
+                    <a 
+                      href={profile.resumeDetails.portfolioUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full bg-surface-variant text-on-surface-variant py-2 rounded-lg font-button-text hover:bg-outline-variant transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">language</span> View Portfolio
+                    </a>
+                  )}
+                  {profile.resumeUrl && (
+                    <button 
+                      onClick={() => setShowPdf(true)}
+                      className="w-full bg-surface-variant text-on-surface-variant py-2 rounded-lg font-button-text hover:bg-outline-variant transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">visibility</span> View PDF
+                    </button>
                   )}
                 </div>
               </div>
             </section>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              {/* GitHub Card */}
-              <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col gap-4">
-                <div className="flex items-center gap-3 border-b border-surface-variant pb-4">
-                  <span className="material-symbols-outlined text-primary text-[28px]">code_blocks</span>
-                  <h3 className="font-headline-md text-headline-sm text-on-surface">GitHub Metrics</h3>
+            {/* LinkedIn Network Profile */}
+            {profile.scrapedData?.linkedin && (
+              <section className="bg-surface-container-lowest rounded-2xl p-6 border border-border-light shadow-sm">
+                <div className="flex items-center gap-3 border-b border-surface-variant pb-4 mb-4">
+                  <FaLinkedin className="text-[#0A66C2] text-[28px]" />
+                  <h2 className="font-headline-md text-headline-sm text-on-surface">LinkedIn Overview</h2>
                 </div>
-                {github ? (
-                  <>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div className="bg-bg-subtle p-3 rounded-lg border border-border-light">
-                        <div className="text-headline-md font-bold text-primary">
-                          <CountUp end={github.profile?.public_repos || 0} />
-                        </div>
-                        <div className="text-label-caps text-on-surface-variant mt-1">Repos</div>
+                
+                <div className="flex flex-col md:flex-row gap-6">
+                  <div className="flex-1">
+                    <h3 className="font-headline-sm font-bold text-on-surface mb-2">
+                      {profile.scrapedData.linkedin.firstName} {profile.scrapedData.linkedin.lastName}
+                    </h3>
+                    <p className="text-body-md text-on-surface-variant mb-4">{profile.scrapedData.linkedin.headline}</p>
+                    {profile.scrapedData.linkedin.about && (
+                      <div className="bg-surface-container-low p-4 rounded-xl border border-border-light">
+                        <h4 className="font-label-caps text-label-caps uppercase text-on-surface-variant mb-2">About</h4>
+                        <p className="text-sm text-text-slate whitespace-pre-line">
+                          {profile.scrapedData.linkedin.about.slice(0, 300)}
+                          {profile.scrapedData.linkedin.about.length > 300 ? '...' : ''}
+                        </p>
                       </div>
-                      <div className="bg-bg-subtle p-3 rounded-lg border border-border-light">
-                        <div className="text-headline-md font-bold text-primary">
-                          <CountUp end={github.profile?.followers || 0} />
-                        </div>
-                        <div className="text-label-caps text-on-surface-variant mt-1">Followers</div>
+                    )}
+                  </div>
+                  
+                  {profile.scrapedData.linkedin.certifications?.length > 0 && (
+                    <div className="flex-1 flex flex-col">
+                      <div className="flex justify-between items-center mb-4">
+                        <h4 className="font-label-caps text-label-caps uppercase text-on-surface-variant">Top Certifications</h4>
+                        <a href="/certificates" className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
+                          Show More <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </a>
                       </div>
-                      <div className="bg-bg-subtle p-3 rounded-lg border border-border-light">
-                        <div className="text-headline-md font-bold text-primary">
-                          <CountUp end={github.profile?.following || 0} />
-                        </div>
-                        <div className="text-label-caps text-on-surface-variant mt-1">Following</div>
-                      </div>
-                    </div>
-                    {github.repositories && github.repositories.length > 0 && (
-                      <div className="mt-2 space-y-3">
-                        <h4 className="text-label-lg font-bold text-on-surface">Top Repositories</h4>
-                        {github.repositories.slice(0, 3).map(repo => (
-                          <div 
-                            key={repo.name} 
-                            onClick={() => setSelectedRepo(repo)}
-                            className="flex justify-between items-center p-3 border border-border-light rounded-lg bg-surface-container-lowest hover:border-primary hover:shadow-sm cursor-pointer transition-all group"
-                          >
-                            <div className="flex-1 min-w-0 pr-4">
-                              <span className="text-body-md font-bold text-primary group-hover:underline flex items-center gap-1.5">
-                                {repo.name}
-                                <span className="material-symbols-outlined text-[14px] opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>
-                              </span>
-                              <p className="text-body-sm text-on-surface-variant truncate">{repo.description || 'No description'}</p>
-                            </div>
-                            <div className="flex gap-3 text-label-sm text-on-surface-variant shrink-0">
-                              <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">star</span>{repo.stargazers_count || 0}</span>
-                              <span className="px-2 py-0.5 bg-surface-container-high rounded">{repo.language || 'Code'}</span>
-                            </div>
+                      <div className="space-y-3">
+                        {profile.scrapedData.linkedin.certifications.slice(0, 3).map((cert, i) => (
+                          <div key={i} className="bg-surface-container-low p-3 rounded-xl border border-border-light flex flex-col">
+                            <span className="font-bold text-on-surface text-sm truncate">{cert.title}</span>
+                            <span className="text-xs text-on-surface-variant">{cert.issuedBy}</span>
+                            {cert.link && (
+                              <a href={cert.link} target="_blank" rel="noreferrer" className="text-[10px] text-primary mt-1 hover:underline truncate">
+                                View Credential
+                              </a>
+                            )}
                           </div>
                         ))}
                       </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Quick Stats Grid */}
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <span className="material-symbols-outlined text-primary mb-2">psychology</span>
+                <div>
+                  <div className="font-headline-md text-headline-md text-on-surface">{skills.length}</div>
+                  <div className="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Skills</div>
+                </div>
+              </div>
+              <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <span className="material-symbols-outlined text-secondary-container mb-2">work</span>
+                <div>
+                  <div className="font-headline-md text-headline-md text-on-surface">{experience.length}</div>
+                  <div className="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Experiences</div>
+                </div>
+              </div>
+              <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <span className="material-symbols-outlined text-tertiary-container mb-2">rocket_launch</span>
+                <div>
+                  <div className="font-headline-md text-headline-md text-on-surface">{projects.length}</div>
+                  <div className="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Projects</div>
+                </div>
+              </div>
+              <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <span className="material-symbols-outlined text-surface-tint mb-2">school</span>
+                <div>
+                  <div className="font-headline-md text-headline-md text-on-surface">{education.length}</div>
+                  <div className="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Degrees</div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-1 flex flex-col gap-8">
+                <section className="bg-white border border-border-light rounded-xl p-6 shadow-md relative overflow-hidden h-full">
+                  <div className="absolute inset-0 bg-gradient-to-br from-surface-container-low to-transparent opacity-50 pointer-events-none"></div>
+                  <div className="flex justify-between items-center mb-6 relative z-10">
+                    <h2 className="font-headline-md text-headline-md text-on-surface">Your Skills</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2 relative z-10">
+                    {skills.length > 0 ? skills.map((skill, idx) => (
+                      <span key={idx} className="px-3 py-1 bg-surface-container text-primary rounded-full text-sm font-medium border border-border-light">{skill}</span>
+                    )) : (
+                      <p className="text-on-surface-variant text-sm">No skills added yet. Update your resume!</p>
                     )}
-                  </>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center text-on-surface-variant p-8">No GitHub data available.</div>
-                )}
+                  </div>
+                </section>
               </div>
 
-              {/* LeetCode Card */}
-              <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col gap-4">
-                <div className="flex items-center gap-3 border-b border-surface-variant pb-4">
-                  <span className="material-symbols-outlined text-primary text-[28px]">terminal</span>
-                  <h3 className="font-headline-md text-headline-sm text-on-surface">LeetCode Metrics</h3>
-                </div>
-                {leetcode ? (
-                  <>
-                    <div className="flex items-center justify-between p-4 bg-bg-subtle rounded-lg border border-border-light">
-                      <div className="text-body-lg font-medium text-on-surface">Global Ranking</div>
-                      <div className="text-headline-md font-bold text-primary">
-                        <CountUp end={leetcode.profile?.ranking || 0} />
-                      </div>
+              <div className="lg:col-span-2 flex flex-col gap-8">
+                <section>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="font-headline-md text-headline-md text-on-surface">Experience History</h2>
+                  </div>
+                  {experience.length > 0 ? (
+                    <div className="relative border-l-2 border-border-light ml-3 space-y-8">
+                      {experience.map((exp, idx) => (
+                        <div key={idx} className="relative pl-6">
+                          <div className="absolute w-4 h-4 bg-primary rounded-full -left-[9px] top-1 ring-4 ring-white shadow-sm"></div>
+                          <h3 className="font-body-lg text-body-lg font-bold text-on-surface">{exp.role}</h3>
+                          <p className="text-on-surface-variant font-medium text-sm mb-2">{exp.company} • {exp.startDate} - {exp.endDate || 'Present'}</p>
+                          <p className="text-text-slate text-sm leading-relaxed">{exp.description}</p>
+                        </div>
+                      ))}
                     </div>
-                    
-                    <div className="mt-2">
-                      <h4 className="text-label-lg font-bold text-on-surface mb-3">Problems Solved</h4>
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex justify-between text-body-sm mb-1">
-                            <span className="text-on-surface">
-                              Easy (<CountUp end={leetcode.profile?.easySolved || 0} duration={1000}/>/<CountUp end={leetcode.profile?.totalEasy || 0} duration={1000}/>)
-                            </span>
-                          </div>
-                          <div className="w-full bg-surface-container-high rounded-full h-2">
-                            <div className="bg-green-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${(leetcode.profile?.easySolved / leetcode.profile?.totalEasy) * 100 || 0}%`}}></div>
-                          </div>
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-body-sm mb-1">
-                            <span className="text-on-surface">
-                              Medium (<CountUp end={leetcode.profile?.mediumSolved || 0} duration={1000}/>/<CountUp end={leetcode.profile?.totalMedium || 0} duration={1000}/>)
-                            </span>
-                          </div>
-                          <div className="w-full bg-surface-container-high rounded-full h-2">
-                            <div className="bg-yellow-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${(leetcode.profile?.mediumSolved / leetcode.profile?.totalMedium) * 100 || 0}%`}}></div>
-                          </div>
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-body-sm mb-1">
-                            <span className="text-on-surface">
-                              Hard (<CountUp end={leetcode.profile?.hardSolved || 0} duration={1000}/>/<CountUp end={leetcode.profile?.totalHard || 0} duration={1000}/>)
-                            </span>
-                          </div>
-                          <div className="w-full bg-surface-container-high rounded-full h-2">
-                            <div className="bg-red-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${(leetcode.profile?.hardSolved / leetcode.profile?.totalHard) * 100 || 0}%`}}></div>
-                          </div>
-                        </div>
-                      </div>
+                  ) : (
+                    <div className="bg-surface-container-low border border-border-light border-dashed rounded-xl p-8 text-center text-on-surface-variant">
+                      No experience history. Update your resume to populate this section.
                     </div>
-                  </>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center text-on-surface-variant p-8">No LeetCode data available.</div>
-                )}
+                  )}
+                </section>
               </div>
             </div>
+            
           </div>
         )}
       </main>

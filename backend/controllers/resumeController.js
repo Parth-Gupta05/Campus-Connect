@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary').v2;
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const pdfParse = require('pdf-parse');
 const User = require('../models/User');
 
 cloudinary.config({
@@ -19,11 +20,21 @@ const uploadAndParseResume = async (req, res) => {
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    // Explicitly using gemini-1.5-flash which is widely available on free tiers globally.
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    // Using gemini-3.1-flash-lite as it is highly responsive and avoids the 503 issues of 3.5-flash
+    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     
+    // Extract text from the PDF buffer
+    let resumeText = '';
+    try {
+      const pdfData = await pdfParse(req.file.buffer);
+      resumeText = pdfData.text;
+    } catch (err) {
+      console.error('Failed to parse PDF text:', err);
+      return res.status(500).json({ message: 'Failed to read PDF file' });
+    }
+
     const prompt = `
-    You are an expert resume parser. I have attached a resume in PDF format.
+    You are an expert resume parser. I have provided the text extracted from a resume.
     Extract the following information from the resume.
     Return ONLY a valid JSON object matching this schema exactly without markdown wrapping:
     {
@@ -32,16 +43,14 @@ const uploadAndParseResume = async (req, res) => {
       "experience": [{"company": "...", "role": "...", "startDate": "...", "endDate": "...", "description": "..."}],
       "projects": [{"title": "...", "link": "...", "description": "..."}]
     }
+
+    RESUME TEXT:
+    ${resumeText}
     `;
 
-    const filePart = {
-      inlineData: {
-        data: req.file.buffer.toString("base64"),
-        mimeType: "application/pdf"
-      }
-    };
-
-    const result = await model.generateContent([prompt, filePart]);
+    // Call the API directly without retries to eliminate long waiting times
+    const result = await model.generateContent([prompt]);
+    
     let responseText = result.response.text();
     
     // Clean up any potential markdown formatting the AI might inject
@@ -60,7 +69,7 @@ const uploadAndParseResume = async (req, res) => {
     try {
       const uploadStream = new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { resource_type: 'auto', folder: 'resumes' },
+          { folder: 'resumes', resource_type: 'raw' },
           (error, result) => {
             if (error) reject(error);
             else resolve(result.secure_url);

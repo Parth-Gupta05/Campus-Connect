@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .animate-shimmer {
+    background: linear-gradient(90deg, 
+      rgba(255,255,255,0) 0%, 
+      rgba(255,255,255,0.4) 50%, 
+      rgba(255,255,255,0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-box {
+  @apply bg-surface-container-high rounded-xl relative overflow-hidden;
+}
+
+.skeleton-box::after {
+  content: '';
+  @apply absolute inset-0 animate-shimmer;
+}
+
+/* Cascading animation delays */
+.delay-100 { animation-delay: 100ms, 100ms; }
+.delay-200 { animation-delay: 200ms, 200ms; }
+.delay-300 { animation-delay: 300ms, 300ms; }
+.delay-400 { animation-delay: 400ms, 400ms; }
+.delay-500 { animation-delay: 500ms, 500ms; }

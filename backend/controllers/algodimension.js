@@ -110,6 +110,7 @@ const getgithubdata = async (githubuserid) => {
                     language: repo.language,
                     stargazers_count: repo.stargazers_count,
                     forks_count: repo.forks_count,
+                    default_branch: repo.default_branch || 'main',
                     readme: readmeContent
                 };
             })

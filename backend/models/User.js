@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  avatarUrl: {
+    type: String,
+    default: '',
+  },
   githubUsername: {
     type: String,
     default: '',
@@ -43,11 +47,16 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  lastLinkedInScrapeAt: {
+    type: Date,
+    default: null,
+  },
   resumeUrl: {
     type: String,
     default: '',
   },
   resumeDetails: {
+    portfolioUrl: { type: String, default: '' },
     skills: { type: [String], default: [] },
     education: [{
       institution: String,
@@ -66,6 +75,14 @@ const UserSchema = new mongoose.Schema({
       title: String,
       link: String,
       description: String
+    }],
+    certificates: [{
+      title: String,
+      issuer: String,
+      issueDate: String,
+      credentialUrl: String,
+      fileUrl: String,
+      isComplete: { type: Boolean, default: false }
     }]
   }
 }, { timestamps: true });
