@@ -6,13 +6,26 @@ import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
 import { FiLoader } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
-function ProfileSetupOverlay({ onComplete }) {
+const formatExternalUrl = (url) => {
+  if (!url) return '#';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `https://${url}`;
+};
+
+function ProfileSetupOverlay({ onComplete, user }) {
+  const { showToast } = useToast();
+  const isMissingCredential = !user.email || !user.uid;
+  const missingLabel = !user.email ? 'College Email' : 'UID (e.g. 23-COMPA10-27)';
+  const missingField = !user.email ? 'email' : 'uid';
+
   const [formData, setFormData] = useState({
-    name: '',
-    githubUsername: '',
-    leetcodeUsername: '',
-    linkedInUrl: ''
+    name: user.name || '',
+    githubUsername: user.githubUsername || '',
+    leetcodeUsername: user.leetcodeUsername || '',
+    linkedInUrl: user.linkedInUrl || '',
+    [missingField]: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,8 +34,27 @@ function ProfileSetupOverlay({ onComplete }) {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (isMissingCredential && missingField === 'uid' && formData.uid) {
+      const match = formData.uid.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
+      if (!match) {
+        setError('Invalid UID format. Expected format: 23-COMPA10-27');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
-      const res = await axios.put('/user/profile', formData);
+      if (isMissingCredential && formData[missingField]) {
+        await axios.post('/auth/link-account', { identifier: formData[missingField] });
+      }
+      const res = await axios.put('/user/profile', {
+        name: formData.name,
+        githubUsername: formData.githubUsername,
+        leetcodeUsername: formData.leetcodeUsername,
+        linkedInUrl: formData.linkedInUrl
+      });
+      showToast('Profile setup successfully!', 'success');
       onComplete(res.data.user);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update profile');
@@ -32,15 +64,23 @@ function ProfileSetupOverlay({ onComplete }) {
 
   return (
     <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-      <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-ambient max-w-lg w-full border border-border-light">
+      <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-ambient max-w-lg w-full border border-border-light max-h-[90vh] overflow-y-auto">
         <h2 className="text-headline-md font-bold text-on-surface mb-2">Complete Your Profile</h2>
         <p className="text-body-md text-on-surface-variant mb-6">
-          We need a few details to automatically fetch your coding metrics and set up your portfolio.
+          {isMissingCredential 
+            ? `Please link your ${!user.email ? 'Email' : 'UID'} and provide a few details to automatically fetch your coding metrics and set up your portfolio.`
+            : `We need a few details to automatically fetch your coding metrics and set up your portfolio.`}
         </p>
 
         {error && <div className="p-3 mb-4 bg-error-container text-on-error-container rounded-lg text-sm">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isMissingCredential && (
+            <div>
+              <label className="block text-label-lg font-medium text-on-surface mb-1">{missingLabel}</label>
+              <input required type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder={!user.email ? "student@university.edu" : "23-COMPA10-27"} value={formData[missingField]} onChange={e => setFormData({...formData, [missingField]: e.target.value})} />
+            </div>
+          )}
           <div>
             <label className="block text-label-lg font-medium text-on-surface mb-1">Full Name</label>
             <input required type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder="John Doe" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
@@ -73,7 +113,7 @@ function PdfViewerModal({ url, onClose }) {
       <div className="bg-surface-container-lowest w-full max-w-4xl h-[85vh] rounded-2xl shadow-ambient flex flex-col overflow-hidden relative">
         <div className="flex justify-between items-center p-4 border-b border-border-light">
           <h2 className="text-label-lg font-bold">Resume PDF</h2>
-          <button onClick={onClose} className="p-2 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors">
+          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors">
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
@@ -104,6 +144,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
   const [education, setEducation] = useState(profile?.resumeDetails?.education || []);
   const [experience, setExperience] = useState(profile?.resumeDetails?.experience || []);
   const [projects, setProjects] = useState(profile?.resumeDetails?.projects || []);
+  const [achievements, setAchievements] = useState(profile?.resumeDetails?.achievements || []);
   const [loading, setLoading] = useState(false);
   const [parsing, setParsing] = useState(false);
 
@@ -145,7 +186,8 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
         skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean),
         education,
         experience,
-        projects
+        projects,
+        achievements
       };
       const res = await axios.put('/user/portfolio', payload);
       onComplete(res.data.user);
@@ -161,6 +203,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
   const addEdu = () => setEducation([...education, { institution: '', degree: '', startYear: '', endYear: '' }]);
   const addExp = () => setExperience([...experience, { company: '', role: '', startDate: '', endDate: '', description: '' }]);
   const addProj = () => setProjects([...projects, { title: '', link: '', description: '' }]);
+  const addAchieve = () => setAchievements([...achievements, { title: '', description: '', imageUrl: '', date: '' }]);
 
   const updateEdu = (index, field, val) => {
     const newEdu = [...education];
@@ -177,10 +220,16 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
     newProj[index][field] = val;
     setProjects(newProj);
   };
+  const updateAchieve = (index, field, val) => {
+    const newAchieve = [...achievements];
+    newAchieve[index][field] = val;
+    setAchievements(newAchieve);
+  };
 
   const removeEdu = (index) => setEducation(education.filter((_, i) => i !== index));
   const removeExp = (index) => setExperience(experience.filter((_, i) => i !== index));
   const removeProj = (index) => setProjects(projects.filter((_, i) => i !== index));
+  const removeAchieve = (index) => setAchievements(achievements.filter((_, i) => i !== index));
 
   return (
     <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
@@ -194,7 +243,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={onClose} className="p-2 bg-surface-variant text-on-surface-variant rounded-full hover:bg-outline-variant transition-colors">
+            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-surface-variant text-on-surface-variant rounded-full hover:bg-outline-variant transition-colors">
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
             <button 
@@ -314,6 +363,23 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
               </div>
             ))}
           </section>
+
+          {/* Achievements Section */}
+          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-label-lg text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">award_star</span> Achievements</h3>
+              <button type="button" onClick={addAchieve} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span> Add</button>
+            </div>
+            {achievements.map((ach, idx) => (
+              <div key={idx} className="bg-surface p-4 rounded-lg border border-border-light relative gap-4 grid grid-cols-1 md:grid-cols-2">
+                <button type="button" onClick={() => removeAchieve(idx)} className="absolute top-2 right-2 text-error"><span className="material-symbols-outlined text-[20px]">delete</span></button>
+                <div><label className="text-xs font-bold text-on-surface-variant">Title</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={ach.title} onChange={e => updateAchieve(idx, 'title', e.target.value)} /></div>
+                <div><label className="text-xs font-bold text-on-surface-variant">Date</label><input type="date" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={ach.date?.split('T')[0] || ''} onChange={e => updateAchieve(idx, 'date', e.target.value)} /></div>
+                <div className="md:col-span-2"><label className="text-xs font-bold text-on-surface-variant">Image URL (Optional)</label><input type="url" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" placeholder="https://" value={ach.imageUrl} onChange={e => updateAchieve(idx, 'imageUrl', e.target.value)} /></div>
+                <div className="md:col-span-2"><label className="text-xs font-bold text-on-surface-variant">Description</label><textarea rows="2" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={ach.description} onChange={e => updateAchieve(idx, 'description', e.target.value)} /></div>
+              </div>
+            ))}
+          </section>
         </form>
         </div>
       </div>
@@ -329,6 +395,7 @@ export default function StudentProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
+  const [selectedAchievement, setSelectedAchievement] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -357,6 +424,7 @@ export default function StudentProfile() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setProfile(res.data.user);
+      showToast('Profile picture updated successfully!', 'success');
     } catch (err) {
       console.error('Error uploading avatar:', err);
       showToast(err.response?.data?.message || 'Failed to upload avatar', 'error');
@@ -410,6 +478,8 @@ export default function StudentProfile() {
   const experience = profile.resumeDetails?.experience || [];
   const education = profile.resumeDetails?.education || [];
   const projects = profile.resumeDetails?.projects || [];
+  const achievements = profile.resumeDetails?.achievements || [];
+  const portfolioUrl = profile.resumeDetails?.portfolioUrl || '';
   const manualCerts = profile.resumeDetails?.certificates || [];
   const scrapedCerts = profile.scrapedData?.linkedin?.certifications || [];
   
@@ -418,26 +488,31 @@ export default function StudentProfile() {
   manualCerts.forEach(cert => certificatesMap.set(cert.title, cert));
   
   const allCertificates = Array.from(certificatesMap.values());
-  const hasIncompleteCerts = allCertificates.some(cert => !cert.isComplete);
+  const hasIncompleteCerts = allCertificates.length === 0 ? false : allCertificates.some(cert => !cert.isComplete);
+  const hasCertificates = allCertificates.length > 0;
 
   const missingSections = [];
   if (skills.length === 0) missingSections.push('Skills');
   if (experience.length === 0) missingSections.push('Experience');
   if (education.length === 0) missingSections.push('Education');
   if (projects.length === 0) missingSections.push('Projects');
-  if (hasIncompleteCerts) missingSections.push('Certificates');
+  if (achievements.length === 0) missingSections.push('Achievements');
+  if (!portfolioUrl) missingSections.push('Portfolio');
+  if (!hasCertificates || hasIncompleteCerts) missingSections.push('Certificates');
 
-  let profileStrength = 20; // base
+  let profileStrength = 10; // base
   if (skills.length > 0) profileStrength += 15;
-  if (experience.length > 0) profileStrength += 20;
+  if (experience.length > 0) profileStrength += 15;
   if (education.length > 0) profileStrength += 15;
   if (projects.length > 0) profileStrength += 15;
-  if (!hasIncompleteCerts) profileStrength += 15;
+  if (achievements.length > 0) profileStrength += 10;
+  if (portfolioUrl) profileStrength += 10;
+  if (hasCertificates && !hasIncompleteCerts) profileStrength += 10;
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
       <Sidebar />
-      {!profile.isProfileComplete && <ProfileSetupOverlay onComplete={setProfile} />}
+      {(!profile.isProfileComplete || !profile.email || !profile.uid) && <ProfileSetupOverlay onComplete={setProfile} user={profile} />}
       
       {showEditor && (
         <ResumeEditorModal 
@@ -450,6 +525,29 @@ export default function StudentProfile() {
 
       {showPdf && profile.resumeUrl && (
         <PdfViewerModal url={profile.resumeUrl} onClose={() => setShowPdf(false)} />
+      )}
+      
+      {selectedAchievement && (
+        <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-ambient max-w-2xl w-full border border-border-light max-h-[90vh] flex flex-col overflow-hidden relative">
+            <div className="flex justify-between items-center p-4 md:p-6 border-b border-border-light bg-surface-container-lowest shrink-0">
+              <h2 className="text-headline-sm font-bold text-on-surface">Achievement Details</h2>
+              <button onClick={() => setSelectedAchievement(null)} className="w-10 h-10 flex items-center justify-center hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors">
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <div className="p-4 md:p-6 overflow-y-auto">
+              {selectedAchievement.imageUrl && (
+                <img src={selectedAchievement.imageUrl} alt={selectedAchievement.title} className="w-full h-64 object-contain bg-surface-container rounded-xl mb-6 shadow-sm border border-border-light" />
+              )}
+              <h3 className="font-headline-md font-bold text-on-surface mb-2">{selectedAchievement.title}</h3>
+              <span className="inline-block px-3 py-1 bg-surface-variant text-on-surface-variant text-xs font-bold rounded-md mb-6 uppercase tracking-wide">
+                {selectedAchievement.date ? new Date(selectedAchievement.date).toLocaleDateString() : 'N/A'}
+              </span>
+              <p className="text-body-lg text-on-surface-variant whitespace-pre-line leading-relaxed">{selectedAchievement.description}</p>
+            </div>
+          </div>
+        </div>
       )}
       
       <main className="flex-1 relative overflow-y-auto">
@@ -594,9 +692,9 @@ export default function StudentProfile() {
                     <div className="flex-1 flex flex-col">
                       <div className="flex justify-between items-center mb-4">
                         <h4 className="font-label-caps text-label-caps uppercase text-on-surface-variant">Top Certifications</h4>
-                        <a href="/certificates" className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
+                        <Link to="/certificates" className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
                           Show More <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                        </a>
+                        </Link>
                       </div>
                       <div className="space-y-3">
                         {profile.scrapedData.linkedin.certifications.slice(0, 3).map((cert, i) => (
@@ -604,7 +702,7 @@ export default function StudentProfile() {
                             <span className="font-bold text-on-surface text-sm truncate">{cert.title}</span>
                             <span className="text-xs text-on-surface-variant">{cert.issuedBy}</span>
                             {cert.link && (
-                              <a href={cert.link} target="_blank" rel="noreferrer" className="text-[10px] text-primary mt-1 hover:underline truncate">
+                              <a href={formatExternalUrl(cert.link)} target="_blank" rel="noreferrer" className="text-[10px] text-primary mt-1 hover:underline truncate">
                                 View Credential
                               </a>
                             )}
@@ -689,6 +787,61 @@ export default function StudentProfile() {
                   )}
                 </section>
               </div>
+            </div>
+
+            <div className="mt-8 space-y-8">
+              <section>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="font-headline-md text-headline-md text-on-surface">Projects</h2>
+                  </div>
+                  {projects.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {projects.map((proj, idx) => (
+                        <div key={idx} className="bg-surface-container-low border border-border-light rounded-xl p-5 hover:shadow-md transition-shadow flex flex-col h-full">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-bold text-on-surface">{proj.title}</h3>
+                            {proj.link && (
+                              <a href={formatExternalUrl(proj.link)} target="_blank" rel="noreferrer" className="text-primary hover:bg-primary-container p-1 rounded transition-colors" title="View Project">
+                                <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                              </a>
+                            )}
+                          </div>
+                          <p className="text-sm text-text-slate line-clamp-3">{proj.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-surface-container-low border border-border-light border-dashed rounded-xl p-8 text-center text-on-surface-variant">
+                      No projects added. Update your resume to populate this section.
+                    </div>
+                  )}
+                </section>
+
+                <section className="mt-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">award_star</span> Achievements</h2>
+                  </div>
+                  {(profile.resumeDetails?.achievements && profile.resumeDetails.achievements.length > 0) ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {profile.resumeDetails.achievements.map((ach, idx) => (
+                        <div key={idx} onClick={() => setSelectedAchievement(ach)} className="bg-surface border border-border-light rounded-xl overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full cursor-pointer">
+                          {ach.imageUrl && (
+                            <img src={ach.imageUrl} alt={ach.title} className="w-full h-40 object-contain bg-surface-container" />
+                          )}
+                          <div className="p-5 flex flex-col flex-1">
+                            <h3 className="font-bold text-on-surface mb-1">{ach.title}</h3>
+                            <span className="text-[10px] text-text-slate mb-3 uppercase tracking-wider">{ach.date ? new Date(ach.date).toLocaleDateString() : 'N/A'}</span>
+                            <p className="text-sm text-on-surface-variant line-clamp-3 mt-auto">{ach.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-surface-container-low border border-border-light border-dashed rounded-xl p-8 text-center text-on-surface-variant">
+                      No achievements yet.
+                    </div>
+                  )}
+                </section>
             </div>
             
           </div>

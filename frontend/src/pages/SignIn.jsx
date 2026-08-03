@@ -1,22 +1,26 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function SignIn() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      const user = await login(email, password, rememberMe);
+      const user = await login(identifier, password, rememberMe);
+      showToast('Logged in successfully!', 'success');
       if (user.role === 'admin') navigate('/admin');
+      else if (user.role === 'club') navigate('/club');
       else navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
@@ -92,21 +96,21 @@ export default function SignIn() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="email">
-                    College Email
+                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="identifier">
+                    Email or UID
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
-                      <span className="material-symbols-outlined text-[18px]">mail</span>
+                      <span className="material-symbols-outlined text-[18px]">badge</span>
                     </div>
                     <input
-                      id="email"
-                      type="email"
+                      id="identifier"
+                      type="text"
                       required
                       className="w-full pl-10 p-3.5 bg-surface border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline-variant"
-                      placeholder="student@university.edu"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email or UID"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
                     />
                   </div>
                 </div>

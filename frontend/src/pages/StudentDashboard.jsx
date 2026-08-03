@@ -11,6 +11,7 @@ import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
 import { FiLoader } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
 
 const CountUp = ({ end }) => {
   const [mounted, setMounted] = useState(false);
@@ -115,24 +116,30 @@ function RepoModal({ repo, onClose }) {
 export default function StudentDashboard() {
   const { user } = useContext(AuthContext);
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeHeatmap, setActiveHeatmap] = useState('github');
   const [selectedRepo, setSelectedRepo] = useState(null);
   
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get('/user/profile');
-        setProfile(res.data);
+        const [profileRes, eventsRes] = await Promise.all([
+          axios.get('/user/profile'),
+          axios.get('/events/student/registered')
+        ]);
+        setProfile(profileRes.data);
+        setUpcomingEvents(eventsRes.data.slice(0, 3));
       } catch (err) {
-        console.error('Failed to fetch profile', err);
+        console.error('Failed to fetch dashboard data', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
+    fetchData();
   }, []);
 
   const handleRefreshMetrics = async () => {
@@ -171,6 +178,26 @@ export default function StudentDashboard() {
     }, 50);
     return () => clearTimeout(timer);
   }, [activeHeatmap, profile]);
+
+  const handleApproveAchievement = async (title) => {
+    try {
+      const res = await axios.post('/user/achievements/approve', { title });
+      setProfile(res.data.user);
+      showToast('Achievement added to your portfolio!', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to approve achievement', 'error');
+    }
+  };
+
+  const handleDiscardAchievement = async (title) => {
+    try {
+      const res = await axios.post('/user/achievements/discard', { title });
+      setProfile(res.data.user);
+      showToast('Achievement discarded', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to discard achievement', 'error');
+    }
+  };
 
   const dynamicGreeting = React.useMemo(() => {
     const hour = new Date().getHours();
@@ -229,6 +256,8 @@ export default function StudentDashboard() {
   const skills = profile?.resumeDetails?.skills || [];
   const experience = profile?.resumeDetails?.experience || [];
   const projects = profile?.resumeDetails?.projects || [];
+  const achievements = profile?.resumeDetails?.achievements || [];
+  const portfolioUrl = profile?.resumeDetails?.portfolioUrl || '';
   const manualCerts = profile?.resumeDetails?.certificates || [];
   const scrapedCerts = profile?.scrapedData?.linkedin?.certifications || [];
   
@@ -237,21 +266,26 @@ export default function StudentDashboard() {
   manualCerts.forEach(cert => certificatesMap.set(cert.title, cert));
   
   const allCertificates = Array.from(certificatesMap.values());
-  const hasIncompleteCerts = allCertificates.some(cert => !cert.isComplete);
+  const hasIncompleteCerts = allCertificates.length === 0 ? false : allCertificates.some(cert => !cert.isComplete);
+  const hasCertificates = allCertificates.length > 0;
 
   const missingSections = [];
   if (skills.length === 0) missingSections.push('Skills');
   if (experience.length === 0) missingSections.push('Experience');
   if (education.length === 0) missingSections.push('Education');
   if (projects.length === 0) missingSections.push('Projects');
-  if (hasIncompleteCerts) missingSections.push('Certificates');
+  if (achievements.length === 0) missingSections.push('Achievements');
+  if (!portfolioUrl) missingSections.push('Portfolio');
+  if (!hasCertificates || hasIncompleteCerts) missingSections.push('Certificates');
 
-  let profileStrength = 20;
+  let profileStrength = 10;
   if (skills.length > 0) profileStrength += 15;
-  if (experience.length > 0) profileStrength += 20;
+  if (experience.length > 0) profileStrength += 15;
   if (education.length > 0) profileStrength += 15;
   if (projects.length > 0) profileStrength += 15;
-  if (!hasIncompleteCerts) profileStrength += 15;
+  if (achievements.length > 0) profileStrength += 10;
+  if (portfolioUrl) profileStrength += 10;
+  if (hasCertificates && !hasIncompleteCerts) profileStrength += 10;
 
   // Helper for Calendar
   const getCalendarData = () => {
@@ -285,8 +319,8 @@ export default function StudentDashboard() {
 
   const calendarData = getCalendarData();
 
-  // Calculate 30-minute refresh cooldown
-  const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+  // Calculate 30-minute refresh cooldown (Temporarily disabled for testing)
+  const THIRTY_MINUTES_MS = 0; // 30 * 60 * 1000;
   const timeSinceLastScrape = profile?.lastScrapedAt ? Date.now() - new Date(profile.lastScrapedAt).getTime() : Infinity;
   const isCooldownActive = timeSinceLastScrape < THIRTY_MINUTES_MS;
   const remainingMinutes = isCooldownActive ? Math.ceil((THIRTY_MINUTES_MS - timeSinceLastScrape) / 60000) : 0;
@@ -384,6 +418,74 @@ export default function StudentDashboard() {
               </div>
             )}
           </section>
+
+          {/* Pending Achievements Inbox */}
+          {profile?.pendingAchievements?.length > 0 && (
+            <section className="bg-primary-container text-on-primary-container rounded-xl p-6 shadow-md border border-primary/20 animate-fade-in">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-primary">award_star</span>
+                <h3 className="font-headline-sm font-bold">New Achievements Found</h3>
+                <span className="bg-primary text-on-primary text-xs px-2 py-1 rounded-full font-bold ml-2">{profile.pendingAchievements.length} Pending</span>
+              </div>
+              <p className="text-sm mb-6 text-on-primary-container/80">We extracted these achievements from your recent LinkedIn activity. Approve them to add them to your public portfolio.</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {profile.pendingAchievements.map((ach, idx) => (
+                  <div key={idx} className="bg-surface text-on-surface rounded-lg p-4 border border-border-light flex flex-col gap-3">
+                    {ach.imageUrl && (
+                      <img src={ach.imageUrl} alt="Achievement" className="w-full h-32 object-contain bg-surface-container rounded-md" />
+                    )}
+                    <div>
+                      <h4 className="font-bold text-sm mb-1 line-clamp-1">{ach.title}</h4>
+                      <p className="text-xs text-on-surface-variant line-clamp-2">{ach.description}</p>
+                      <span className="text-[10px] text-text-slate mt-2 block">{formatDistanceToNow(new Date(ach.date), { addSuffix: true })}</span>
+                    </div>
+                    <div className="flex gap-2 mt-auto pt-2 border-t border-border-light">
+                      <button onClick={() => handleApproveAchievement(ach.title)} className="flex-1 bg-primary text-on-primary py-1.5 rounded text-xs font-bold transition-colors hover:bg-primary/90">Approve</button>
+                      <button onClick={() => handleDiscardAchievement(ach.title)} className="flex-1 bg-surface-container-high text-on-surface hover:text-error py-1.5 rounded text-xs font-bold transition-colors">Discard</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Upcoming Club Events */}
+          {upcomingEvents.length > 0 && (
+            <section className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col w-full">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-headline-md text-headline-sm text-on-surface flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">event</span> Upcoming Club Events
+                </h3>
+                <Link to="/clubs" className="text-primary hover:underline text-sm font-medium">View All Clubs</Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {upcomingEvents.map(ev => (
+                  <div key={ev._id} className="bg-surface-variant p-4 rounded-xl border border-border-light flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/clubs/${ev.clubId._id}`)}>
+                    <h4 className="font-bold text-label-lg mb-1">{ev.title}</h4>
+                    <p className="text-xs text-on-surface-variant flex items-center gap-1 mb-2">
+                      <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                      {new Date(ev.date).toLocaleDateString()} at {ev.time}
+                    </p>
+                    <p className="text-xs text-on-surface-variant flex items-center gap-1 mb-3">
+                      <span className="material-symbols-outlined text-[14px]">location_on</span>
+                      {ev.venue}
+                    </p>
+                    <div className="mt-auto flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-surface overflow-hidden">
+                        {ev.clubId.profilePhoto ? (
+                          <img src={ev.clubId.profilePhoto} alt={ev.clubId.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="material-symbols-outlined text-[16px] text-on-surface-variant mt-1 ml-1">groups</span>
+                        )}
+                      </div>
+                      <span className="text-xs font-medium text-on-surface">{ev.clubId.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Activity Heatmap Toggle Section */}
           <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col items-center overflow-hidden w-full">

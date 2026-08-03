@@ -8,7 +8,7 @@ export const ToastProvider = ({ children }) => {
 
   const showToast = useCallback((message, type = 'info', duration = 3000) => {
     const id = Date.now().toString();
-    setToasts((prev) => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type, duration }]);
 
     if (duration > 0) {
       setTimeout(() => {
@@ -71,20 +71,44 @@ const ToastItem = ({ toast, onRemove }) => {
     }
   };
 
+  const getProgressBarColor = () => {
+    switch (toast.type) {
+      case 'success':
+        return 'bg-emerald-500';
+      case 'error':
+        return 'bg-red-500';
+      default:
+        return 'bg-blue-500';
+    }
+  };
+
   return (
     <div
-      className={`pointer-events-auto w-80 bg-surface/95 backdrop-blur-lg border ${getBorderColor()} shadow-lg rounded-xl p-4 flex items-start gap-3 transition-all duration-300 transform ${
+      className={`pointer-events-auto w-80 bg-surface/95 backdrop-blur-lg border ${getBorderColor()} shadow-lg rounded-xl flex flex-col overflow-hidden transition-all duration-300 transform ${
         isShowing ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-4 opacity-0 scale-95'
       }`}
     >
-      <div className="shrink-0 mt-0.5">{getIcon()}</div>
-      <div className="flex-1 font-body-md text-on-surface text-sm">{toast.message}</div>
-      <button
-        onClick={handleClose}
-        className="shrink-0 text-on-surface-variant hover:text-on-surface transition-colors"
-      >
-        <FiX className="text-[18px]" />
-      </button>
+      <div className="p-4 flex items-start gap-3 w-full">
+        <div className="shrink-0 mt-0.5">{getIcon()}</div>
+        <div className="flex-1 font-body-md text-on-surface text-sm">{toast.message}</div>
+        <button
+          onClick={handleClose}
+          className="shrink-0 text-on-surface-variant hover:text-on-surface transition-colors"
+        >
+          <FiX className="text-[18px]" />
+        </button>
+      </div>
+      {toast.duration > 0 && (
+        <div className="w-full h-1 bg-surface-variant/50">
+          <div
+            className={`h-full ${getProgressBarColor()}`}
+            style={{
+              width: isShowing ? '0%' : '100%',
+              transition: isShowing ? `width ${toast.duration}ms linear` : 'none',
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };
