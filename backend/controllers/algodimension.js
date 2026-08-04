@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 const axios = require('axios');
@@ -720,6 +721,106 @@ const fallbackMockData = (githubuserid) => ({
     ]
 });
 
+const getLinkedInPosts = async (linkedinUrl) => {
+    console.log(`Skipping real LinkedIn posts fetch via Apify for: ${linkedinUrl} (Temporarily disabled)`);
+    return [];
+
+    /*
+    const APIFY_TOKEN = process.env.APIFY_TOKEN;
+    // Replace this ID with the correct one from your Apify store if this actor is deprecated
+    const POST_ACTOR_ID = "curious_coder~linkedin-post-scraper";
+
+    if (!APIFY_TOKEN) {
+        console.warn('APIFY_TOKEN missing, skipping real post scraping.');
+        return [];
+    }
+
+    try {
+        const input = {
+            profileUrls: [linkedinUrl]
+        };
+
+        const runResponse = await fetch(
+          `https://api.apify.com/v2/actors/${POST_ACTOR_ID}/runs?token=${APIFY_TOKEN}&waitForFinish=120`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(input)
+          }
+        );
+
+        const run = await runResponse.json();
+        if (!run.data) {
+            throw new Error(`Apify post scraper failed to start: ${JSON.stringify(run)}`);
+        }
+
+        const datasetId = run.data.defaultDatasetId;
+
+        const datasetResponse = await fetch(
+          `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true&token=${APIFY_TOKEN}`
+        );
+
+        const posts = await datasetResponse.json();
+        console.log(`Fetched ${posts.length} posts from LinkedIn.`);
+
+        // Map the posts to the generic schema expected by our AI filter
+        return posts.map(post => {
+            return {
+                text: post.text || "",
+                images: post.images || [],
+                date: post.time || new Date().toISOString()
+            };
+        }).filter(p => p.text.length > 10);
+
+    } catch (error) {
+        console.error('Error fetching LinkedIn posts via Apify:', error);
+        return [];
+    }
+    */
+};
+
+const filterAchievementsWithGemini = async (posts) => {
+    if (!posts || posts.length === 0) return [];
+    if (!process.env.GEMINI_API_KEY) {
+        console.warn('GEMINI_API_KEY missing, skipping AI filtering.');
+        return [];
+    }
+
+    try {
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+
+        const prompt = `
+        You are an AI assistant that filters a user's LinkedIn posts to identify purely professional, academic, or technical achievements.
+        An achievement is typically: winning a competition/hackathon, completing a certification/course, launching a major project, getting a promotion, or receiving an award.
+        It is NOT: general opinions, memes, simple updates (e.g. "having coffee"), or asking questions.
+        
+        Analyze the following list of posts. For each post that IS a genuine achievement, extract a short, punchy title (max 5 words), a 1-sentence description, the image URL, and the date.
+        If a post is NOT an achievement, ignore it completely.
+
+        Return ONLY a JSON array of objects. Do not wrap in markdown \`\`\`json.
+        Format:
+        [
+          { "title": "...", "description": "...", "imageUrl": "...", "date": "..." }
+        ]
+
+        POSTS:
+        ${JSON.stringify(posts, null, 2)}
+        `;
+
+        const result = await model.generateContent(prompt);
+        let responseText = result.response.text().trim();
+        if (responseText.startsWith('```json')) responseText = responseText.replace(/```json/g, '');
+        if (responseText.startsWith('```')) responseText = responseText.replace(/```/g, '');
+        
+        const parsed = JSON.parse(responseText);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.error('Error filtering achievements with Gemini:', error);
+        return [];
+    }
+};
+
 module.exports = {
     createdimension,
     createOpportunityVector,
@@ -729,5 +830,7 @@ module.exports = {
     evaluateApplicantMatchController,
     getgithubdata,
     getleetcodedata,
-    getLinkedInData
+    getLinkedInData,
+    getLinkedInPosts,
+    filterAchievementsWithGemini
 };

@@ -2,10 +2,12 @@ import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { FiLoader } from 'react-icons/fi';
 
 export default function Sidebar() {
   const { user, logout } = useContext(AuthContext);
+  const { showToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -44,13 +46,15 @@ export default function Sidebar() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     await logout();
+    showToast('Logged out successfully', 'success');
   };
 
   const studentLinks = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Profile', icon: 'person', path: '/profile' },
+    { name: 'Clubs', icon: 'groups', path: '/clubs' },
     { name: 'Opportunities', icon: 'work', path: '/opportunities' },
-    { name: 'Events', icon: 'event', path: '#' },
+    { name: 'Events', icon: 'event', path: '/events' },
     { name: 'Certificates', icon: 'school', path: '/certificates' },
   ];
 
@@ -60,7 +64,11 @@ export default function Sidebar() {
     { name: 'System Analytics', icon: 'analytics', path: '#' },
   ];
 
-  const links = user.role === 'admin' ? adminLinks : studentLinks;
+  const clubLinks = [
+    { name: 'Club Portal', icon: 'dashboard', path: '/club' }
+  ];
+
+  const links = user.role === 'admin' ? adminLinks : (user.role === 'club' ? clubLinks : studentLinks);
 
   return (
     <aside className={`hidden md:flex flex-col bg-surface border-r border-border-light h-screen sticky top-0 shrink-0 transition-all duration-300 ${isSidebarOpen ? 'w-72' : 'w-20'} z-50`}>

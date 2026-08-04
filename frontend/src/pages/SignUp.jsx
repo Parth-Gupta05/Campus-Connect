@@ -2,10 +2,11 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { FiLoader } from 'react-icons/fi';
 
 export default function SignUp() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +15,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,17 +26,26 @@ export default function SignUp() {
       return;
     }
 
+    if (!identifier.includes('@')) {
+      const match = identifier.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
+      if (!match) {
+        setError('Invalid UID format. Expected format: 23-COMPA10-27');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
       const response = await axios.post('/auth/register', {
-        email,
+        identifier,
         password,
         role: 'student'
       });
 
-      login(response.data);
-      navigate('/profile');
+      await login(identifier, password, false);
+      showToast('Account created successfully!', 'success');
+      navigate('/dashboard');
     } catch (err) {
       setError(
         err.response?.data?.message || 
@@ -114,21 +125,21 @@ export default function SignUp() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="email">
-                    College Email
+                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="identifier">
+                    Email or UID
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
-                      <span className="material-symbols-outlined text-[18px]">mail</span>
+                      <span className="material-symbols-outlined text-[18px]">badge</span>
                     </div>
                     <input
-                      id="email"
-                      type="email"
+                      id="identifier"
+                      type="text"
                       required
                       className="w-full pl-10 p-3.5 bg-surface border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline-variant"
-                      placeholder="student@university.edu"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email or UID"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
                     />
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
   return (
@@ -24,8 +25,8 @@ export default function LandingPage() {
 </div>
 
 <div className="hidden md:flex items-center gap-4">
-<a href="#" className="font-button-text text-button-text text-on-surface-variant hover:text-primary transition-colors py-2 px-4 scale-95 active:opacity-80">Sign In</a>
-<a href="#" className="font-button-text text-button-text bg-primary text-on-primary hover:bg-primary-fixed-variant transition-colors py-2.5 px-5 rounded-lg shadow-sm scale-95 active:opacity-80">Get Started</a>
+<Link to="/signin" className="font-button-text text-button-text text-on-surface-variant hover:text-primary transition-colors py-2 px-4 scale-95 active:opacity-80">Sign In</Link>
+<Link to="/signin" className="font-button-text text-button-text bg-primary text-on-primary hover:bg-primary-fixed-variant transition-colors py-2.5 px-5 rounded-lg shadow-sm scale-95 active:opacity-80">Get Started</Link>
 </div>
 
 <button className="md:hidden text-on-surface p-2" aria-label="Toggle menu">
@@ -55,24 +56,12 @@ export default function LandingPage() {
                     Campus Connect continuously translates your academic journey, extracurriculars, and skills into a dynamic, verified profile that connects you with the perfect opportunities.
                 </p>
 <div className="flex flex-col sm:flex-row gap-4">
-<a href="#" className="inline-flex justify-center items-center gap-2 bg-primary text-on-primary font-button-text text-button-text py-3.5 px-8 rounded-lg hover:bg-primary-fixed-variant transition-all shadow-[0_4px_14px_0_rgba(53,37,205,0.39)] hover:shadow-[0_6px_20px_rgba(53,37,205,0.23)] hover:-translate-y-0.5">
+<Link to="/signin" className="inline-flex justify-center items-center gap-2 bg-primary text-on-primary font-button-text text-button-text py-3.5 px-8 rounded-lg hover:bg-primary-fixed-variant transition-all shadow-[0_4px_14px_0_rgba(53,37,205,0.39)] hover:shadow-[0_6px_20px_rgba(53,37,205,0.23)] hover:-translate-y-0.5">
                         Get Started
                         <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-</a>
-<a className="inline-flex justify-center items-center gap-2 bg-white text-on-surface border border-border-light font-button-text text-button-text py-3.5 px-8 rounded-lg hover:bg-bg-subtle transition-all shadow-sm hover:shadow" href="#">
-<span className="material-symbols-outlined text-[18px]">play_circle</span>
-                        Explore Demo
-                    </a>
+</Link>
 </div>
-<div className="mt-12 flex items-center gap-6 text-sm text-on-surface-variant">
-<div className="flex -space-x-3">
-<img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm" data-alt="A small circular avatar of a young professional student with a bright smile, set against a light background, 100x100 pixels, modern crisp lighting, high quality corporate headshot style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8vEGQAEpP3zbbh0WhXyDHWZkwztLSCoQsvzYX6S9uXb-4TGYsQkXQqUYCCFQLJiTbQ70uqvE9LTdLa4OQ6JpJlvBVDPZTZ9ayhvn56WtTz9ZDBCT8zcr3u22YfMBug-5qxQ97O4BhgqPsjxzMxk_lNy0M7W49EeqXMEtcqIMUpSIeNasTsIhyfBFtWnFHwoKKT-la54lDn6w0mbUK8a_57LUjlTcWgTFJVGZOiwjhSMfohXH2vDZUPCyRFvl1kER2HlOmCtH2UamO" />
-<img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm" data-alt="A small circular avatar of an academic advisor looking confident, warm lighting, 100x100 pixels, professional modern headshot." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJkAAef_QZW6vB_gTzfSv9aaF3qlDC-LTmEsBtR2KnCYMccVQJZilD18Zp-nf_iTZ0D38wl0cCQF-zWesalcj45amg1S33Y8Ylj0l0RAu2LwzNnbomz7sGMjdn_8N3nCB8beDOhtLqZ52vuik5aseDYLoecZhrItNSZJACe8pSuZnBPgp20zrYxl4PaMoWJ_7QvekAyj--y98Ug9EssDDnZUAYCnTSpg7lYPEmebYulhwsaOYimppiyySC6WJ5zH6Rr5DbvBxf95Ul" />
-<img className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm" data-alt="A small circular avatar of a diverse tech student with glasses, vibrant background, 100x100 pixels, modern high-key lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy1TH4z7rufmLV0QPZn-iHgjGK6sjOhcqOIpGhFAzSNW1jbUj5nijTjsQ61P65jHlCSC6gPW_R7fnLmr5R99o2OEddpmgAojenZRZBnd6_xlhIiV0rcB2bXRl7ENI4oWQyO-JFM58qa2jj-CXh5GUDoTwt3nz40lniklVrfiXMMfny43h6m8SWUgdFw9sl2GNzzhRlQlygktb2YDcLUIqpPFZDkLk9bYgwQHtvIHF4naB7FVQc5YQjyeZ0QELsE0W4E5qig0JhEIBY" />
-<div className="w-10 h-10 rounded-full border-2 border-white bg-surface-container flex items-center justify-center text-xs font-medium text-primary z-10 shadow-sm">+2k</div>
-</div>
-<p className="font-body-md text-body-md"><span className="font-semibold text-on-surface">Trusted by thousands</span> of students nationwide.</p>
-</div>
+
 </div>
 
 <div className="relative w-full aspect-[4/3] lg:aspect-auto lg:h-[600px] flex items-center justify-center">
@@ -164,33 +153,9 @@ export default function LandingPage() {
 
 
 
-<div className="absolute -left-4 top-20 z-20 bg-white/90 backdrop-blur-md border border-border-light p-3 rounded-xl shadow-sm flex items-center gap-3 transition-transform hover:scale-105"><div className="w-8 h-8 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary-container"><span className="material-symbols-outlined text-[18px]" >verified</span></div><div><p className="text-[10px] font-bold text-on-surface">Identity Verified</p><p className="text-[8px] text-on-surface-variant uppercase tracking-widest">Blockchain Secured</p></div></div><div className="absolute -right-4 bottom-24 z-20 bg-white/90 backdrop-blur-md border border-border-light p-3 rounded-xl shadow-sm flex flex-col gap-2 transition-transform hover:scale-105"><div className="flex justify-between items-center gap-4"><p className="text-[10px] font-bold text-on-surface">Monthly Growth</p><span className="text-[10px] font-bold text-tertiary-container">+12%</span></div><div className="flex items-end gap-1 h-8"><div className="w-2 bg-primary/20 h-3 rounded-t-sm"></div><div className="w-2 bg-primary/40 h-5 rounded-t-sm"></div><div className="w-2 bg-primary/60 h-4 rounded-t-sm"></div><div className="w-2 bg-primary h-7 rounded-t-sm"></div></div></div></div>
+<div className="absolute -left-4 top-20 z-20 bg-white/90 backdrop-blur-md border border-border-light p-3 rounded-xl shadow-sm flex items-center gap-3 transition-transform hover:scale-105"><div className="w-8 h-8 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary-container"><span className="material-symbols-outlined text-[18px]" >verified</span></div><div><p className="text-[10px] font-bold text-on-surface">Identity Verified</p><p className="text-[8px] text-on-surface-variant uppercase tracking-widest">Blockchain Secured</p></div></div></div>
 </div>
 </header>
-
-<section className="py-16 bg-surface-container-low border-y border-border-light">
-<div className="max-w-container-max mx-auto px-gutter text-center">
-<h2 className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-8">Built for Modern Campuses</h2>
-<div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 divide-x-0 md:divide-x divide-border-light">
-<div className="flex flex-col items-center">
-<div className="font-headline-lg text-headline-lg font-bold text-on-surface mb-1">50K+</div>
-<div className="font-body-md text-body-md text-on-surface-variant">Active Students</div>
-</div>
-<div className="flex flex-col items-center">
-<div className="font-headline-lg text-headline-lg font-bold text-on-surface mb-1">120+</div>
-<div className="font-body-md text-body-md text-on-surface-variant">Partner Colleges</div>
-</div>
-<div className="flex flex-col items-center">
-<div className="font-headline-lg text-headline-lg font-bold text-on-surface mb-1">2M+</div>
-<div className="font-body-md text-body-md text-on-surface-variant">Verified Certificates</div>
-</div>
-<div className="flex flex-col items-center">
-<div className="font-headline-lg text-headline-lg font-bold text-on-surface mb-1">94%</div>
-<div className="font-body-md text-body-md text-on-surface-variant">Match Success Rate</div>
-</div>
-</div>
-</div>
-</section>
 
 <section className="py-section-gap-mobile md:py-section-gap-desktop bg-white" id="features">
 <div className="max-w-container-max mx-auto px-gutter">
@@ -240,13 +205,7 @@ export default function LandingPage() {
 <p className="font-body-md text-body-md text-on-surface-variant">Algorithmic matching connects you instantly with relevant internships, jobs, and campus projects.</p>
 </div>
 
-<div className="group p-8 rounded-2xl bg-bg-subtle border border-border-light hover:border-primary/30 hover:shadow-md transition-all duration-300">
-<div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-border-light flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
-<span className="material-symbols-outlined" >monitoring</span>
-</div>
-<h3 className="font-headline-md text-headline-md text-on-surface mb-3">Analytics Dashboard</h3>
-<p className="font-body-md text-body-md text-on-surface-variant">Visualize your growth over time with interactive charts comparing your metrics to campus averages.</p>
-</div>
+
 </div>
 </div>
 </section>

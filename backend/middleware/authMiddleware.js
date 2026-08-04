@@ -32,4 +32,12 @@ const adminMiddleware = (req, res, next) => {
   }
 };
 
-module.exports = { authMiddleware, adminMiddleware };
+const clubMiddleware = (req, res, next) => {
+  if (req.user && req.user.role === 'club') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Access denied: Club only' });
+  }
+};
+
+module.exports = { authMiddleware, adminMiddleware, clubMiddleware };

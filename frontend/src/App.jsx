@@ -6,6 +6,10 @@ import StudentDashboard from './pages/StudentDashboard';
 import StudentProfile from './pages/StudentProfile';
 import Certificates from './pages/Certificates';
 import Opportunities from './pages/Opportunities';
+import ClubDashboard from './pages/ClubDashboard';
+import Clubs from './pages/Clubs';
+import ClubProfile from './pages/ClubProfile';
+import Events from './pages/Events';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -50,6 +54,30 @@ function App() {
           <Route path="/certificates" element={
             <ProtectedRoute allowedRoles={['student']}>
               <Certificates />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/clubs" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <Clubs />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/events" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <Events />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/clubs/:id" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <ClubProfile />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/club" element={
+            <ProtectedRoute allowedRoles={['club']}>
+              <ClubDashboard />
             </ProtectedRoute>
           } />
 
