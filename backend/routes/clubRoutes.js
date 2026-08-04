@@ -4,6 +4,7 @@ const Club = require('../models/Club');
 const User = require('../models/User');
 const Announcement = require('../models/Announcement');
 const { authMiddleware, clubMiddleware } = require('../middleware/authMiddleware');
+const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
 
 // Get Club Profile (For the logged-in club)
 router.get('/profile', authMiddleware, clubMiddleware, async (req, res) => {
@@ -26,8 +27,14 @@ router.put('/profile', authMiddleware, clubMiddleware, async (req, res) => {
 
     if (name) club.name = name;
     if (description !== undefined) club.description = description;
-    if (profilePhoto !== undefined) club.profilePhoto = profilePhoto;
-    if (bannerPhoto !== undefined) club.bannerPhoto = bannerPhoto;
+    if (profilePhoto !== undefined && profilePhoto !== club.profilePhoto) {
+      if (club.profilePhoto) await deleteCloudinaryAsset(club.profilePhoto);
+      club.profilePhoto = profilePhoto;
+    }
+    if (bannerPhoto !== undefined && bannerPhoto !== club.bannerPhoto) {
+      if (club.bannerPhoto) await deleteCloudinaryAsset(club.bannerPhoto);
+      club.bannerPhoto = bannerPhoto;
+    }
 
     await club.save();
     res.json({ message: 'Profile updated successfully', club });

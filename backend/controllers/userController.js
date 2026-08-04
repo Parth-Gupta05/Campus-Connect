@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { getgithubdata, getleetcodedata, getLinkedInData, getLinkedInPosts, filterAchievementsWithGemini } = require('./algodimension');
+const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -218,6 +219,10 @@ const uploadAvatar = async (req, res) => {
 
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    if (user.avatarUrl) {
+      await deleteCloudinaryAsset(user.avatarUrl);
+    }
     
     user.avatarUrl = avatarUrl;
     await user.save();
