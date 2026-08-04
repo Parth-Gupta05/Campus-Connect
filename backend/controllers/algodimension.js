@@ -4,7 +4,6 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 const axios = require('axios');
 const pdfParse = require('pdf-parse');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const mongoose = require('mongoose');
 
 // Import models
