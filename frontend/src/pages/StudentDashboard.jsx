@@ -3,9 +3,9 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import { ActivityCalendar } from 'react-activity-calendar';
-import { GitHubCalendar } from 'react-github-calendar';
-import { format, fromUnixTime, subDays, parseISO, formatDistanceToNow } from 'date-fns';
+import { fromUnixTime, format, formatDistanceToNow, subDays, parseISO } from 'date-fns';
 import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
@@ -124,6 +124,10 @@ export default function StudentDashboard() {
   const [activeHeatmap, setActiveHeatmap] = useState('github');
   const [selectedRepo, setSelectedRepo] = useState(null);
   
+  const [githubHeatmap, setGithubHeatmap] = useState(null);
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
+  const [heatmapError, setHeatmapError] = useState(false);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -141,6 +145,22 @@ export default function StudentDashboard() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (activeHeatmap === 'github' && profile?.githubUsername && !githubHeatmap && !heatmapLoading) {
+      setHeatmapLoading(true);
+      axios.get('/user/github-heatmap')
+        .then(res => {
+          setGithubHeatmap(res.data);
+          setHeatmapError(false);
+        })
+        .catch(err => {
+          console.error('Failed to fetch github heatmap', err);
+          setHeatmapError(true);
+        })
+        .finally(() => setHeatmapLoading(false));
+    }
+  }, [activeHeatmap, profile?.githubUsername]);
 
   const handleRefreshMetrics = async () => {
     setRefreshing(true);
@@ -347,15 +367,7 @@ export default function StudentDashboard() {
       <RepoModal repo={selectedRepo} onClose={() => setSelectedRepo(null)} />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="hidden md:flex bg-white/80 backdrop-blur-xl border-b border-border-light shadow-sm justify-between items-center px-gutter h-20 z-40 sticky top-0 w-full">
-          <div className="relative w-96">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-            <input className="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-border-light rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md text-on-surface placeholder:text-text-slate" placeholder="Search opportunities, events..." type="text" />
-          </div>
-          <div className="flex items-center gap-6">
-            <span className="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-colors">notifications</span>
-          </div>
-        </div>
+        <Topbar showSearch={true} />
 
         <div className="p-gutter md:p-8 max-w-container-max mx-auto space-y-8">
           
@@ -511,14 +523,25 @@ export default function StudentDashboard() {
               <div className="min-w-[800px] min-h-[180px] relative w-full">
                 {/* GitHub Heatmap */}
                 <div className={`heatmap-wrapper absolute top-0 left-0 w-full flex justify-center transition-opacity duration-300 ${activeHeatmap === 'github' ? 'opacity-100 z-10 active' : 'opacity-0 z-0 pointer-events-none'}`}>
-                  {github?.profile?.login ? (
-                    <GitHubCalendar 
-                      username={github.profile.login} 
-                      colorScheme="light"
-                      labels={{
-                        totalCount: `{{count}} contributions in the last year`,
-                      }}
-                    />
+                  {profile?.githubUsername ? (
+                    heatmapLoading ? (
+                      <div className="text-on-surface-variant py-8 flex items-center justify-center gap-2"><FiLoader className="animate-spin" /> Fetching GitHub Activity...</div>
+                    ) : heatmapError || !githubHeatmap ? (
+                      <div className="text-error py-8">Failed to fetch GitHub activity. GitHub API might be unreachable.</div>
+                    ) : githubHeatmap.length === 0 ? (
+                       <div className="text-on-surface-variant py-8">No GitHub activity found.</div>
+                    ) : (
+                      <ActivityCalendar 
+                        data={githubHeatmap} 
+                        colorScheme="light"
+                        theme={{
+                          light: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']
+                        }}
+                        labels={{
+                          totalCount: `{{count}} contributions in the last year`,
+                        }}
+                      />
+                    )
                   ) : (
                     <div className="text-on-surface-variant py-8">GitHub profile not linked.</div>
                   )}
@@ -551,12 +574,12 @@ export default function StudentDashboard() {
             <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
               <FaGithub className="text-primary text-[28px]" /> GitHub Profile
             </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               {/* GitHub Stats Card */}
-              <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col justify-between h-full">
+              <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col gap-6">
                 {github ? (
                   <>
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-4">
                       {github.profile?.avatar_url ? (
                         <img src={github.profile.avatar_url} alt="GitHub Avatar" className="w-16 h-16 rounded-full border-2 border-border-light shadow-sm" />
                       ) : (

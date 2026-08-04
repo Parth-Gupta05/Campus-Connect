@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { getgithubdata, getleetcodedata, getLinkedInData, getLinkedInPosts, filterAchievementsWithGemini } = require('./algodimension');
+const { getgithubdata, getleetcodedata, getLinkedInData, getLinkedInPosts, filterAchievementsWithGemini, getGithubContributions } = require('./algodimension');
 const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
 const cloudinary = require('cloudinary').v2;
 
@@ -169,7 +169,7 @@ const refreshMetrics = async (req, res) => {
 
 const updatePortfolio = async (req, res) => {
   try {
-    const { skills, education, experience, projects, certificates, portfolioUrl, achievements } = req.body;
+    const { skills, education, experience, projects, certificates, portfolioUrl, achievements, githubUsername, leetcodeUsername, linkedInUrl } = req.body;
     
     let user = await User.findById(req.user.id);
     if (!user) {
@@ -186,7 +186,33 @@ const updatePortfolio = async (req, res) => {
       achievements: achievements || (user.resumeDetails && user.resumeDetails.achievements) || []
     };
 
-    await user.save();
+    // Check if handles changed
+    const handlesChanged = 
+      (githubUsername !== undefined && githubUsername !== user.githubUsername) ||
+      (leetcodeUsername !== undefined && leetcodeUsername !== user.leetcodeUsername) ||
+      (linkedInUrl !== undefined && linkedInUrl !== user.linkedInUrl);
+
+    if (handlesChanged) {
+      const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+      if (user.lastHandleUpdateAt && (Date.now() - new Date(user.lastHandleUpdateAt).getTime() < ONE_DAY_MS)) {
+        const remainingHours = Math.ceil((ONE_DAY_MS - (Date.now() - new Date(user.lastHandleUpdateAt).getTime())) / (60 * 60 * 1000));
+        return res.status(400).json({ message: `Handles can only be updated once every 24 hours. Please try again in ${remainingHours} hours.` });
+      }
+
+      if (githubUsername !== undefined) user.githubUsername = githubUsername;
+      if (leetcodeUsername !== undefined) user.leetcodeUsername = leetcodeUsername;
+      if (linkedInUrl !== undefined) user.linkedInUrl = linkedInUrl;
+      
+      user.lastHandleUpdateAt = new Date();
+      
+      // Save handles first
+      await user.save();
+      
+      // Trigger a re-scrape with the new handles
+      user = await scrapeAndCacheMetrics(user);
+    } else {
+      await user.save();
+    }
 
     const userResponse = user.toObject();
     delete userResponse.password;
@@ -367,6 +393,22 @@ const addManualAchievement = async (req, res) => {
   }
 };
 
+const getGithubHeatmap = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || !user.githubUsername) {
+      return res.status(404).json({ message: 'GitHub username not found' });
+    }
+    const data = await getGithubContributions(user.githubUsername);
+    if (!data) {
+      return res.status(500).json({ message: 'Failed to fetch github contributions' });
+    }
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -377,5 +419,6 @@ module.exports = {
   getResumePdf,
   approveAchievement,
   discardAchievement,
-  addManualAchievement
+  addManualAchievement,
+  getGithubHeatmap
 };

@@ -11,6 +11,7 @@ export default function Sidebar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [hasUncheckedEvents, setHasUncheckedEvents] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -18,8 +19,31 @@ export default function Sidebar() {
       axios.get('/user/profile')
         .then(res => setProfile(res.data))
         .catch(console.error);
+
+      axios.get('/events/public')
+        .then(res => {
+          const events = res.data;
+          if (events.length > 0) {
+            const lastChecked = localStorage.getItem('lastCheckedEvents');
+            if (!lastChecked) {
+              setHasUncheckedEvents(true);
+            } else {
+              const lastCheckedDate = new Date(lastChecked).getTime();
+              const hasNew = events.some(e => new Date(e.createdAt || e.date).getTime() > lastCheckedDate);
+              setHasUncheckedEvents(hasNew);
+            }
+          }
+        })
+        .catch(console.error);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (location.pathname === '/events') {
+      setHasUncheckedEvents(false);
+      localStorage.setItem('lastCheckedEvents', new Date().toISOString());
+    }
+  }, [location.pathname]);
 
   const manualCerts = profile?.resumeDetails?.certificates || [];
   const scrapedCerts = profile?.scrapedData?.linkedin?.certifications || [];
@@ -83,7 +107,7 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
         {links.map((link) => {
           const isActive = location.pathname === link.path;
-          const showDot = link.name === 'Certificates' && hasIncompleteCerts;
+          const showDot = (link.name === 'Certificates' && hasIncompleteCerts) || (link.name === 'Events' && hasUncheckedEvents);
           
           return (
             <Link 

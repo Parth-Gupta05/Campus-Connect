@@ -395,11 +395,80 @@ const filterAchievementsWithGemini = async (posts) => {
     }
 };
 
+const getGithubContributions = async (githubuserid) => {
+    if (!githubuserid) return null;
+    if (!GITHUB_TOKEN) return null;
+
+    const query = `
+      query($login: String!) {
+        user(login: $login) {
+          contributionsCollection {
+            contributionCalendar {
+              totalContributions
+              weeks {
+                contributionDays {
+                  contributionCount
+                  date
+                  color
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+        const res = await fetch('https://api.github.com/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json',
+                'User-Agent': 'Campus-Connect-Backend'
+            },
+            body: JSON.stringify({ query, variables: { login: githubuserid } })
+        });
+        
+        if (!res.ok) {
+            console.error('Failed to fetch github contributions via GraphQL', res.status);
+            return null;
+        }
+        
+        const data = await res.json();
+        if (data.errors || !data.data?.user) return null;
+
+        const calendar = data.data.user.contributionsCollection.contributionCalendar;
+        const result = [];
+        
+        calendar.weeks.forEach(week => {
+            week.contributionDays.forEach(day => {
+                let level = 0;
+                if (day.contributionCount > 0 && day.contributionCount <= 3) level = 1;
+                else if (day.contributionCount > 3 && day.contributionCount <= 6) level = 2;
+                else if (day.contributionCount > 6 && day.contributionCount <= 9) level = 3;
+                else if (day.contributionCount > 9) level = 4;
+
+                result.push({
+                    date: day.date,
+                    count: day.contributionCount,
+                    level: level
+                });
+            });
+        });
+
+        return result;
+    } catch (err) {
+        console.error('Error fetching github contributions:', err);
+        return null;
+    }
+};
+
 module.exports = {
     createdimension,
     getgithubdata,
     getleetcodedata,
     getLinkedInData,
     getLinkedInPosts,
-    filterAchievementsWithGemini
+    filterAchievementsWithGemini,
+    getGithubContributions
 };
