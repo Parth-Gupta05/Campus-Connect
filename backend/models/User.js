@@ -51,6 +51,22 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  lastHandleUpdateAt: {
+    type: Date,
+    default: null,
+  },
+  resetOtp: {
+    type: String,
+    default: null,
+  },
+  resetOtpExpiry: {
+    type: Date,
+    default: null,
+  },
+  resetOtpLastSent: {
+    type: Date,
+    default: null,
+  },
   scrapedData: {
     type: Object,
     default: null,

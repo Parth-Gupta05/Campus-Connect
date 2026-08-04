@@ -30,6 +30,11 @@ const ClubSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  socials: {
+    instagram: { type: String, default: '' },
+    facebook: { type: String, default: '' },
+    linkedin: { type: String, default: '' }
+  },
   assignedStudents: [{
     studentId: {
       type: mongoose.Schema.Types.ObjectId,

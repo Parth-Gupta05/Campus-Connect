@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 
 export default function SignIn() {
   const [identifier, setIdentifier] = useState('');
@@ -12,6 +13,76 @@ export default function SignIn() {
   const { login } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  // Forgot Password States
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [forgotStep, setForgotStep] = useState(1);
+  const [cooldown, setCooldown] = useState(0);
+  const [loadingForgot, setLoadingForgot] = useState(false);
+
+  const handleRequestOtp = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail) return showToast('Please enter your email', 'error');
+    setLoadingForgot(true);
+    try {
+      await axios.post('/auth/forgot-password', { email: forgotEmail });
+      showToast('OTP sent to your email', 'success');
+      setForgotStep(2);
+      setCooldown(60);
+      const timer = setInterval(() => {
+        setCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to send OTP', 'error');
+    } finally {
+      setLoadingForgot(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!forgotOtp || forgotOtp.length !== 6) return showToast('Please enter a valid 6-digit OTP', 'error');
+    setLoadingForgot(true);
+    try {
+      await axios.post('/auth/verify-otp', { email: forgotEmail, otp: forgotOtp });
+      showToast('OTP verified successfully', 'success');
+      setForgotStep(3);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Invalid OTP', 'error');
+    } finally {
+      setLoadingForgot(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmNewPassword) return showToast('Passwords do not match', 'error');
+    setLoadingForgot(true);
+    try {
+      await axios.post('/auth/reset-password', { email: forgotEmail, otp: forgotOtp, newPassword });
+      showToast('Password reset successfully. You can now log in.', 'success');
+      setShowForgotModal(false);
+      setForgotStep(1);
+      setForgotEmail('');
+      setForgotOtp('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to reset password', 'error');
+    } finally {
+      setLoadingForgot(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,8 +99,8 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-body-lg">
-      <main className="flex-1 flex flex-col md:flex-row">
+    <div className="h-screen bg-background flex flex-col font-body-lg overflow-hidden">
+      <main className="flex-1 flex flex-col md:flex-row overflow-y-auto">
         {/* Left Side: Branding / Visuals */}
         <div className="hidden md:flex flex-col w-1/2 p-12 relative overflow-hidden bg-surface-container-lowest border-r border-border-light justify-center">
           <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
@@ -37,12 +108,12 @@ export default function SignIn() {
             <div className="absolute bottom-[-10%] right-[-10%] w-2/3 h-2/3 bg-ai-gradient-end rounded-full blur-[120px]"></div>
           </div>
           <div className="z-10 max-w-lg mx-auto">
-            <div className="flex items-center gap-3 mb-12">
+            <Link to="/" className="flex items-center gap-3 mb-12 hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
                 <span className="material-symbols-outlined text-[24px]">school</span>
               </div>
               <span className="font-display-hero text-headline-md text-primary tracking-tight">Campus Connect</span>
-            </div>
+            </Link>
             <h1 className="font-display-hero text-display-hero text-on-surface mb-6 leading-tight">Your academic journey, unified.</h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant mb-12">
               Access your digital portfolio, seamlessly sync your coding metrics, and discover opportunities powered by intelligent matching.
@@ -74,12 +145,12 @@ export default function SignIn() {
         <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 bg-surface">
           <div className="w-full max-w-md">
             {/* Mobile Branding */}
-            <div className="md:hidden flex items-center justify-center gap-2 mb-10">
+            <Link to="/" className="md:hidden flex items-center justify-center gap-2 mb-10 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary">
                 <span className="material-symbols-outlined text-[20px]">school</span>
               </div>
               <span className="font-display-hero text-headline-sm text-primary">Campus Connect</span>
-            </div>
+            </Link>
 
             <div className="bg-surface-container-lowest p-8 md:p-10 rounded-3xl border border-border-light shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="text-center mb-8">
@@ -155,7 +226,7 @@ export default function SignIn() {
                     />
                     <label htmlFor="remember" className="text-sm text-on-surface-variant cursor-pointer">Remember me</label>
                   </div>
-                  <a href="#" className="text-sm text-primary font-medium hover:underline">Forgot Password?</a>
+                  <button type="button" onClick={() => setShowForgotModal(true)} className="text-sm text-primary font-medium hover:underline">Forgot Password?</button>
                 </div>
 
                 <button
@@ -188,6 +259,124 @@ export default function SignIn() {
           </div>
         </div>
       </main>
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 bg-black/60 z-[200] flex justify-center items-center p-4 backdrop-blur-sm">
+          <div className="bg-surface-container-lowest p-6 md:p-8 rounded-2xl w-full max-w-md shadow-2xl relative border border-border-light">
+            <button 
+              onClick={() => {
+                setShowForgotModal(false);
+                setForgotStep(1);
+                setForgotEmail('');
+                setForgotOtp('');
+                setNewPassword('');
+                setConfirmNewPassword('');
+              }} 
+              className="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors w-8 h-8 flex justify-center items-center rounded-full hover:bg-surface-variant"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+            <h2 className="text-headline-sm font-bold mb-2 text-on-surface">Forgot Password</h2>
+            <p className="text-body-md text-on-surface-variant mb-6">
+              {forgotStep === 1 && "Enter your email to receive a password reset OTP."}
+              {forgotStep === 2 && "Enter the OTP sent to your email."}
+              {forgotStep === 3 && "Set your new password."}
+            </p>
+
+            {forgotStep === 1 && (
+              <form onSubmit={handleRequestOtp} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-on-surface mb-1">Registered Email</label>
+                  <input 
+                    type="email" 
+                    required 
+                    className="w-full p-3 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:border-primary" 
+                    placeholder="Enter your email"
+                    value={forgotEmail} 
+                    onChange={e => setForgotEmail(e.target.value)} 
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={loadingForgot || cooldown > 0} 
+                  className="w-full py-3 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary-container disabled:opacity-50 mt-4 transition-colors"
+                >
+                  {loadingForgot ? 'Sending...' : cooldown > 0 ? `Resend OTP in ${cooldown}s` : 'Send OTP'}
+                </button>
+              </form>
+            )}
+            
+            {forgotStep === 2 && (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-on-surface mb-1">6-Digit OTP</label>
+                  <input 
+                    type="text" 
+                    required 
+                    maxLength={6}
+                    className="w-full p-3 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:border-primary text-center tracking-widest text-lg font-bold" 
+                    placeholder="000000"
+                    value={forgotOtp} 
+                    onChange={e => setForgotOtp(e.target.value)} 
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={loadingForgot} 
+                  className="w-full py-3 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary-container disabled:opacity-50 mt-4 transition-colors"
+                >
+                  {loadingForgot ? 'Verifying...' : 'Verify OTP'}
+                </button>
+                <div className="text-center mt-2">
+                  <button 
+                    type="button" 
+                    onClick={handleRequestOtp} 
+                    disabled={loadingForgot || cooldown > 0} 
+                    className="text-sm text-primary font-medium hover:underline disabled:opacity-50 disabled:no-underline"
+                  >
+                    {cooldown > 0 ? `Resend OTP in ${cooldown}s` : 'Resend OTP'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {forgotStep === 3 && (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-on-surface mb-1">New Password</label>
+                  <input 
+                    type="password" 
+                    required 
+                    className="w-full p-3 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:border-primary" 
+                    placeholder="Enter new password"
+                    value={newPassword} 
+                    onChange={e => setNewPassword(e.target.value)} 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-on-surface mb-1">Confirm New Password</label>
+                  <input 
+                    type="password" 
+                    required 
+                    className="w-full p-3 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:border-primary" 
+                    placeholder="Confirm new password"
+                    value={confirmNewPassword} 
+                    onChange={e => setConfirmNewPassword(e.target.value)} 
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={loadingForgot} 
+                  className="w-full py-3 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary-container disabled:opacity-50 mt-4 transition-colors"
+                >
+                  {loadingForgot ? 'Resetting...' : 'Reset Password'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Standard Footer */}
       <footer className="w-full border-t border-border-light bg-surface py-6 px-gutter flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-on-surface-variant">

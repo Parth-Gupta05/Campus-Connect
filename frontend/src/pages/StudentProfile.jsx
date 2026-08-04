@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
+import ImageCropperModal from '../components/ImageCropperModal';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
@@ -141,6 +143,10 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
   const { showToast } = useToast();
   const [skillsStr, setSkillsStr] = useState(profile?.resumeDetails?.skills?.join(', ') || '');
   const [portfolioUrl, setPortfolioUrl] = useState(profile?.resumeDetails?.portfolioUrl || '');
+  const [githubUsername, setGithubUsername] = useState(profile?.githubUsername || '');
+  const [leetcodeUsername, setLeetcodeUsername] = useState(profile?.leetcodeUsername || '');
+  const [linkedInUrl, setLinkedInUrl] = useState(profile?.linkedInUrl || '');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [education, setEducation] = useState(profile?.resumeDetails?.education || []);
   const [experience, setExperience] = useState(profile?.resumeDetails?.experience || []);
   const [projects, setProjects] = useState(profile?.resumeDetails?.projects || []);
@@ -178,7 +184,21 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    const handlesChanged = 
+      githubUsername !== (profile?.githubUsername || '') ||
+      leetcodeUsername !== (profile?.leetcodeUsername || '') ||
+      linkedInUrl !== (profile?.linkedInUrl || '');
+
+    if (handlesChanged && !showConfirmModal) {
+      setShowConfirmModal(true);
+      return;
+    }
+    
+    await executeSave();
+  };
+
+  const executeSave = async () => {
     setLoading(true);
     try {
       const payload = {
@@ -187,16 +207,20 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
         education,
         experience,
         projects,
-        achievements
+        achievements,
+        githubUsername,
+        leetcodeUsername,
+        linkedInUrl
       };
       const res = await axios.put('/user/portfolio', payload);
       onComplete(res.data.user);
       onClose();
       showToast('Resume saved successfully', 'success');
     } catch (err) {
-      showToast('Failed to save resume details', 'error');
+      showToast(err.response?.data?.message || 'Failed to save resume details', 'error');
     } finally {
       setLoading(false);
+      setShowConfirmModal(false);
     }
   };
 
@@ -278,10 +302,38 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
 
         <form onSubmit={handleSave} className="space-y-8">
           {/* Portfolio Link Section */}
-          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light">
-            <h3 className="font-bold text-label-lg text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary">link</span> Personal Portfolio</h3>
-            <input type="url" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="https://yourportfolio.com" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} />
-            <p className="text-xs text-on-surface-variant mt-2">Link to your personal website or portfolio.</p>
+          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
+            <h3 className="font-bold text-label-lg text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary">link</span> Online Profiles</h3>
+            
+            <div>
+              <label className="block text-sm font-medium text-on-surface mb-1">Personal Portfolio</label>
+              <input type="url" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="https://yourportfolio.com" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-on-surface mb-1">GitHub Username</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"><FiGithub /></span>
+                  <input type="text" className="w-full pl-9 p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="octocat" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-on-surface mb-1">LeetCode Username</label>
+                <div className="relative">
+                  <input type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="johndoe" value={leetcodeUsername} onChange={(e) => setLeetcodeUsername(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-on-surface mb-1">LinkedIn Profile URL</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"><FiLinkedin /></span>
+                  <input type="url" className="w-full pl-9 p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="https://linkedin.com/in/..." value={linkedInUrl} onChange={(e) => setLinkedInUrl(e.target.value)} />
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* Skills Section */}
@@ -393,6 +445,7 @@ export default function StudentProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarCropSrc, setAvatarCropSrc] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
   const [selectedAchievement, setSelectedAchievement] = useState(null);
@@ -411,14 +464,21 @@ export default function StudentProfile() {
     fetchProfile();
   }, []);
 
-  const handleAvatarUpload = async (e) => {
+  const handleAvatarUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const reader = new FileReader();
+    reader.addEventListener('load', () => setAvatarCropSrc(reader.result?.toString() || ''));
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset input
+  };
 
-    const formData = new FormData();
-    formData.append('avatar', file);
-
+  const handleAvatarCropComplete = async (croppedBlob) => {
+    setAvatarCropSrc(null);
     setUploadingAvatar(true);
+    const formData = new FormData();
+    formData.append('avatar', croppedBlob);
+
     try {
       const res = await axios.post('/user/upload-avatar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -427,7 +487,7 @@ export default function StudentProfile() {
       showToast('Profile picture updated successfully!', 'success');
     } catch (err) {
       console.error('Error uploading avatar:', err);
-      showToast(err.response?.data?.message || 'Failed to upload avatar', 'error');
+      showToast(err.response?.data?.message || 'Failed to update profile picture', 'error');
     } finally {
       setUploadingAvatar(false);
     }
@@ -438,11 +498,7 @@ export default function StudentProfile() {
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
         <Sidebar />
         <main className="flex-1 relative overflow-y-auto">
-          <header className="sticky top-0 w-full z-50 flex justify-between items-center px-gutter py-4 bg-surface/80 border-b border-outline-variant">
-            <div className="h-8 w-40 skeleton-box delay-100"></div>
-            <div className="w-8 h-8 rounded-full skeleton-box delay-100"></div>
-          </header>
-          
+          <Topbar />
           <div className="pt-8 pb-16 px-gutter max-w-container-max mx-auto w-full space-y-8">
             <section className="flex flex-col md:flex-row gap-6">
               <div className="flex-1 h-48 skeleton-box delay-200"></div>
@@ -549,21 +605,19 @@ export default function StudentProfile() {
           </div>
         </div>
       )}
-      
-      <main className="flex-1 relative overflow-y-auto">
-        <header className="sticky top-0 w-full z-50 flex justify-between items-center px-gutter py-4 bg-surface/80 backdrop-blur-xl border-b border-outline-variant shadow-sm">
-          <div className="font-display-hero text-headline-md font-bold text-primary tracking-tight">My Profile</div>
-          <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-sm overflow-hidden border border-border-light">
-              {profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="material-symbols-outlined text-[20px]">person</span>
-              )}
-            </div>
-          </div>
-        </header>
 
+      {avatarCropSrc && (
+        <ImageCropperModal
+          imageSrc={avatarCropSrc}
+          aspectRatio={1}
+          onCropComplete={handleAvatarCropComplete}
+          onCancel={() => setAvatarCropSrc(null)}
+        />
+      )}
+      
+      <main className="flex-1 relative overflow-y-auto bg-surface">
+        <Topbar />
+        
         {profile.isProfileComplete && (
           <div className="pt-8 pb-16 px-gutter max-w-container-max mx-auto w-full space-y-8">
             {/* Header Section */}
@@ -611,6 +665,14 @@ export default function StudentProfile() {
                       <FaLinkedin className="text-[18px]" /> LinkedIn
                     </a>
                   )}
+                  {profile.resumeUrl && (
+                    <button 
+                      onClick={() => setShowPdf(true)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">visibility</span> Resume
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -641,24 +703,6 @@ export default function StudentProfile() {
                   >
                     <span className="material-symbols-outlined text-[18px]">edit_document</span> Update Resume
                   </button>
-                  {profile.resumeDetails?.portfolioUrl && (
-                    <a 
-                      href={profile.resumeDetails.portfolioUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full bg-surface-variant text-on-surface-variant py-2 rounded-lg font-button-text hover:bg-outline-variant transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">language</span> View Portfolio
-                    </a>
-                  )}
-                  {profile.resumeUrl && (
-                    <button 
-                      onClick={() => setShowPdf(true)}
-                      className="w-full bg-surface-variant text-on-surface-variant py-2 rounded-lg font-button-text hover:bg-outline-variant transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span> View PDF
-                    </button>
-                  )}
                 </div>
               </div>
             </section>

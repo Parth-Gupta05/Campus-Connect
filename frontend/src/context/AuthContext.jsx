@@ -11,9 +11,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Axios interceptor to add access token to requests
+  // Axios interceptors to add access token and handle 401s globally
   useEffect(() => {
-    const interceptor = axios.interceptors.request.use(
+    let isRefreshing = false;
+    let refreshSubscribers = [];
+
+    const subscribeTokenRefresh = (cb) => {
+      refreshSubscribers.push(cb);
+    };
+
+    const onRefreshed = (token) => {
+      refreshSubscribers.forEach((cb) => cb(token));
+      refreshSubscribers = [];
+    };
+
+    const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('accessToken');
         if (token) {
@@ -23,7 +35,68 @@ export const AuthProvider = ({ children }) => {
       },
       (error) => Promise.reject(error)
     );
-    return () => axios.interceptors.request.eject(interceptor);
+
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (
+          error.response && 
+          error.response.status === 401 && 
+          originalRequest &&
+          !originalRequest.url.includes('/auth/refresh') && 
+          !originalRequest.url.includes('/auth/login') &&
+          !originalRequest._retry
+        ) {
+          originalRequest._retry = true;
+
+          if (!isRefreshing) {
+            isRefreshing = true;
+            try {
+              const res = await axios.post('/auth/refresh');
+              const newToken = res.data.accessToken;
+              localStorage.setItem('accessToken', newToken);
+              
+              const payload = JSON.parse(atob(newToken.split('.')[1]));
+              setUser({ id: payload.id, role: payload.role });
+
+              isRefreshing = false;
+              onRefreshed(newToken);
+              
+              originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+              return axios(originalRequest);
+            } catch (refreshError) {
+              isRefreshing = false;
+              localStorage.removeItem('accessToken');
+              setUser(null);
+              return Promise.reject(refreshError);
+            }
+          }
+
+          // If a refresh is already in progress, queue the request
+          return new Promise((resolve) => {
+            subscribeTokenRefresh((token) => {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`;
+              resolve(axios(originalRequest));
+            });
+          });
+        }
+        
+        // If it's a 401 from the refresh endpoint itself
+        if (error.response && error.response.status === 401 && originalRequest && originalRequest.url.includes('/auth/refresh')) {
+           localStorage.removeItem('accessToken');
+           setUser(null);
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
   }, []);
 
   // Try to refresh token on initial load

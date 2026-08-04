@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
 import { FiLoader, FiCalendar, FiMapPin, FiMessageSquare, FiUsers, FiCheck } from 'react-icons/fi';
 import { useToast } from '../context/ToastContext';
 import { AuthContext } from '../context/AuthContext';
@@ -74,6 +75,7 @@ export default function ClubProfile() {
     <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
+        <Topbar />
         {/* Banner Area */}
         <div className="relative h-48 md:h-72 bg-surface-variant">
           {club.bannerPhoto ? (

@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { authMiddleware } = require('../middleware/authMiddleware');
-const { getProfile, updateProfile, refreshMetrics, updatePortfolio, uploadAvatar, uploadCertFile, getResumePdf, approveAchievement, discardAchievement, addManualAchievement } = require('../controllers/userController');
+const { getProfile, updateProfile, refreshMetrics, updatePortfolio, uploadAvatar, uploadCertFile, getResumePdf, approveAchievement, discardAchievement, addManualAchievement, getGithubHeatmap } = require('../controllers/userController');
 const { uploadAndParseResume } = require('../controllers/resumeController');
 
 const router = express.Router();
@@ -11,6 +11,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.use(authMiddleware);
 
 router.get('/profile', getProfile);
+router.get('/github-heatmap', getGithubHeatmap);
 router.put('/profile', updateProfile);
 router.post('/refresh-metrics', refreshMetrics);
 router.put('/portfolio', updatePortfolio);

@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Announcement = require('../models/Announcement');
 const { authMiddleware, clubMiddleware } = require('../middleware/authMiddleware');
 const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
+const { broadcastNotification } = require('../utils/notificationService');
 
 // Get Club Profile (For the logged-in club)
 router.get('/profile', authMiddleware, clubMiddleware, async (req, res) => {
@@ -21,7 +22,7 @@ router.get('/profile', authMiddleware, clubMiddleware, async (req, res) => {
 // Update Club Profile
 router.put('/profile', authMiddleware, clubMiddleware, async (req, res) => {
   try {
-    const { name, description, profilePhoto, bannerPhoto } = req.body;
+    const { name, description, profilePhoto, bannerPhoto, socials } = req.body;
     const club = await Club.findById(req.user.id);
     if (!club) return res.status(404).json({ message: 'Club not found' });
 
@@ -34,6 +35,13 @@ router.put('/profile', authMiddleware, clubMiddleware, async (req, res) => {
     if (bannerPhoto !== undefined && bannerPhoto !== club.bannerPhoto) {
       if (club.bannerPhoto) await deleteCloudinaryAsset(club.bannerPhoto);
       club.bannerPhoto = bannerPhoto;
+    }
+    
+    if (socials) {
+      if (!club.socials) club.socials = {};
+      if (socials.instagram !== undefined) club.socials.instagram = socials.instagram;
+      if (socials.facebook !== undefined) club.socials.facebook = socials.facebook;
+      if (socials.linkedin !== undefined) club.socials.linkedin = socials.linkedin;
     }
 
     await club.save();
@@ -143,6 +151,21 @@ router.post('/announcements', authMiddleware, clubMiddleware, async (req, res) =
     });
 
     await announcement.save();
+
+    // Broadcast to all students
+    const club = await Club.findById(req.user.id);
+    const students = await User.find({ role: 'student' }).select('_id');
+    const studentIds = students.map(s => s._id);
+
+    await broadcastNotification(studentIds, 'User', {
+      type: 'announcement',
+      title: `New Announcement from ${club?.name || 'a club'}`,
+      message: title,
+      link: '/events', // Send them to the feed
+      sender: req.user.id,
+      senderModel: 'Club'
+    });
+
     res.status(201).json({ message: 'Announcement created successfully', announcement });
   } catch (error) {
     console.error(error);

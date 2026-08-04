@@ -57,8 +57,8 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-body-lg">
-      <main className="flex-1 flex flex-col md:flex-row">
+    <div className="h-screen bg-background flex flex-col font-body-lg overflow-hidden">
+      <main className="flex-1 flex flex-col md:flex-row overflow-y-auto">
         {/* Left Side (Visuals) */}
         <div className="hidden md:flex flex-col w-1/2 p-12 relative overflow-hidden bg-surface-container-lowest border-r border-border-light justify-center">
           <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
@@ -66,12 +66,12 @@ export default function SignUp() {
             <div className="absolute bottom-[-10%] right-[-10%] w-2/3 h-2/3 bg-ai-gradient-end rounded-full blur-[120px]"></div>
           </div>
           <div className="z-10 max-w-lg mx-auto">
-            <div className="flex items-center gap-3 mb-12">
+            <Link to="/" className="flex items-center gap-3 mb-12 hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
                 <span className="material-symbols-outlined text-[24px]">school</span>
               </div>
               <span className="font-display-hero text-headline-md text-primary tracking-tight">Campus Connect</span>
-            </div>
+            </Link>
             <h1 className="font-display-hero text-display-hero text-on-surface mb-6 leading-tight">Start your legacy.</h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant mb-12">
               Join thousands of students building their digital portfolios and tracking their engineering metrics in one unified platform.
@@ -103,12 +103,12 @@ export default function SignUp() {
         <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 bg-surface">
           <div className="w-full max-w-md">
             {/* Mobile Branding */}
-            <div className="md:hidden flex items-center justify-center gap-2 mb-10">
+            <Link to="/" className="md:hidden flex items-center justify-center gap-2 mb-10 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary">
                 <span className="material-symbols-outlined text-[20px]">school</span>
               </div>
               <span className="font-display-hero text-headline-sm text-primary">Campus Connect</span>
-            </div>
+            </Link>
 
             <div className="bg-surface-container-lowest p-8 md:p-10 rounded-3xl border border-border-light shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="text-center mb-8">

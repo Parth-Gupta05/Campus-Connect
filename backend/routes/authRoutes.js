@@ -341,4 +341,101 @@ router.post('/logout', (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
+// Forgot Password Route
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Admins cannot reset password via OTP' });
+    }
+
+    // Cooldown check (60 seconds)
+    if (user.resetOtpLastSent && Date.now() - user.resetOtpLastSent.getTime() < 60000) {
+      return res.status(429).json({ message: 'Please wait 60 seconds before requesting another OTP' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = hashPassword(otp);
+
+    user.resetOtp = hashedOtp;
+    user.resetOtpExpiry = new Date(Date.now() + 15 * 60000); // 15 mins
+    user.resetOtpLastSent = new Date();
+    await user.save();
+
+    const { sendPasswordResetEmail } = require('../utils/emailService');
+    await sendPasswordResetEmail(user.email, otp);
+
+    res.json({ message: 'OTP sent to your email' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Verify OTP Route
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user.resetOtp || !user.resetOtpExpiry || user.resetOtpExpiry < new Date()) {
+      return res.status(400).json({ message: 'OTP is invalid or expired' });
+    }
+
+    const hashedProvidedOtp = hashPassword(otp);
+    if (user.resetOtp !== hashedProvidedOtp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    res.json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Reset Password Route
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user.resetOtp || !user.resetOtpExpiry || user.resetOtpExpiry < new Date()) {
+      return res.status(400).json({ message: 'OTP is invalid or expired' });
+    }
+
+    // Verify OTP
+    const hashedProvidedOtp = hashPassword(otp);
+    if (user.resetOtp !== hashedProvidedOtp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    // Update Password
+    user.password = hashPassword(newPassword);
+    user.resetOtp = null;
+    user.resetOtpExpiry = null;
+    user.resetOtpLastSent = null;
+    await user.save();
+
+    res.json({ message: 'Password reset successfully. You can now log in.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
