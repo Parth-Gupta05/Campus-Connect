@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
 import { FiLoader, FiSearch, FiUsers } from 'react-icons/fi';
 
 export default function Clubs() {
@@ -28,8 +29,9 @@ export default function Clubs() {
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
       <Sidebar />
-      <main className="flex-1 p-6 md:p-12 overflow-y-auto">
-        <div className="max-w-container-max mx-auto">
+      <main className="flex-1 overflow-y-auto">
+        <Topbar />
+        <div className="p-4 sm:p-8 max-w-container-max mx-auto space-y-6 sm:space-y-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h1 className="font-display-hero text-display-md text-on-surface font-bold tracking-tight">College Clubs</h1>

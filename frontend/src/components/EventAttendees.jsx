@@ -84,11 +84,18 @@ export default function EventAttendees({ eventId, onClose }) {
   const handleExportExcel = () => {
     if (!event) return;
 
+    const extractDiv = (uid) => {
+      if (!uid) return '';
+      const match = uid.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
+      return match ? match[3].toUpperCase() : '';
+    };
+
     const data = event.registeredStudents.map(student => ({
       Name: student.studentId?.name || 'Unknown',
       Email: student.studentId?.email || '',
       UID: student.studentId?.uid || '',
       Branch: student.studentId?.branch || '',
+      Division: extractDiv(student.studentId?.uid) || student.studentId?.division || '',
       Semester: student.studentId?.currentSem || '',
       Status: student.attendanceStatus.toUpperCase()
     }));

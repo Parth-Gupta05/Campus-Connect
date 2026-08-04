@@ -5,6 +5,7 @@ const User = require('../models/User');
 const { authMiddleware, clubMiddleware } = require('../middleware/authMiddleware');
 const crypto = require('crypto');
 const { sendEventRegistrationEmail } = require('../utils/emailService');
+const { createNotification } = require('../utils/notificationService');
 
 // Create Event (Club only)
 router.post('/', authMiddleware, clubMiddleware, async (req, res) => {
@@ -138,6 +139,20 @@ router.post('/:eventId/register', authMiddleware, async (req, res) => {
     const student = await User.findById(req.user.id);
     if (student && student.email) {
       await sendEventRegistrationEmail(student.email, student.name, event.title, qrToken);
+    }
+
+    // Notify the club
+    if (student) {
+      await createNotification({
+        recipient: event.clubId,
+        recipientModel: 'Club',
+        type: 'event_registration',
+        title: 'New Event Registration',
+        message: `${student.name} registered for ${event.title}`,
+        link: `/club`, // Club dashboard
+        sender: student._id,
+        senderModel: 'User'
+      });
     }
 
     console.log(`[Event Registration] Generated QR Code and sent email for student ${req.user.id}: ${qrToken}`);

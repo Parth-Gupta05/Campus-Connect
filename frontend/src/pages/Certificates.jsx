@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FiLoader } from 'react-icons/fi';
@@ -134,8 +135,10 @@ export default function Certificates() {
   return (
     <div className="flex min-h-screen bg-background text-on-surface font-body-lg">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-gutter md:p-12 max-w-container-max mx-auto space-y-8">
+      <main className="flex-1 overflow-y-auto bg-surface-container-lowest">
+        <Topbar />
+        
+        <div className="max-w-6xl mx-auto p-4 sm:p-8 space-y-8">
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="font-display-hero text-display-hero text-on-surface">Command Center: Certificates</h1>
