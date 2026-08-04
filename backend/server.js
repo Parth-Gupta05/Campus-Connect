@@ -9,6 +9,7 @@ const userRoutes = require('./routes/userRoutes');
 const clubRoutes = require('./routes/clubRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -36,6 +37,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/clubs', clubRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
   res.send('Backend is running!');
