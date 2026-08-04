@@ -49,7 +49,7 @@ export default function Sidebar() {
   const studentLinks = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Profile', icon: 'person', path: '/profile' },
-    { name: 'Opportunities', icon: 'work', path: '#' },
+    { name: 'Opportunities', icon: 'work', path: '/opportunities' },
     { name: 'Events', icon: 'event', path: '#' },
     { name: 'Certificates', icon: 'school', path: '/certificates' },
   ];

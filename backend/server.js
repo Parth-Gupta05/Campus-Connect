@@ -6,6 +6,11 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const opportunityRoutes = require('./routes/opportunity');
+const dimensionRouter = require('./routes/algodimension');
+
+const Opportunity=require("./models/Opportunities");
+const Applicant=require("./models/Applicants");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -26,6 +31,8 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/opportunities', opportunityRoutes);
+app.use('/api', dimensionRouter);
 
 app.get('/', (req, res) => {
   res.send('Backend is running!');

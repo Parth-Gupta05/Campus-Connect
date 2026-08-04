@@ -5,6 +5,7 @@ import SignUp from './pages/SignUp';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentProfile from './pages/StudentProfile';
 import Certificates from './pages/Certificates';
+import Opportunities from './pages/Opportunities';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -37,6 +38,12 @@ function App() {
           <Route path="/profile" element={
             <ProtectedRoute allowedRoles={['student']}>
               <StudentProfile />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/opportunities" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <Opportunities />
             </ProtectedRoute>
           } />
 
