@@ -77,7 +77,7 @@ export default function Sidebar() {
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Profile', icon: 'person', path: '/profile' },
     { name: 'Clubs', icon: 'groups', path: '/clubs' },
-    { name: 'Opportunities', icon: 'work', path: '#' },
+    { name: 'Opportunities', icon: 'work', path: '/opportunities' },
     { name: 'Events', icon: 'event', path: '/events' },
     { name: 'Certificates', icon: 'school', path: '/certificates' },
   ];
