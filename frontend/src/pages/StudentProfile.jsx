@@ -7,7 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
-import { FiLoader } from 'react-icons/fi';
+import { FiLoader, FiGithub, FiLinkedin, FiX } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
 const formatExternalUrl = (url) => {

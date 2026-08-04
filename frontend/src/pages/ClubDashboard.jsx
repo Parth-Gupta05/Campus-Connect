@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { FiLoader, FiEdit2, FiUsers, FiCalendar, FiMessageSquare, FiPlus, FiTrash2, FiCamera } from 'react-icons/fi';
+import { FiLoader, FiEdit2, FiUsers, FiCalendar, FiMessageSquare, FiPlus, FiTrash2, FiCamera, FiX } from 'react-icons/fi';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import EventAttendees from '../components/EventAttendees';

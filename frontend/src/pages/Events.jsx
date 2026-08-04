@@ -116,7 +116,11 @@ export default function Events() {
             {activeTab === 'events' ? (
               events.length > 0 ? (
                 events.map(ev => {
-                  const isRegistered = ev.registeredStudents?.some(s => s.studentId === user?._id || s.studentId?._id === user?._id);
+                  const userId = user?.id || user?._id;
+                  const isRegistered = ev.registeredStudents?.some(s => {
+                    const sId = s.studentId?._id || s.studentId;
+                    return sId?.toString() === userId?.toString();
+                  });
                   const isRegistering = registeringEventId === ev._id;
 
                   return (
