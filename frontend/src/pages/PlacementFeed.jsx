@@ -121,35 +121,26 @@ export default function PlacementFeed() {
         <Topbar />
 
         <div className="max-w-5xl w-full mx-auto px-4 md:px-8 py-8 space-y-6">
-          {/* Hero Banner Header */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-primary via-primary-container to-secondary-container rounded-3xl p-6 md:p-8 text-on-primary shadow-md">
-            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              <div className="space-y-2 max-w-xl">
-                <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider">
-                  Community Hub
-                </span>
-                <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-                  Placement &amp; Interview Experiences
-                </h1>
-                <p className="text-sm md:text-base text-white/80 leading-relaxed">
-                  Real interview questions, coding round breakdowns, HR insights, and packages shared by seniors and peers.
-                </p>
-              </div>
-
-              {/* Share Experience Button */}
-              <Link
-                to="/placements/create"
-                className="shrink-0 flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-surface-container-lowest text-primary hover:bg-white text-sm font-extrabold shadow-lg hover:scale-105 transition-all cursor-pointer"
-              >
-                <FiPlus className="text-lg" />
-                <span>Share Experience</span>
-              </Link>
+          {/* Top Header */}
+          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2">
+            <div>
+              <h1 className="font-display-hero text-display-hero text-on-surface flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-primary text-3xl">military_tech</span>
+                Placement &amp; Interview Experiences
+              </h1>
+              <p className="text-body-lg text-on-surface-variant mt-1.5">
+                Real interview questions, coding round breakdowns, HR insights, and packages shared by seniors and peers.
+              </p>
             </div>
 
-            {/* Subtle decorative background circles */}
-            <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-            <div className="absolute -left-12 -top-12 w-48 h-48 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
-          </div>
+            <Link
+              to="/placements/create"
+              className="shrink-0 bg-primary text-on-primary px-6 py-3 rounded-xl font-button-text hover:bg-on-primary-fixed transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-lg">add</span>
+              <span>Share Experience</span>
+            </Link>
+          </header>
 
           {/* Filter Bar */}
           <PlacementFilterBar

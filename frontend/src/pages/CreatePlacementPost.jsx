@@ -340,11 +340,12 @@ export default function CreatePlacementPost() {
           </div>
 
           {/* Header Title */}
-          <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-8 shadow-xs">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-on-surface mb-2">
-              {isEditing ? 'Edit Placement Experience' : 'Share Your Placement & Interview Experience'}
+          <div className="pb-2">
+            <h1 className="font-display-hero text-display-hero text-on-surface flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-primary text-3xl">edit_note</span>
+              {isEditing ? 'Edit Placement Experience' : 'Share Placement Experience'}
             </h1>
-            <p className="text-sm text-on-surface-variant leading-relaxed">
+            <p className="text-body-lg text-on-surface-variant mt-1.5 leading-relaxed">
               Help your juniors and peers prepare by sharing your selection process, online test questions, interview rounds, package details, and preparation strategy.
             </p>
           </div>
