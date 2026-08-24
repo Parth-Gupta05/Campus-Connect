@@ -43,6 +43,18 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  verificationCode: {
+    type: String,
+    default: '',
+  },
+  githubVerified: {
+    type: Boolean,
+    default: false,
+  },
+  leetcodeVerified: {
+    type: Boolean,
+    default: false,
+  },
   linkedInUrl: {
     type: String,
     default: '',

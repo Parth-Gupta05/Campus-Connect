@@ -2,6 +2,7 @@ const User = require('../models/User');
 const { getgithubdata, getleetcodedata, getLinkedInData, getLinkedInPosts, filterAchievementsWithGemini, getGithubContributions } = require('./algodimension');
 const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
 const cloudinary = require('cloudinary').v2;
+const crypto = require('crypto');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -15,6 +16,12 @@ const getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    if (!user.verificationCode) {
+      user.verificationCode = `cc-verify-${crypto.randomBytes(4).toString('hex')}`;
+      await user.save();
+    }
+
     res.json(user);
   } catch (error) {
     console.error('Error fetching profile:', error);
@@ -409,6 +416,69 @@ const getGithubHeatmap = async (req, res) => {
   }
 };
 
+const verifyPlatform = async (req, res) => {
+  try {
+    const { platform } = req.body;
+    const user = await User.findById(req.user.id);
+    
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user.verificationCode) return res.status(400).json({ message: 'No verification code found for user. Please generate one first.' });
+
+    let isVerified = false;
+
+    if (platform === 'github') {
+      if (!user.githubUsername) return res.status(400).json({ message: 'No GitHub username linked' });
+      const githubData = await getgithubdata(user.githubUsername);
+      if (githubData?.profile?.bio && githubData.profile.bio.includes(user.verificationCode)) {
+        user.githubVerified = true;
+        isVerified = true;
+      }
+    } else if (platform === 'leetcode') {
+      if (!user.leetcodeUsername) return res.status(400).json({ message: 'No LeetCode username linked' });
+      const leetcodeData = await getleetcodedata(user.leetcodeUsername);
+      if (leetcodeData?.profile?.about && leetcodeData.profile.about.includes(user.verificationCode)) {
+        user.leetcodeVerified = true;
+        isVerified = true;
+      } else if (leetcodeData?.profile?.summary && leetcodeData.profile.summary.includes(user.verificationCode)) {
+        // Fallback depending on API field names
+        user.leetcodeVerified = true;
+        isVerified = true;
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid or unsupported platform for verification' });
+    }
+
+    if (isVerified) {
+      await user.save();
+      const userResponse = user.toObject();
+      delete userResponse.password;
+      return res.json({ message: `${platform} verified successfully!`, user: userResponse });
+    } else {
+      return res.status(400).json({ message: `Verification code not found in your ${platform} profile bio/about section.` });
+    }
+  } catch (error) {
+    console.error('Error verifying platform:', error);
+    res.status(500).json({ message: 'Server error during verification' });
+  }
+};
+
+const generateVerificationCode = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.verificationCode = `cc-verify-${crypto.randomBytes(4).toString('hex')}`;
+    await user.save();
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    res.json({ message: 'Verification code generated', user: userResponse });
+  } catch (error) {
+    console.error('Error generating code:', error);
+    res.status(500).json({ message: 'Server error generating code' });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -420,5 +490,7 @@ module.exports = {
   approveAchievement,
   discardAchievement,
   addManualAchievement,
-  getGithubHeatmap
+  getGithubHeatmap,
+  verifyPlatform,
+  generateVerificationCode
 };

@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { authMiddleware } = require('../middleware/authMiddleware');
-const { getProfile, updateProfile, refreshMetrics, updatePortfolio, uploadAvatar, uploadCertFile, getResumePdf, approveAchievement, discardAchievement, addManualAchievement, getGithubHeatmap } = require('../controllers/userController');
+const { getProfile, updateProfile, refreshMetrics, updatePortfolio, uploadAvatar, uploadCertFile, getResumePdf, approveAchievement, discardAchievement, addManualAchievement, getGithubHeatmap, verifyPlatform, generateVerificationCode } = require('../controllers/userController');
 const { uploadAndParseResume } = require('../controllers/resumeController');
 
 const router = express.Router();
@@ -22,4 +22,6 @@ router.get('/portfolio/resume/pdf', getResumePdf);
 router.post('/achievements/approve', approveAchievement);
 router.post('/achievements/discard', discardAchievement);
 router.post('/achievements/manual', addManualAchievement);
+router.post('/verify-platform', verifyPlatform);
+router.post('/generate-verification-code', generateVerificationCode);
 module.exports = router;
