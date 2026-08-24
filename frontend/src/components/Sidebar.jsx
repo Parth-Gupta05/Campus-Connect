@@ -76,6 +76,7 @@ export default function Sidebar() {
   const studentLinks = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Profile', icon: 'person', path: '/profile' },
+    { name: 'Placements', icon: 'military_tech', path: '/placements' },
     { name: 'Clubs', icon: 'groups', path: '/clubs' },
     { name: 'Opportunities', icon: 'work', path: '/opportunities' },
     { name: 'Events', icon: 'event', path: '/events' },

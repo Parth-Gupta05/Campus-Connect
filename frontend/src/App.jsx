@@ -10,6 +10,9 @@ import ClubDashboard from './pages/ClubDashboard';
 import Clubs from './pages/Clubs';
 import ClubProfile from './pages/ClubProfile';
 import Events from './pages/Events';
+import PlacementFeed from './pages/PlacementFeed';
+import PlacementPostDetail from './pages/PlacementPostDetail';
+import CreatePlacementPost from './pages/CreatePlacementPost';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -48,6 +51,30 @@ function App() {
           <Route path="/opportunities" element={
             <ProtectedRoute allowedRoles={['student']}>
               <Opportunities />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/placements" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <PlacementFeed />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/placements/create" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <CreatePlacementPost />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/placements/edit/:id" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <CreatePlacementPost />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/placements/:id" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <PlacementPostDetail />
             </ProtectedRoute>
           } />
 

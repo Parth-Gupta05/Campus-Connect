@@ -452,6 +452,7 @@ export default function StudentProfile() {
   const [verifyingPlatform, setVerifyingPlatform] = useState(null);
   const [verifyingLoad, setVerifyingLoad] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
+  const [userPlacementPosts, setUserPlacementPosts] = useState([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -466,6 +467,14 @@ export default function StudentProfile() {
     };
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    if (profile?._id) {
+      axios.get(`/placements/user/${profile._id}`)
+        .then(res => setUserPlacementPosts(res.data || []))
+        .catch(err => console.error('Failed to load user placement posts:', err));
+    }
+  }, [profile?._id]);
 
   const handleGenerateCodeAndVerify = async (platform) => {
     try {
@@ -488,6 +497,15 @@ export default function StudentProfile() {
       showToast(err.response?.data?.message || 'Verification failed', 'error');
     } finally {
       setVerifyingLoad(false);
+    }
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(profile.verificationCode);
+      showToast('Verification code copied to clipboard!', 'success');
+    } catch (err) {
+      showToast('Failed to copy code. Please copy it manually.', 'error');
     }
   };
 
@@ -666,10 +684,13 @@ export default function StudentProfile() {
             ) : (
               <>
                 <p className="text-body-md text-on-surface-variant mb-6 leading-relaxed">
-                  To verify your account, please temporarily add the following code to your <strong>{verifyingPlatform === 'github' ? 'bio' : 'about'}</strong> section on {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'}.
+                  To verify your account, please temporarily add the following code to your <strong>{verifyingPlatform === 'github' ? 'bio' : 'readme'}</strong> section on {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'}.
                 </p>
-                <div className="bg-surface p-4 rounded-lg font-mono text-center text-xl font-bold border border-border-light mb-6 text-primary select-all">
-                  {profile.verificationCode}
+                <div className="bg-surface p-4 rounded-lg font-mono text-xl font-bold border border-border-light mb-6 text-primary flex items-center justify-between">
+                  <span className="select-all">{profile.verificationCode}</span>
+                  <button onClick={handleCopyCode} className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-md hover:bg-surface-variant flex items-center justify-center" title="Copy to clipboard">
+                    <span className="material-symbols-outlined text-[20px]">content_copy</span>
+                  </button>
                 </div>
                 <button 
                   onClick={() => handleVerify(verifyingPlatform)} 
@@ -992,6 +1013,94 @@ export default function StudentProfile() {
                   ) : (
                     <div className="bg-surface-container-low border border-border-light border-dashed rounded-xl p-8 text-center text-on-surface-variant">
                       No achievements yet.
+                    </div>
+                  )}
+                </section>
+
+                {/* Placed Students Posts Section */}
+                <section className="mt-10 pt-8 border-t border-border-light">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary">military_tech</span>
+                        {profile.name ? `${profile.name}'s Posts` : "Placement Experiences"}
+                      </h2>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        Interview rounds, online assessments, and placement guides shared with the community.
+                      </p>
+                    </div>
+
+                    <Link
+                      to="/placements/create"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary hover:bg-primary-container text-xs font-bold transition-all shadow-xs"
+                    >
+                      <span className="material-symbols-outlined text-sm">add</span> Share Experience
+                    </Link>
+                  </div>
+
+                  {userPlacementPosts.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {userPlacementPosts.map((post) => (
+                        <div
+                          key={post._id}
+                          className="bg-surface-container-lowest border border-border-light hover:border-primary/40 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-surface-container-low border border-border-light p-1 flex items-center justify-center shrink-0">
+                                  {post.company?.logoUrl ? (
+                                    <img src={post.company.logoUrl} alt={post.company.name} className="w-full h-full object-contain" />
+                                  ) : (
+                                    <span className="font-bold text-xs text-primary">{(post.company?.name || 'C').charAt(0)}</span>
+                                  )}
+                                </div>
+                                <div>
+                                  <h3 className="font-bold text-sm text-on-surface">{post.company?.name}</h3>
+                                  <span className="text-xs text-on-surface-variant font-medium">{post.role}</span>
+                                </div>
+                              </div>
+
+                              {post.outcome === 'selected' && (
+                                <span className="px-2 py-0.5 rounded-md bg-green-500/10 text-green-700 font-bold text-[10px]">
+                                  Selected
+                                </span>
+                              )}
+                            </div>
+
+                            <Link to={`/placements/${post._id}`} className="block group">
+                              <h4 className="font-bold text-sm text-on-surface group-hover:text-primary transition-colors line-clamp-2 mt-2">
+                                {post.title}
+                              </h4>
+                            </Link>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-3 mt-4 border-t border-border-light/60 text-xs text-on-surface-variant">
+                            <span className="font-mono text-[11px]">
+                              {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}
+                            </span>
+
+                            <div className="flex items-center gap-3">
+                              <span className="flex items-center gap-1 font-mono text-[11px]">
+                                💬 {post.commentCount || 0}
+                              </span>
+                              <Link
+                                to={`/placements/${post._id}`}
+                                className="text-primary font-bold hover:underline"
+                              >
+                                View →
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-surface-container-low border border-border-light border-dashed rounded-2xl p-8 text-center text-on-surface-variant space-y-2">
+                      <p className="text-sm font-semibold">No placement experiences shared yet.</p>
+                      <p className="text-xs text-on-surface-variant/70">
+                        Help fellow students by sharing your selection process and interview insights!
+                      </p>
                     </div>
                   )}
                 </section>
