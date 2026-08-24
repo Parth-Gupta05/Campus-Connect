@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -123,10 +123,46 @@ export default function StudentDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeHeatmap, setActiveHeatmap] = useState('github');
   const [selectedRepo, setSelectedRepo] = useState(null);
+  const [animMounted, setAnimMounted] = useState(false);
+
+  const speedometerRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setAnimMounted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (speedometerRef.current) {
+      observer.observe(speedometerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
   
   const [githubHeatmap, setGithubHeatmap] = useState(null);
   const [heatmapLoading, setHeatmapLoading] = useState(false);
   const [heatmapError, setHeatmapError] = useState(false);
+  
+  const generateDummyHeatmap = () => {
+    const data = [];
+    const today = new Date();
+    for (let i = 365; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toISOString().split('T')[0],
+        count: 0,
+        level: 0
+      });
+    }
+    return data;
+  };
   
   useEffect(() => {
     const fetchData = async () => {
@@ -136,7 +172,14 @@ export default function StudentDashboard() {
           axios.get('/events/student/registered')
         ]);
         setProfile(profileRes.data);
-        setUpcomingEvents(eventsRes.data.slice(0, 3));
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const futureEvents = eventsRes.data
+          .filter(ev => new Date(ev.date) >= today)
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+          
+        setUpcomingEvents(futureEvents.slice(0, 3));
       } catch (err) {
         console.error('Failed to fetch dashboard data', err);
       } finally {
@@ -242,7 +285,7 @@ export default function StudentDashboard() {
     return (
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
         <Sidebar />
-        <main className="flex-1 relative overflow-y-auto">
+        <main className="flex-1 relative">
           {/* Skeleton Header */}
           <div className="hidden md:flex bg-white/80 border-b border-border-light h-20 w-full"></div>
           
@@ -366,7 +409,7 @@ export default function StudentDashboard() {
       <Sidebar />
       <RepoModal repo={selectedRepo} onClose={() => setSelectedRepo(null)} />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1">
         <Topbar showSearch={true} />
 
         <div className="p-gutter md:p-8 max-w-container-max mx-auto space-y-8">
@@ -525,7 +568,18 @@ export default function StudentDashboard() {
                 <div className={`heatmap-wrapper absolute top-0 left-0 w-full flex justify-center transition-opacity duration-300 ${activeHeatmap === 'github' ? 'opacity-100 z-10 active' : 'opacity-0 z-0 pointer-events-none'}`}>
                   {profile?.githubUsername ? (
                     heatmapLoading ? (
-                      <div className="text-on-surface-variant py-8 flex items-center justify-center gap-2"><FiLoader className="animate-spin" /> Fetching GitHub Activity...</div>
+                      <div className="animate-pulse">
+                        <ActivityCalendar 
+                          data={generateDummyHeatmap()} 
+                          colorScheme="light"
+                          theme={{
+                            light: ['#cbd5e1', '#cbd5e1', '#cbd5e1', '#cbd5e1', '#cbd5e1']
+                          }}
+                          labels={{
+                            totalCount: `Loading contributions...`,
+                          }}
+                        />
+                      </div>
                     ) : heatmapError || !githubHeatmap ? (
                       <div className="text-error py-8">Failed to fetch GitHub activity. GitHub API might be unreachable.</div>
                     ) : githubHeatmap.length === 0 ? (
@@ -688,39 +742,79 @@ export default function StudentDashboard() {
 
                   {/* LeetCode Problems Solved (Progress) */}
                   <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col justify-center">
-                    <h3 className="font-headline-sm text-on-surface font-bold mb-4">Problems Solved</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-body-sm mb-1">
-                          <span className="text-on-surface">
-                            Easy (<CountUp end={leetcode.solved?.easySolved || leetcode.profile?.easySolved || 0}/>/<CountUp end={leetcode.solved?.totalEasy || leetcode.profile?.totalEasy || 0}/>)
-                          </span>
+                    
+                    {(() => {
+                      const easySolved = leetcode.solved?.easySolved || leetcode.profile?.easySolved || 0;
+                      const mediumSolved = leetcode.solved?.mediumSolved || leetcode.profile?.mediumSolved || 0;
+                      const hardSolved = leetcode.solved?.hardSolved || leetcode.profile?.hardSolved || 0;
+                      
+                      const totalEasy = leetcode.solved?.totalEasy || leetcode.profile?.totalEasy || 0;
+                      const totalMedium = leetcode.solved?.totalMedium || leetcode.profile?.totalMedium || 0;
+                      const totalHard = leetcode.solved?.totalHard || leetcode.profile?.totalHard || 0;
+                      
+                      const totalSolved = easySolved + mediumSolved + hardSolved;
+                      const totalAvailable = (totalEasy + totalMedium + totalHard) || 4013;
+                      
+                      const radius = 40;
+                      const circumference = 2 * Math.PI * radius;
+                      const V = circumference * 0.75; // 270 degrees visible
+                      const gap = 3;
+                      
+                      // Base tracks (faded) lengths
+                      const easyBase = totalAvailable > 0 ? (totalEasy / totalAvailable) * (V - 2 * gap) : 0;
+                      const medBase = totalAvailable > 0 ? (totalMedium / totalAvailable) * (V - 2 * gap) : 0;
+                      const hardBase = totalAvailable > 0 ? (totalHard / totalAvailable) * (V - 2 * gap) : 0;
+                      
+                      // Progress tracks (bright) lengths
+                      const easyProg = totalEasy > 0 ? (easySolved / totalEasy) * easyBase : 0;
+                      const medProg = totalMedium > 0 ? (mediumSolved / totalMedium) * medBase : 0;
+                      const hardProg = totalHard > 0 ? (hardSolved / totalHard) * hardBase : 0;
+
+                      return (
+                        <div className="flex flex-col items-center gap-6 justify-center">
+                          {/* Speedometer Arc Chart */}
+                          <div className="relative w-36 h-36 shrink-0 mt-2" ref={speedometerRef}>
+                            <svg viewBox="0 0 100 100" className="w-full h-full transform rotate-[135deg] drop-shadow-sm">
+                              
+                              {/* Faded Base Tracks */}
+                              {easyBase > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#2cbb5d33" strokeWidth="4" strokeDasharray={`${Math.max(0, easyBase)} ${circumference}`} strokeDashoffset={0} strokeLinecap="round" />}
+                              {medBase > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#ffc01e33" strokeWidth="4" strokeDasharray={`${Math.max(0, medBase)} ${circumference}`} strokeDashoffset={-(easyBase + gap)} strokeLinecap="round" />}
+                              {hardBase > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#ef474333" strokeWidth="4" strokeDasharray={`${Math.max(0, hardBase)} ${circumference}`} strokeDashoffset={-(easyBase + gap + medBase + gap)} strokeLinecap="round" />}
+                              
+                              {/* Bright Progress Tracks */}
+                              {easyProg > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#2cbb5d" strokeWidth="4" strokeDasharray={`${animMounted ? Math.max(0, easyProg) : 0} ${circumference}`} strokeDashoffset={0} strokeLinecap="round" className="transition-all duration-1000 ease-out" />}
+                              {medProg > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#ffc01e" strokeWidth="4" strokeDasharray={`${animMounted ? Math.max(0, medProg) : 0} ${circumference}`} strokeDashoffset={-(easyBase + gap)} strokeLinecap="round" className="transition-all duration-1000 ease-out" />}
+                              {hardProg > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#ef4743" strokeWidth="4" strokeDasharray={`${animMounted ? Math.max(0, hardProg) : 0} ${circumference}`} strokeDashoffset={-(easyBase + gap + medBase + gap)} strokeLinecap="round" className="transition-all duration-1000 ease-out" />}
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center mt-[-10px]">
+                              <div className="flex items-baseline">
+                                <span className="text-3xl font-bold text-on-surface"><CountUp end={totalSolved} /></span>
+                                <span className="text-xs text-on-surface-variant font-medium ml-0.5">/{totalAvailable}</span>
+                              </div>
+                              <div className="flex items-center text-xs text-on-surface-variant font-medium mt-1">
+                                <span className="text-[#2cbb5d] mr-1 text-sm leading-none">✓</span> Solved
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Cards (Easy, Med, Hard) */}
+                          <div className="flex flex-col gap-2 w-full max-w-[160px]">
+                            <div className="flex flex-col items-center justify-center py-2 px-4 rounded-lg bg-surface-container-high border border-border-light">
+                              <span className="text-[#2cbb5d] font-medium text-sm">Easy</span>
+                              <span className="text-on-surface font-semibold text-sm">{easySolved}<span className="text-on-surface-variant font-normal">/{totalEasy}</span></span>
+                            </div>
+                            <div className="flex flex-col items-center justify-center py-2 px-4 rounded-lg bg-surface-container-high border border-border-light">
+                              <span className="text-[#ffc01e] font-medium text-sm">Med.</span>
+                              <span className="text-on-surface font-semibold text-sm">{mediumSolved}<span className="text-on-surface-variant font-normal">/{totalMedium}</span></span>
+                            </div>
+                            <div className="flex flex-col items-center justify-center py-2 px-4 rounded-lg bg-surface-container-high border border-border-light">
+                              <span className="text-[#ef4743] font-medium text-sm">Hard</span>
+                              <span className="text-on-surface font-semibold text-sm">{hardSolved}<span className="text-on-surface-variant font-normal">/{totalHard}</span></span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="w-full bg-surface-container-high rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${((leetcode.solved?.easySolved || leetcode.profile?.easySolved) / (leetcode.solved?.totalEasy || leetcode.profile?.totalEasy)) * 100 || 0}%`}}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-body-sm mb-1">
-                          <span className="text-on-surface">
-                            Medium (<CountUp end={leetcode.solved?.mediumSolved || leetcode.profile?.mediumSolved || 0}/>/<CountUp end={leetcode.solved?.totalMedium || leetcode.profile?.totalMedium || 0}/>)
-                          </span>
-                        </div>
-                        <div className="w-full bg-surface-container-high rounded-full h-2">
-                          <div className="bg-yellow-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${((leetcode.solved?.mediumSolved || leetcode.profile?.mediumSolved) / (leetcode.solved?.totalMedium || leetcode.profile?.totalMedium)) * 100 || 0}%`}}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-body-sm mb-1">
-                          <span className="text-on-surface">
-                            Hard (<CountUp end={leetcode.solved?.hardSolved || leetcode.profile?.hardSolved || 0}/>/<CountUp end={leetcode.solved?.totalHard || leetcode.profile?.totalHard || 0}/>)
-                          </span>
-                        </div>
-                        <div className="w-full bg-surface-container-high rounded-full h-2">
-                          <div className="bg-red-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${((leetcode.solved?.hardSolved || leetcode.profile?.hardSolved) / (leetcode.solved?.totalHard || leetcode.profile?.totalHard)) * 100 || 0}%`}}></div>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </div>
 
                   {/* LeetCode Recent Submissions */}
