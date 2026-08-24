@@ -22,6 +22,24 @@ export default function PlacementFilterBar({
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownRef = useRef(null);
 
+  // Local debounced search query state
+  const [localSearch, setLocalSearch] = useState(filters.search || '');
+
+  // Sync external search resets
+  useEffect(() => {
+    setLocalSearch(filters.search || '');
+  }, [filters.search]);
+
+  // Debounced search trigger
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if ((filters.search || '') !== localSearch) {
+        onChange({ ...filters, search: localSearch, page: 1 });
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [localSearch]);
+
   // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -118,15 +136,18 @@ export default function PlacementFilterBar({
           <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none" />
           <input
             type="text"
-            value={filters.search || ''}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Search by company, role (e.g. SDE Intern), topics (DSA, React), or title..."
             className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-border-light bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium shadow-xs"
           />
-          {filters.search && (
+          {localSearch && (
             <button
               type="button"
-              onClick={() => handleFilterChange('search', '')}
+              onClick={() => {
+                setLocalSearch('');
+                onChange({ ...filters, search: '', page: 1 });
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant hover:text-on-surface"
             >
               <FiX className="text-sm" />

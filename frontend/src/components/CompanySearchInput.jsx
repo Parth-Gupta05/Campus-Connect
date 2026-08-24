@@ -16,28 +16,65 @@ export default function CompanySearchInput({ value, onChange, disabled }) {
     }
   }, [value?.name]);
 
-  // Debounced search
+  // In-memory cache to prevent duplicate queries for already searched terms
+  const searchCacheRef = useRef(new Map());
+  const abortControllerRef = useRef(null);
+
+  // Debounced search with request cancellation and in-memory cache
   useEffect(() => {
-    if (!query || query.trim().length === 0 || (value && value.name === query && !isOpen)) {
+    const trimmed = query.trim();
+
+    // If query is empty or unchanged from selected company while dropdown closed, reset
+    if (!trimmed || trimmed.length < 2 || (value && value.name === query && !isOpen)) {
       setSuggestions([]);
+      setLoading(false);
       return;
     }
 
+    // Check cache first
+    const cached = searchCacheRef.current.get(trimmed.toLowerCase());
+    if (cached) {
+      setSuggestions(cached);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
     const timer = setTimeout(async () => {
+      // Cancel previous in-flight request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
       try {
-        setLoading(true);
-        const res = await axios.get(`/placements/companies/search?q=${encodeURIComponent(query.trim())}`);
-        setSuggestions(res.data || []);
+        const res = await axios.get(`/placements/companies/search?q=${encodeURIComponent(trimmed)}`, {
+          signal: abortControllerRef.current.signal
+        });
+        const results = res.data || [];
+        // Cache result
+        searchCacheRef.current.set(trimmed.toLowerCase(), results);
+        setSuggestions(results);
       } catch (err) {
+        if (axios.isCancel(err) || err.name === 'CanceledError' || err.name === 'AbortError') {
+          // Ignore canceled requests
+          return;
+        }
         console.error('Error fetching company suggestions:', err);
         setSuggestions([]);
       } finally {
         setLoading(false);
       }
-    }, 300);
+    }, 350); // 350ms debounce delay
 
-    return () => clearTimeout(timer);
-  }, [query]);
+    return () => {
+      clearTimeout(timer);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [query, isOpen, value?.name]);
 
   // Click outside to close
   useEffect(() => {
