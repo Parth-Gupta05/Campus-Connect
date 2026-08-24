@@ -13,7 +13,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: { 
     type: String, 
-    enum: ['event_registration', 'announcement', 'system', 'profile_update', 'club_invite'],
+    enum: ['event_registration', 'announcement', 'system', 'profile_update', 'club_invite', 'placement_comment', 'placement_reply', 'placement_reaction'],
     required: true
   },
   title: { 

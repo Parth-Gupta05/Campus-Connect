@@ -435,12 +435,8 @@ const verifyPlatform = async (req, res) => {
       }
     } else if (platform === 'leetcode') {
       if (!user.leetcodeUsername) return res.status(400).json({ message: 'No LeetCode username linked' });
-      const leetcodeData = await getleetcodedata(user.leetcodeUsername);
-      if (leetcodeData?.profile?.about && leetcodeData.profile.about.includes(user.verificationCode)) {
-        user.leetcodeVerified = true;
-        isVerified = true;
-      } else if (leetcodeData?.profile?.summary && leetcodeData.profile.summary.includes(user.verificationCode)) {
-        // Fallback depending on API field names
+      const leetcodeData = await getleetcodedata(user.leetcodeUsername, true);
+      if (leetcodeData?.profile && JSON.stringify(leetcodeData.profile).includes(user.verificationCode)) {
         user.leetcodeVerified = true;
         isVerified = true;
       }

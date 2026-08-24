@@ -568,10 +568,12 @@ const getgithubdata = async (githubuserid) => {
     }
 };
 
-const getleetcodedata = async (leetcodeuserid) => {
+const getleetcodedata = async (leetcodeuserid, profileOnly = false) => {
     if (!leetcodeuserid) return null;
 
-    const endpoints = {
+    const endpoints = profileOnly ? {
+        profile: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/profile`
+    } : {
         profile: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/profile`,
         badges: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/badges`,
         solved: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/solved`,
@@ -606,8 +608,10 @@ const getleetcodedata = async (leetcodeuserid) => {
         });
 
         // Verify that we got at least some basic profile/solved information back
-        if (!leetcodeData.profile && !leetcodeData.solved) {
+        if (!leetcodeData.profile && !leetcodeData.solved && !profileOnly) {
             throw new Error(`Could not retrieve any profile data for LeetCode user '${leetcodeuserid}'`);
+        } else if (profileOnly && !leetcodeData.profile) {
+            throw new Error(`Could not retrieve profile data for LeetCode verification '${leetcodeuserid}'`);
         }
 
         return leetcodeData;
