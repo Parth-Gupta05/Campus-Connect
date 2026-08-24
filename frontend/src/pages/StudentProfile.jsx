@@ -449,6 +449,9 @@ export default function StudentProfile() {
   const [showEditor, setShowEditor] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
   const [selectedAchievement, setSelectedAchievement] = useState(null);
+  const [verifyingPlatform, setVerifyingPlatform] = useState(null);
+  const [verifyingLoad, setVerifyingLoad] = useState(false);
+  const [verificationSuccess, setVerificationSuccess] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -463,6 +466,30 @@ export default function StudentProfile() {
     };
     fetchProfile();
   }, []);
+
+  const handleGenerateCodeAndVerify = async (platform) => {
+    try {
+      const res = await axios.post('/user/generate-verification-code');
+      setProfile(res.data.user);
+      setVerificationSuccess(false);
+      setVerifyingPlatform(platform);
+    } catch (err) {
+      showToast('Failed to generate verification code', 'error');
+    }
+  };
+
+  const handleVerify = async (platform) => {
+    setVerifyingLoad(true);
+    try {
+      const res = await axios.post('/user/verify-platform', { platform });
+      setProfile(res.data.user);
+      setVerificationSuccess(true);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Verification failed', 'error');
+    } finally {
+      setVerifyingLoad(false);
+    }
+  };
 
   const handleAvatarUpload = (e) => {
     const file = e.target.files[0];
@@ -615,7 +642,49 @@ export default function StudentProfile() {
         />
       )}
       
-      <main className="flex-1 relative overflow-y-auto bg-surface">
+      {verifyingPlatform && (
+        <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-ambient max-w-lg w-full border border-border-light p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-headline-sm font-bold">Verify {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'}</h2>
+              <button onClick={() => setVerifyingPlatform(null)} className="text-on-surface-variant hover:bg-surface-variant rounded-full p-1 flex items-center justify-center"><span className="material-symbols-outlined text-[20px]">close</span></button>
+            </div>
+            
+            {verificationSuccess ? (
+              <div className="text-center py-6 flex flex-col items-center">
+                <div className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mb-4">
+                  <span className="material-symbols-outlined text-success text-[40px]">check_circle</span>
+                </div>
+                <h3 className="text-title-lg font-bold text-on-surface mb-2">Verification Successful!</h3>
+                <p className="text-body-md text-on-surface-variant mb-6">
+                  Your {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'} account has been verified. You can now safely remove the code from your profile.
+                </p>
+                <button onClick={() => setVerifyingPlatform(null)} className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm">
+                  Done
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="text-body-md text-on-surface-variant mb-6 leading-relaxed">
+                  To verify your account, please temporarily add the following code to your <strong>{verifyingPlatform === 'github' ? 'bio' : 'about'}</strong> section on {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'}.
+                </p>
+                <div className="bg-surface p-4 rounded-lg font-mono text-center text-xl font-bold border border-border-light mb-6 text-primary select-all">
+                  {profile.verificationCode}
+                </div>
+                <button 
+                  onClick={() => handleVerify(verifyingPlatform)} 
+                  disabled={verifyingLoad}
+                  className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2"
+                >
+                  {verifyingLoad ? <FiLoader className="animate-spin text-[20px]" /> : 'Verify Now'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      
+      <main className="flex-1 relative bg-surface">
         <Topbar />
         
         {profile.isProfileComplete && (
@@ -651,14 +720,54 @@ export default function StudentProfile() {
                     </a>
                   )}
                   {profile.githubUsername && (
-                    <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
-                      <FaGithub className="text-[18px]" /> GitHub
-                    </a>
+                    <div className="relative group" title={!profile.githubVerified ? "Please verify your GitHub account" : "Verified GitHub account"}>
+                      {profile.githubVerified ? (
+                        <a 
+                          href={`https://github.com/${profile.githubUsername}`} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-green-50 border-green-200 hover:bg-green-100 text-green-800"
+                        >
+                          <FaGithub className="text-[18px]" /> GitHub
+                          <span className="material-symbols-outlined text-green-600 text-[16px]">verified</span>
+                        </a>
+                      ) : (
+                        <button 
+                          onClick={() => handleGenerateCodeAndVerify('github')}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-red-50 border-red-200 hover:bg-red-100 text-red-800"
+                        >
+                          <FaGithub className="text-[18px]" /> GitHub
+                        </button>
+                      )}
+                      {!profile.githubVerified && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm pointer-events-none animate-pulse" />
+                      )}
+                    </div>
                   )}
                   {profile.leetcodeUsername && (
-                    <a href={`https://leetcode.com/u/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
-                      <SiLeetcode className="text-[18px]" /> LeetCode
-                    </a>
+                    <div className="relative group" title={!profile.leetcodeVerified ? "Please verify your LeetCode account" : "Verified LeetCode account"}>
+                      {profile.leetcodeVerified ? (
+                        <a 
+                          href={`https://leetcode.com/u/${profile.leetcodeUsername}`} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-green-50 border-green-200 hover:bg-green-100 text-green-800"
+                        >
+                          <SiLeetcode className="text-[18px]" /> LeetCode
+                          <span className="material-symbols-outlined text-green-600 text-[16px]">verified</span>
+                        </a>
+                      ) : (
+                        <button 
+                          onClick={() => handleGenerateCodeAndVerify('leetcode')}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-red-50 border-red-200 hover:bg-red-100 text-red-800"
+                        >
+                          <SiLeetcode className="text-[18px]" /> LeetCode
+                        </button>
+                      )}
+                      {!profile.leetcodeVerified && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm pointer-events-none animate-pulse" />
+                      )}
+                    </div>
                   )}
                   {profile.linkedInUrl && (
                     <a href={profile.linkedInUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">

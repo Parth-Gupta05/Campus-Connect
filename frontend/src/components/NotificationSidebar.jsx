@@ -11,6 +11,7 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState(null);
   const sidebarRef = useRef(null);
 
   const fetchNotifications = async () => {
@@ -18,23 +19,34 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
     try {
       const res = await axios.get('/notifications');
       setNotifications(res.data);
-      const unread = res.data.filter(n => !n.isRead).length;
-      setUnreadCount(unread);
     } catch (error) {
       if (error.response && error.response.status === 401) return; // Silent abort on 401
       console.error('Failed to fetch notifications', error);
     }
   };
 
+  const fetchProfile = async () => {
+    if (user?.role === 'student') {
+      try {
+        const res = await axios.get('/user/profile');
+        setProfile(res.data);
+      } catch (e) {
+        console.error('Failed to fetch profile in sidebar', e);
+      }
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchNotifications();
+      fetchProfile();
     }
   }, [isOpen]);
 
   useEffect(() => {
     // Initial fetch for badge
     fetchNotifications();
+    fetchProfile();
     
     // Polling every 30 seconds
     const interval = setInterval(() => {
@@ -43,6 +55,19 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
 
     return () => clearInterval(interval);
   }, [user]);
+
+  // Calculate total unread count including unverified accounts
+  useEffect(() => {
+    const unreadNotifications = notifications.filter(n => !n.isRead).length;
+    const unverifiedCount = profile ? [
+      profile.githubUsername && !profile.githubVerified,
+      profile.leetcodeUsername && !profile.leetcodeVerified
+    ].filter(Boolean).length : 0;
+    
+    // We only add 1 to the badge if there are any unverified accounts, 
+    // since they are grouped into a single "Action Required" banner.
+    setUnreadCount(unreadNotifications + (unverifiedCount > 0 ? 1 : 0));
+  }, [notifications, profile, setUnreadCount]);
 
   // Handle click outside to close
   useEffect(() => {
@@ -134,6 +159,18 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          {profile && ((profile.githubUsername && !profile.githubVerified) || (profile.leetcodeUsername && !profile.leetcodeVerified)) && (
+            <div className="p-4 bg-error/10 border-b border-error/20 flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-error font-bold text-sm">
+                <FiInfo className="text-lg" /> Action Required
+              </div>
+              <p className="text-xs text-on-surface-variant">
+                You have unverified platform accounts. Please verify your {profile.githubUsername && !profile.githubVerified ? 'GitHub' : ''}{(profile.githubUsername && !profile.githubVerified) && (profile.leetcodeUsername && !profile.leetcodeVerified) ? ' and ' : ''}{profile.leetcodeUsername && !profile.leetcodeVerified ? 'LeetCode' : ''} accounts.
+              </p>
+              <Link to="/profile" className="text-xs font-bold text-error hover:underline w-fit" onClick={onClose}>Go to Profile to Verify &rarr;</Link>
+            </div>
+          )}
+          
           {loading ? (
             <div className="flex justify-center p-8">
               <FiLoader className="animate-spin text-primary text-2xl" />
