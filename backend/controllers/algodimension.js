@@ -459,199 +459,178 @@ const createdimension = async (req, res) => {
 
 
 
-const createdimension = async (req, res) => {
-    try {
-        const {
-            linkedIn,
-            github
-        } = req.body;
->>>>>>> 79ca6a2fd38b8fb18df11f865678f7d3e46e208f
+function calcRValues(user, linkedin, leetcode) {
+    const activities = [];
 
-    });
+    /* ---------------------- Resume Projects --------------------- */
 
-});
+    if (user?.resumeDetails?.projects) {
 
-    }
+        user.resumeDetails.projects.forEach(project => {
 
-/* ---------------------- Resume Projects --------------------- */
+            activities.push({
 
-if (user?.resumeDetails?.projects) {
+                source: "resume",
 
-    user.resumeDetails.projects.forEach(project => {
+                activityType: "resume_project",
 
-        activities.push({
+                title: project.title,
 
-            source: "resume",
+                rtype: TYPE_WEIGHTS.resume_project,
 
-            activityType: "resume_project",
+                rrole: ROLE_WEIGHTS.developer,
 
-            title: project.title,
+                rachievement: 1.10
 
-            rtype: TYPE_WEIGHTS.resume_project,
-
-            rrole: ROLE_WEIGHTS.developer,
-
-            rachievement: 1.10
-
-        });
-
-    });
-
-}
-
-/* -------------------- Linkedin Projects --------------------- */
-
-if (linkedin?.projects) {
-
-    linkedin.projects.forEach(project => {
-
-        activities.push({
-
-            source: "linkedin",
-
-            activityType: "linkedin_project",
-
-            title: project.title,
-
-            rtype: TYPE_WEIGHTS.linkedin_project,
-
-            rrole: ROLE_WEIGHTS.developer,
-
-            rachievement: 1.10
-
-        });
-
-    });
-
-}
-
-/* -------------------- Experience --------------------- */
-
-if (linkedin?.experience) {
-
-    linkedin.experience.forEach(exp => {
-
-        const role = detectRole(exp.position);
-
-        activities.push({
-
-            source: "linkedin",
-
-            activityType: "internship",
-
-            title: exp.companyName,
-
-            rtype: TYPE_WEIGHTS.internship,
-
-            rrole: ROLE_WEIGHTS[role],
-
-            rachievement: internshipAchievement(exp)
-
-        });
-
-    });
-
-}
-
-/* --------------------- Certificates --------------------- */
-
-if (user?.resumeDetails?.certificates) {
-
-    user.resumeDetails.certificates.forEach(cert => {
-
-        activities.push({
-
-            source: "resume",
-
-            activityType: "certificate",
-
-            title: cert.title,
-
-            rtype: TYPE_WEIGHTS.certificate,
-
-            rrole: ROLE_WEIGHTS.participant,
-
-            rachievement: certificateAchievement(cert)
-
-        });
-
-    });
-
-}
-
-/* -------------------- Leetcode ---------------------- */
-
-if (leetcode?.profile) {
-
-    for (let i = 0; i < (leetcode.profile.easySolved || 0); i++) {
-
-        activities.push({
-
-            source: "leetcode",
-
-            activityType: "leetcode_easy",
-
-            rtype: TYPE_WEIGHTS.leetcode_easy,
-
-            rrole: ROLE_WEIGHTS.participant,
-
-            rachievement: leetcodeAchievement("easy")
+            });
 
         });
 
     }
 
-    for (let i = 0; i < (leetcode.profile.mediumSolved || 0); i++) {
+    /* -------------------- Linkedin Projects --------------------- */
 
-        activities.push({
+    if (linkedin?.projects) {
 
-            source: "leetcode",
+        linkedin.projects.forEach(project => {
 
-            activityType: "leetcode_medium",
+            activities.push({
 
-            rtype: TYPE_WEIGHTS.leetcode_medium,
+                source: "linkedin",
 
-            rrole: ROLE_WEIGHTS.participant,
+                activityType: "linkedin_project",
 
-            rachievement: leetcodeAchievement("medium")
+                title: project.title,
 
-        });
+                rtype: TYPE_WEIGHTS.linkedin_project,
 
-    }
+                rrole: ROLE_WEIGHTS.developer,
 
-    for (let i = 0; i < (leetcode.profile.hardSolved || 0); i++) {
+                rachievement: 1.10
 
-        activities.push({
-
-            source: "leetcode",
-
-            activityType: "leetcode_hard",
-
-            rtype: TYPE_WEIGHTS.leetcode_hard,
-
-            rrole: ROLE_WEIGHTS.participant,
-
-            rachievement: leetcodeAchievement("hard")
+            });
 
         });
 
     }
 
-}
+    /* -------------------- Experience --------------------- */
 
-return activities;
+    if (linkedin?.experience) {
 
-}
+        linkedin.experience.forEach(exp => {
 
-module.exports = calcRValues;
+            const role = detectRole(exp.position);
 
-const createdimension = async (req, res) => {
-    try {
+            activities.push({
 
-    } catch (error) {
+                source: "linkedin",
+
+                activityType: "internship",
+
+                title: exp.companyName,
+
+                rtype: TYPE_WEIGHTS.internship,
+
+                rrole: ROLE_WEIGHTS[role] || ROLE_WEIGHTS.participant,
+
+                rachievement: internshipAchievement(exp)
+
+            });
+
+        });
 
     }
-};
+
+    /* --------------------- Certificates --------------------- */
+
+    if (user?.resumeDetails?.certificates) {
+
+        user.resumeDetails.certificates.forEach(cert => {
+
+            activities.push({
+
+                source: "resume",
+
+                activityType: "certificate",
+
+                title: cert.title,
+
+                rtype: TYPE_WEIGHTS.certificate,
+
+                rrole: ROLE_WEIGHTS.participant,
+
+                rachievement: certificateAchievement(cert)
+
+            });
+
+        });
+
+    }
+
+    /* -------------------- Leetcode ---------------------- */
+
+    if (leetcode?.profile) {
+
+        for (let i = 0; i < (leetcode.profile.easySolved || 0); i++) {
+
+            activities.push({
+
+                source: "leetcode",
+
+                activityType: "leetcode_easy",
+
+                rtype: TYPE_WEIGHTS.leetcode_easy,
+
+                rrole: ROLE_WEIGHTS.participant,
+
+                rachievement: leetcodeAchievement("easy")
+
+            });
+
+        }
+
+        for (let i = 0; i < (leetcode.profile.mediumSolved || 0); i++) {
+
+            activities.push({
+
+                source: "leetcode",
+
+                activityType: "leetcode_medium",
+
+                rtype: TYPE_WEIGHTS.leetcode_medium,
+
+                rrole: ROLE_WEIGHTS.participant,
+
+                rachievement: leetcodeAchievement("medium")
+
+            });
+
+        }
+
+        for (let i = 0; i < (leetcode.profile.hardSolved || 0); i++) {
+
+            activities.push({
+
+                source: "leetcode",
+
+                activityType: "leetcode_hard",
+
+                rtype: TYPE_WEIGHTS.leetcode_hard,
+
+                rrole: ROLE_WEIGHTS.participant,
+
+                rachievement: leetcodeAchievement("hard")
+
+            });
+
+        }
+
+    }
+
+    return activities;
+}
+
 
 const getgithubdata = async (githubuserid) => {
     if (!githubuserid) return null;
