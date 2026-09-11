@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Club = require('../models/Club');
 
 const router = express.Router();
 
@@ -10,29 +11,87 @@ const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
+// Helper to parse UID
+const parseUID = (uid) => {
+  const match = uid.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
+  if (!match) return null;
+
+  const admissionYear = '20' + match[1];
+  const branch = match[2].toUpperCase();
+  const division = match[3].toUpperCase();
+  const rollNo = match[4];
+  const graduationYear = '20' + match[5];
+
+  const currentYearFull = new Date().getFullYear();
+  const currentMonth = new Date().getMonth(); // 0-11
+  
+  const yearsDiff = currentYearFull - parseInt(admissionYear);
+  let currentSem = 1;
+
+  if (currentMonth >= 6) {
+    currentSem = (yearsDiff * 2) + 1;
+  } else {
+    currentSem = (yearsDiff * 2);
+  }
+
+  let currentYear = 'FE';
+  if (currentSem <= 2) currentYear = 'FE';
+  else if (currentSem <= 4) currentYear = 'SE';
+  else if (currentSem <= 6) currentYear = 'TE';
+  else if (currentSem <= 8) currentYear = 'BE';
+
+  return {
+    admissionYear,
+    graduationYear,
+    branch,
+    division,
+    rollNo,
+    currentYear,
+    currentSem
+  };
+};
+
 // Register Route
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { identifier, password, role } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password' });
+    if (!identifier || !password) {
+      return res.status(400).json({ message: 'Please provide email/UID and password' });
     }
 
+    const isEmail = identifier.includes('@');
+    const email = isEmail ? identifier : undefined;
+    const uid = !isEmail ? identifier.toUpperCase() : undefined;
+
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const query = [];
+    if (email) query.push({ email });
+    if (uid) query.push({ uid });
+
+    const existingUser = await User.findOne({ $or: query });
     if (existingUser) {
-      return res.status(400).json({ message: 'Email is already registered' });
+      return res.status(400).json({ message: 'Account is already registered with this credential' });
     }
 
     // Hash password
     const hashedPassword = hashPassword(password);
 
+    let profileData = {};
+    if (uid) {
+      const parsed = parseUID(uid);
+      if (parsed) {
+        profileData = parsed;
+      }
+    }
+
     // Create new user
     const user = new User({
       email,
+      uid,
       password: hashedPassword,
-      role: role === 'admin' ? 'admin' : 'student' // Default to student
+      role: role === 'admin' ? 'admin' : 'student', // Default to student
+      ...profileData
     });
 
     await user.save();
@@ -65,6 +124,7 @@ router.post('/register', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
+        uid: user.uid,
         role: user.role
       }
     });
@@ -77,14 +137,29 @@ router.post('/register', async (req, res) => {
 // Login Route
 router.post('/login', async (req, res) => {
   try {
-    const { email, password, remember } = req.body;
+    const { identifier, password, remember } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password' });
+    if (!identifier || !password) {
+      return res.status(400).json({ message: 'Please provide email/UID and password' });
     }
 
+    const isEmail = identifier.includes('@');
+    const email = isEmail ? identifier : undefined;
+    const uid = !isEmail ? identifier.toUpperCase() : undefined;
+
+    const query = [];
+    if (email) query.push({ email });
+    if (uid) query.push({ uid });
+
     // Find user
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ $or: query });
+    let isClub = false;
+
+    if (!user && isEmail) {
+      user = await Club.findOne({ email });
+      if (user) isClub = true;
+    }
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -129,13 +204,94 @@ router.post('/login', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        role: user.role
+        uid: user.uid,
+        role: user.role,
+        isMissingCredential: isClub ? false : (!user.email || !user.uid)
       }
     });
 
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login' });
+  }
+});
+
+// Link Account Route
+router.post('/link-account', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    const { identifier } = req.body;
+    if (!identifier) {
+      return res.status(400).json({ message: 'Please provide an identifier to link' });
+    }
+
+    const isEmail = identifier.includes('@');
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (isEmail) {
+      if (user.email) {
+        return res.status(400).json({ message: 'Email is already linked' });
+      }
+      const existingUser = await User.findOne({ email: identifier });
+      if (existingUser) {
+        return res.status(400).json({ message: 'This email is already in use by another account' });
+      }
+      user.email = identifier;
+    } else {
+      const uid = identifier.toUpperCase();
+      if (user.uid) {
+        return res.status(400).json({ message: 'UID is already linked' });
+      }
+      const existingUser = await User.findOne({ uid: uid });
+      if (existingUser) {
+        return res.status(400).json({ message: 'This UID is already in use by another account' });
+      }
+      user.uid = uid;
+      
+      // Auto-fill details if missing
+      const parsed = parseUID(uid);
+      if (parsed) {
+        if (!user.admissionYear) user.admissionYear = parsed.admissionYear;
+        if (!user.graduationYear) user.graduationYear = parsed.graduationYear;
+        if (!user.branch) user.branch = parsed.branch;
+        if (!user.division) user.division = parsed.division;
+        if (!user.rollNo) user.rollNo = parsed.rollNo;
+        if (!user.currentYear) user.currentYear = parsed.currentYear;
+        if (!user.currentSem) user.currentSem = parsed.currentSem;
+      }
+    }
+
+    await user.save();
+
+    res.json({
+      message: 'Account linked successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        uid: user.uid,
+        role: user.role,
+        isMissingCredential: !user.email || !user.uid
+      }
+    });
+
+  } catch (error) {
+    console.error('Link account error:', error);
+    res.status(500).json({ message: 'Server error during account linking' });
   }
 });
 
@@ -155,7 +311,11 @@ router.post('/refresh', (req, res) => {
       }
 
       // Find user to get role
-      const user = await User.findById(decoded.id);
+      let user = await User.findById(decoded.id);
+      if (!user) {
+        user = await Club.findById(decoded.id);
+      }
+      
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -179,6 +339,103 @@ router.post('/refresh', (req, res) => {
 router.post('/logout', (req, res) => {
   res.clearCookie('refreshToken');
   res.json({ message: 'Logged out successfully' });
+});
+
+// Forgot Password Route
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Admins cannot reset password via OTP' });
+    }
+
+    // Cooldown check (60 seconds)
+    if (user.resetOtpLastSent && Date.now() - user.resetOtpLastSent.getTime() < 60000) {
+      return res.status(429).json({ message: 'Please wait 60 seconds before requesting another OTP' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = hashPassword(otp);
+
+    user.resetOtp = hashedOtp;
+    user.resetOtpExpiry = new Date(Date.now() + 15 * 60000); // 15 mins
+    user.resetOtpLastSent = new Date();
+    await user.save();
+
+    const { sendPasswordResetEmail } = require('../utils/emailService');
+    await sendPasswordResetEmail(user.email, otp);
+
+    res.json({ message: 'OTP sent to your email' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Verify OTP Route
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user.resetOtp || !user.resetOtpExpiry || user.resetOtpExpiry < new Date()) {
+      return res.status(400).json({ message: 'OTP is invalid or expired' });
+    }
+
+    const hashedProvidedOtp = hashPassword(otp);
+    if (user.resetOtp !== hashedProvidedOtp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    res.json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Reset Password Route
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user.resetOtp || !user.resetOtpExpiry || user.resetOtpExpiry < new Date()) {
+      return res.status(400).json({ message: 'OTP is invalid or expired' });
+    }
+
+    // Verify OTP
+    const hashedProvidedOtp = hashPassword(otp);
+    if (user.resetOtp !== hashedProvidedOtp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    // Update Password
+    user.password = hashPassword(newPassword);
+    user.resetOtp = null;
+    user.resetOtpExpiry = null;
+    user.resetOtpLastSent = null;
+    await user.save();
+
+    res.json({ message: 'Password reset successfully. You can now log in.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 module.exports = router;

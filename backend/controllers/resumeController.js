@@ -2,6 +2,7 @@ const cloudinary = require('cloudinary').v2;
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const pdfParse = require('pdf-parse');
 const User = require('../models/User');
+const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -87,6 +88,9 @@ const uploadAndParseResume = async (req, res) => {
     if (resumeUrl) {
       const user = await User.findById(req.user.id);
       if (user) {
+        if (user.resumeUrl) {
+          await deleteCloudinaryAsset(user.resumeUrl);
+        }
         user.resumeUrl = resumeUrl;
         await user.save();
       }

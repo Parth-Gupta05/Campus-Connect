@@ -2,6 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const User = require('./models/User');
+const Club = require('./models/Club');
 
 const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
@@ -12,8 +13,9 @@ const seed = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to DB...');
 
-    // Clear existing users
+    // Clear existing users and clubs
     await User.deleteMany({});
+    await Club.deleteMany({});
 
     // Create Student
     await User.create({
@@ -29,7 +31,15 @@ const seed = async () => {
       role: 'admin'
     });
 
-    console.log('Database seeded with student and admin accounts.');
+    // Create Dummy Club
+    await Club.create({
+      email: 'techclub@university.edu',
+      password: hashPassword('password123'),
+      name: 'Tech Innovators Club',
+      description: 'A club for technology enthusiasts.',
+    });
+
+    console.log('Database seeded with student, admin, and club accounts.');
     process.exit();
   } catch (err) {
     console.error(err);

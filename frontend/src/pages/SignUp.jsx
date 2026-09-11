@@ -2,10 +2,11 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { FiLoader } from 'react-icons/fi';
 
 export default function SignUp() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +15,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,17 +26,26 @@ export default function SignUp() {
       return;
     }
 
+    if (!identifier.includes('@')) {
+      const match = identifier.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
+      if (!match) {
+        setError('Invalid UID format. Expected format: 23-COMPA10-27');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
       const response = await axios.post('/auth/register', {
-        email,
+        identifier,
         password,
         role: 'student'
       });
 
-      login(response.data);
-      navigate('/profile');
+      await login(identifier, password, false);
+      showToast('Account created successfully!', 'success');
+      navigate('/dashboard');
     } catch (err) {
       setError(
         err.response?.data?.message || 
@@ -46,8 +57,8 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-body-lg">
-      <main className="flex-1 flex flex-col md:flex-row">
+    <div className="h-screen bg-background flex flex-col font-body-lg overflow-hidden">
+      <main className="flex-1 flex flex-col md:flex-row overflow-y-auto">
         {/* Left Side (Visuals) */}
         <div className="hidden md:flex flex-col w-1/2 p-12 relative overflow-hidden bg-surface-container-lowest border-r border-border-light justify-center">
           <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
@@ -55,12 +66,12 @@ export default function SignUp() {
             <div className="absolute bottom-[-10%] right-[-10%] w-2/3 h-2/3 bg-ai-gradient-end rounded-full blur-[120px]"></div>
           </div>
           <div className="z-10 max-w-lg mx-auto">
-            <div className="flex items-center gap-3 mb-12">
+            <Link to="/" className="flex items-center gap-3 mb-12 hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
                 <span className="material-symbols-outlined text-[24px]">school</span>
               </div>
               <span className="font-display-hero text-headline-md text-primary tracking-tight">Campus Connect</span>
-            </div>
+            </Link>
             <h1 className="font-display-hero text-display-hero text-on-surface mb-6 leading-tight">Start your legacy.</h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant mb-12">
               Join thousands of students building their digital portfolios and tracking their engineering metrics in one unified platform.
@@ -92,12 +103,12 @@ export default function SignUp() {
         <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 bg-surface">
           <div className="w-full max-w-md">
             {/* Mobile Branding */}
-            <div className="md:hidden flex items-center justify-center gap-2 mb-10">
+            <Link to="/" className="md:hidden flex items-center justify-center gap-2 mb-10 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary">
                 <span className="material-symbols-outlined text-[20px]">school</span>
               </div>
               <span className="font-display-hero text-headline-sm text-primary">Campus Connect</span>
-            </div>
+            </Link>
 
             <div className="bg-surface-container-lowest p-8 md:p-10 rounded-3xl border border-border-light shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="text-center mb-8">
@@ -114,21 +125,21 @@ export default function SignUp() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="email">
-                    College Email
+                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="identifier">
+                    Email or UID
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
-                      <span className="material-symbols-outlined text-[18px]">mail</span>
+                      <span className="material-symbols-outlined text-[18px]">badge</span>
                     </div>
                     <input
-                      id="email"
-                      type="email"
+                      id="identifier"
+                      type="text"
                       required
                       className="w-full pl-10 p-3.5 bg-surface border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline-variant"
-                      placeholder="student@university.edu"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email or UID"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
                     />
                   </div>
                 </div>

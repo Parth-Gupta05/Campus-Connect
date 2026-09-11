@@ -1,11 +1,11 @@
 {
-  "id": "ACoAAE12kWYBw0xicPnCuLe_QwpwXks5O21q8q8",
-  "publicIdentifier": "asmit-bagkar-79a2a4303",
-  "linkedinUrl": "https://www.linkedin.com/in/asmit-bagkar-79a2a4303",
-  "firstName": "ASMIT",
-  "lastName": "BAGKAR",
+  "id": "ACoAAERo_e0Bzg1Oa3TatJVb6j8R7fGSq9mTZgg",
+  "publicIdentifier": "tarun-asthana",
+  "linkedinUrl": "https://www.linkedin.com/in/tarun-asthana",
+  "firstName": "Tarun",
+  "lastName": "Asthana",
   "emails": [],
-  "headline": "Final-Year CS Engineering Student @ TCET | Aspiring Data Analyst & BI Professional | SQL, PowerBI, Python | 5-Star HackerRank (SQL)",
+  "headline": "5x Hackathon Finalist || TCET’27 COMPS || FullStack Web Developer|| Python",
   "openToWork": false,
   "hiring": false,
   "premium": false,
@@ -25,88 +25,124 @@
       "city": "Mumbai"
     }
   },
-  "objectUrn": "1299616102",
-  "registeredAt": "2024-04-08T06:45:34.781Z",
-  "topSkills": [
-    "SQL",
-    "Python (Programming Language)",
-    "Microsoft Power BI",
-    "Microsoft Excel",
-    "Tableau"
-  ],
-  "connectionsCount": 34,
-  "followerCount": 34,
-  "verified": false,
-  "about": "I am a final-year Computer Science engineering student specializing in the logical architecture of data. While many focus purely on writing syntax, I am deeply passionate about the structural logic behind data and how it can be used to solve real-world operational bottlenecks.\nMy recent work includes architecting automated data-cleaning pipelines, building high-performance data management engines, and analyzing e-commerce revenue trends using SQL and PowerBI. Beyond formal projects, I regularly run predictive probability models and manage strict resource constraints, sharpening my ability to forecast risk and optimize outcomes under pressure.\nI am actively seeking entry-level opportunities in Business Intelligence, Data Operations, or Business Analytics where I can leverage structured data to drive efficiency and strategic decision-making.\nCore Competencies: SQL | PowerBI | Advanced Excel | Data Preprocessing | Business Intelligence | Python",
-  "currentPosition": [],
-  "profileTopEducation": [
+  "objectUrn": "1147731437",
+  "registeredAt": "2023-06-22T09:49:04.046Z",
+  "topSkills": [],
+  "connectionsCount": 999,
+  "followerCount": 1000,
+  "verified": true,
+  "about": null,
+  "currentPosition": [
     {
-      "schoolName": "Thakur College Of Engineering and Technology",
-      "schoolLinkedinUrl": "https://www.linkedin.com/company/11448647/",
-      "schoolId": "11448647",
-      "degree": "Bachelor of Engineering",
-      "fieldOfStudy": "Computer Science",
-      "period": "Jan 2023 - Jan 2027",
+      "position": "Machine Learning Intern",
+      "location": "Mumbai",
+      "employmentType": "Internship",
+      "workplaceType": "Remote",
+      "companyName": "SEQURETEK",
+      "companyLinkedinUrl": "https://www.linkedin.com/company/sequretek/",
+      "companyId": "3769944",
+      "duration": "4 mos",
+      "description": null,
+      "skills": [
+        "Reinforcement Learning",
+        "Artificial Intelligence (AI)",
+        "IML",
+        "Unsupervised Learning"
+      ],
       "startDate": {
-        "month": "Jan",
-        "year": 2023,
-        "text": "Jan 2023"
+        "month": "Apr",
+        "year": 2026,
+        "text": "Apr 2026"
       },
       "endDate": {
-        "month": "Jan",
-        "year": 2027,
-        "text": "Jan 2027"
+        "text": "Present"
       },
-      "schoolLogo": {
-        "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M",
+      "companyLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHA_d_9S4TIeg/company-logo_400_400/B4DZ2wE2baJQAY-/0/1776775555252/sequretek_logo?e=1785974400&v=beta&t=DDxlxq-HuModB0VfN7JKmFI2x1HdQv0fQxtceVzRMcI",
         "sizes": [
           {
-            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M",
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHA_d_9S4TIeg/company-logo_400_400/B4DZ2wE2baJQAY-/0/1776775555252/sequretek_logo?e=1785974400&v=beta&t=DDxlxq-HuModB0VfN7JKmFI2x1HdQv0fQxtceVzRMcI",
             "width": 400,
             "height": 400
           },
           {
-            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_200_200/company-logo_200_200/0/1631391930064?e=1785974400&v=beta&t=0N8ZKMwcPWRiCr_2BzJJotaN0GfL88oq8dPNJorAkbg",
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHA_d_9S4TIeg/company-logo_200_200/B4DZ2wE2baJQAI-/0/1776775555252/sequretek_logo?e=1785974400&v=beta&t=diQu3G-FsjVbABBjyso6EsAFjycGHeDOhmNKgpAdguw",
             "width": 200,
             "height": 200
           },
           {
-            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_100_100/company-logo_100_100/0/1631391930064?e=1785974400&v=beta&t=_3pryI0PUMXkycQWaCcngC25wQWbRWz1KzhOyhPYk1I",
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHA_d_9S4TIeg/company-logo_100_100/B4DZ2wE2baJQAQ-/0/1776775555252/sequretek_logo?e=1785974400&v=beta&t=eq9BPZR6-SdDvTrgPN7HyiInhpXo34m9KlidPt1EP4s",
             "width": 100,
             "height": 100
           }
         ]
-      }
+      },
+      "companyUniversalName": "sequretek"
+    }
+  ],
+  "profileTopEducation": [
+    {
+      "schoolName": "Thakur College of Engineering & Technology Shaymnarayan Thakur Marg Thakur Villaige Samata Nagar Kandivli (E) Mumbai 400 101",
+      "schoolLinkedinUrl": "https://www.linkedin.com/company/15152250/",
+      "schoolId": "15152250",
+      "degree": "Bachelor of Engineering - BE",
+      "fieldOfStudy": "Computer Engineering",
+      "period": "Aug 2023 - May 2027",
+      "startDate": {
+        "month": "Aug",
+        "year": 2023,
+        "text": "Aug 2023"
+      },
+      "endDate": {
+        "month": "May",
+        "year": 2027,
+        "text": "May 2027"
+      },
+      "schoolLogo": null
     }
   ],
   "profileActions": [],
   "profilePicture": {
-    "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-crop_800_800/B4DZ8uKYTYGkAI-/0/1783185904209?e=1785974400&v=beta&t=9LK3WV2YyH-SXgH6UH7tNrv_3SoG9lZ-F9LrYT6g7C4",
+    "url": "https://media.licdn.com/dms/image/v2/D4D03AQEsdgcIrJkNBQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724512024080?e=1785974400&v=beta&t=YozCsILznO7Mn_iPghg5rE9cQYRBiSWDFGSJxomOPP0",
     "sizes": [
       {
-        "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-crop_800_800/B4DZ8uKYTYGkAI-/0/1783185904209?e=1785974400&v=beta&t=9LK3WV2YyH-SXgH6UH7tNrv_3SoG9lZ-F9LrYT6g7C4",
-        "width": 800,
-        "height": 800
+        "url": "https://media.licdn.com/dms/image/v2/D4D03AQEsdgcIrJkNBQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724512024080?e=1785974400&v=beta&t=YozCsILznO7Mn_iPghg5rE9cQYRBiSWDFGSJxomOPP0",
+        "width": 592,
+        "height": 592
       },
       {
-        "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-scale_400_400/B4DZ8uKYTYGkAg-/0/1783185904209?e=1785974400&v=beta&t=DPfcOPmZvRe7gh3VeEQKIpJOcKQJtJ8JiWZOgb6afq0",
+        "url": "https://media.licdn.com/dms/image/v2/D4D03AQEsdgcIrJkNBQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1724512024082?e=1785974400&v=beta&t=Z7OvD_Kzsu4aIYDR_no9XbZ-5ag19CxuYO1q06R41Y4",
         "width": 400,
         "height": 400
       },
       {
-        "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-scale_200_200/B4DZ8uKYTYGkAc-/0/1783185904209?e=1785974400&v=beta&t=0hjaSPAnmg8khq1vVATqIq5uovD_EooeKPvCwUpWSTs",
+        "url": "https://media.licdn.com/dms/image/v2/D4D03AQEsdgcIrJkNBQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1724512024082?e=1785974400&v=beta&t=NTEdeJS1SFszle7qO5AJRCkyUJZ3RE9q3u1GnFQb7mo",
         "width": 200,
         "height": 200
       },
       {
-        "url": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-scale_100_100/B4DZ8uKYTYGkAY-/0/1783185904209?e=1785974400&v=beta&t=sXd01tYh9iNXys9terwQAwqbwaT3yoATjujZKNLEmO4",
+        "url": "https://media.licdn.com/dms/image/v2/D4D03AQEsdgcIrJkNBQ/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1724512024082?e=1785974400&v=beta&t=gVFBjhft7Bwvbp986TplLijTgxl9KpARQ5YxuJ48fQM",
         "width": 100,
         "height": 100
       }
     ]
   },
-  "coverPicture": null,
-  "photo": "https://media.licdn.com/dms/image/v2/D4D03AQGskHl4P-PB3Q/profile-displayphoto-crop_800_800/B4DZ8uKYTYGkAI-/0/1783185904209?e=1785974400&v=beta&t=9LK3WV2YyH-SXgH6UH7tNrv_3SoG9lZ-F9LrYT6g7C4",
+  "coverPicture": {
+    "url": "https://media.licdn.com/dms/image/v2/D4D16AQFAqSK5BYsx-w/profile-displaybackgroundimage-shrink_350_1400/profile-displaybackgroundimage-shrink_350_1400/0/1720032763443?e=1785974400&v=beta&t=HmpVwq9rJtcE6zxI0Lz911rbASmdm6MB3XWcm63c47Y",
+    "sizes": [
+      {
+        "url": "https://media.licdn.com/dms/image/v2/D4D16AQFAqSK5BYsx-w/profile-displaybackgroundimage-shrink_350_1400/profile-displaybackgroundimage-shrink_350_1400/0/1720032763443?e=1785974400&v=beta&t=HmpVwq9rJtcE6zxI0Lz911rbASmdm6MB3XWcm63c47Y",
+        "width": 1400,
+        "height": 350
+      },
+      {
+        "url": "https://media.licdn.com/dms/image/v2/D4D16AQFAqSK5BYsx-w/profile-displaybackgroundimage-shrink_200_800/profile-displaybackgroundimage-shrink_200_800/0/1720032763443?e=1785974400&v=beta&t=Sg1jR2UBSRIrD9SCSKjU2N-yix7O64scJSN3Tfqtimo",
+        "width": 800,
+        "height": 200
+      }
+    ]
+  },
+  "photo": "https://media.licdn.com/dms/image/v2/D4D03AQEsdgcIrJkNBQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724512024080?e=1785974400&v=beta&t=YozCsILznO7Mn_iPghg5rE9cQYRBiSWDFGSJxomOPP0",
   "profileLocales": [
     {
       "country": "US",
@@ -119,22 +155,123 @@
   },
   "multiLocaleHeadline": [
     {
-      "headline": "Final-Year CS Engineering Student @ TCET | Aspiring Data Analyst & BI Professional | SQL, PowerBI, Python | 5-Star HackerRank (SQL)",
+      "headline": "5x Hackathon Finalist || TCET’27 COMPS || FullStack Web Developer|| Python",
       "locale": "en_US"
     }
   ],
   "services": null,
   "experience": [
     {
-      "position": "Analysis Specialist",
-      "location": "Mumbai Metropolitan Region",
+      "position": "Machine Learning Intern",
+      "location": "Mumbai",
+      "employmentType": "Internship",
+      "workplaceType": "Remote",
+      "companyName": "SEQURETEK",
+      "companyLinkedinUrl": "https://www.linkedin.com/company/sequretek/",
+      "companyId": "3769944",
+      "duration": "4 mos",
+      "description": null,
+      "skills": [
+        "Reinforcement Learning",
+        "Artificial Intelligence (AI)",
+        "IML",
+        "Unsupervised Learning"
+      ],
+      "startDate": {
+        "month": "Apr",
+        "year": 2026,
+        "text": "Apr 2026"
+      },
+      "endDate": {
+        "text": "Present"
+      },
+      "companyLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHA_d_9S4TIeg/company-logo_400_400/B4DZ2wE2baJQAY-/0/1776775555252/sequretek_logo?e=1785974400&v=beta&t=DDxlxq-HuModB0VfN7JKmFI2x1HdQv0fQxtceVzRMcI",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHA_d_9S4TIeg/company-logo_400_400/B4DZ2wE2baJQAY-/0/1776775555252/sequretek_logo?e=1785974400&v=beta&t=DDxlxq-HuModB0VfN7JKmFI2x1HdQv0fQxtceVzRMcI",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHA_d_9S4TIeg/company-logo_200_200/B4DZ2wE2baJQAI-/0/1776775555252/sequretek_logo?e=1785974400&v=beta&t=diQu3G-FsjVbABBjyso6EsAFjycGHeDOhmNKgpAdguw",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQHA_d_9S4TIeg/company-logo_100_100/B4DZ2wE2baJQAQ-/0/1776775555252/sequretek_logo?e=1785974400&v=beta&t=eq9BPZR6-SdDvTrgPN7HyiInhpXo34m9KlidPt1EP4s",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      },
+      "companyUniversalName": "sequretek"
+    },
+    {
+      "position": "AI Developer Intern",
+      "location": "Mumbai",
       "employmentType": "Full-time",
       "workplaceType": "On-site",
-      "companyName": "Asmit Enterprises",
-      "companyLinkedinUrl": "https://www.linkedin.com/search/results/all/?keywords=Asmit+Enterprises",
+      "companyName": "VidyarthiMitra.org",
+      "companyLinkedinUrl": "https://www.linkedin.com/company/vidyarthimitra/",
+      "companyId": "13750963",
+      "duration": "2 mos",
+      "description": null,
+      "skills": [
+        "Python (Programming Language)",
+        "n8n",
+        "Tesseract",
+        "Ai automation"
+      ],
+      "startDate": {
+        "month": "Dec",
+        "year": 2025,
+        "text": "Dec 2025"
+      },
+      "endDate": {
+        "month": "Jan",
+        "year": 2026,
+        "text": "Jan 2026"
+      },
+      "companyLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/C4E0BAQEJ9ral8g9s3g/company-logo_400_400/company-logo_400_400/0/1630593962446/vidyarthimitra_logo?e=1785974400&v=beta&t=6q23HdHmUeMF351QI5v7w6aTeY1x0amVQaG72yYQnxE",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C4E0BAQEJ9ral8g9s3g/company-logo_400_400/company-logo_400_400/0/1630593962446/vidyarthimitra_logo?e=1785974400&v=beta&t=6q23HdHmUeMF351QI5v7w6aTeY1x0amVQaG72yYQnxE",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C4E0BAQEJ9ral8g9s3g/company-logo_200_200/company-logo_200_200/0/1630593962446/vidyarthimitra_logo?e=1785974400&v=beta&t=ygY6zCUMddNlFpa5B2HhYwxHzFbMh0qRgk5nKjcSmpo",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C4E0BAQEJ9ral8g9s3g/company-logo_100_100/company-logo_100_100/0/1630593962446/vidyarthimitra_logo?e=1785974400&v=beta&t=CIadzMpQweCYj3HWiXpM2ikYxm_EJL-6UmL3gx6hsp4",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      },
+      "companyUniversalName": "vidyarthimitra"
+    },
+    {
+      "position": "Frontend Developer",
+      "location": "Mumbai",
+      "employmentType": "Internship",
+      "workplaceType": "Remote",
+      "companyName": "LonelyBag FoodRescue Private Limited",
+      "companyLinkedinUrl": "https://www.linkedin.com/company/lonelybag-foodrescue-private-limited/",
+      "companyId": "108589878",
       "duration": "3 mos",
-      "description": "Analyzed historical e-commerce datasets using SQL and PowerBI to identify seasonal sales bottlenecks and visualize revenue trends. Also created a software that predicts which contracts to accept based on provided and historical data.",
-      "skills": null,
+      "description": null,
+      "skills": [
+        "TypeScript",
+        "Next.js",
+        "GitHub",
+        "Web Interface Design",
+        "Front-End Design"
+      ],
       "startDate": {
         "month": "Nov",
         "year": 2025,
@@ -144,71 +281,461 @@
         "month": "Jan",
         "year": 2026,
         "text": "Jan 2026"
+      },
+      "companyLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4D0BAQFtYn7ZQa5JZw/company-logo_400_400/B4DZh9Iq0zH8AY-/0/1754446082073?e=1785974400&v=beta&t=NwAD4npvCEQx-ujqF7Q8u_LwBfYB2r6cDcjqFpEajks",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQFtYn7ZQa5JZw/company-logo_400_400/B4DZh9Iq0zH8AY-/0/1754446082073?e=1785974400&v=beta&t=NwAD4npvCEQx-ujqF7Q8u_LwBfYB2r6cDcjqFpEajks",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQFtYn7ZQa5JZw/company-logo_200_200/B4DZh9Iq0zH8AI-/0/1754446082073?e=1785974400&v=beta&t=0CGWqASH8feblC9apZgCy0s7Lk1O3ebuR8A_oCxRvc0",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQFtYn7ZQa5JZw/company-logo_100_100/B4DZh9Iq0zH8AQ-/0/1754446082073?e=1785974400&v=beta&t=p7UUDtUIygZa9lcbyVwRwNID8ps7ZVU6VPnHAQPH6eA",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      },
+      "companyUniversalName": "lonelybag-foodrescue-private-limited"
+    },
+    {
+      "position": "Webmaster",
+      "location": "Mumbai, Maharashtra, India",
+      "employmentType": "Full-time",
+      "workplaceType": "Hybrid",
+      "companyName": "CSI - TCET",
+      "companyLinkedinUrl": "https://www.linkedin.com/company/csi-tcet/",
+      "companyId": "76834903",
+      "duration": "1 yr 1 mo",
+      "description": null,
+      "skills": null,
+      "startDate": {
+        "month": "Jul",
+        "year": 2024,
+        "text": "Jul 2024"
+      },
+      "endDate": {
+        "month": "Jul",
+        "year": 2025,
+        "text": "Jul 2025"
+      },
+      "companyLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/C4E0BAQE37xYfO1oK3A/company-logo_400_400/company-logo_400_400/0/1630652841854?e=1785974400&v=beta&t=mSfFDZpSrMvtfnByQaRbV_rptxyE4tYSWi2zto5X7ng",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C4E0BAQE37xYfO1oK3A/company-logo_400_400/company-logo_400_400/0/1630652841854?e=1785974400&v=beta&t=mSfFDZpSrMvtfnByQaRbV_rptxyE4tYSWi2zto5X7ng",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C4E0BAQE37xYfO1oK3A/company-logo_200_200/company-logo_200_200/0/1630652841854?e=1785974400&v=beta&t=3Ipl7h6vS8lWMhOeWKtCCZxjik3afGo9gKx67x7OCkQ",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C4E0BAQE37xYfO1oK3A/company-logo_100_100/company-logo_100_100/0/1630652841854?e=1785974400&v=beta&t=6ppDRgqSiga4IcC3XMUFos-NWAl6xwOhDXTSuiJ_aME",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      },
+      "companyUniversalName": "csi-tcet"
+    },
+    {
+      "position": "Creative Designer",
+      "location": "Mumbai, Maharashtra, India",
+      "employmentType": "Part-time",
+      "workplaceType": "Hybrid",
+      "companyName": "TCET CAPTURE",
+      "companyLinkedinUrl": "https://www.linkedin.com/company/tcet-capture/",
+      "companyId": "98540635",
+      "duration": "1 yr 1 mo",
+      "description": null,
+      "skills": [
+        "Creative Imaging",
+        "Creative Concept Design"
+      ],
+      "startDate": {
+        "month": "May",
+        "year": 2024,
+        "text": "May 2024"
+      },
+      "endDate": {
+        "month": "May",
+        "year": 2025,
+        "text": "May 2025"
+      },
+      "companyLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4D0BAQGxHJDsdLXMKQ/company-logo_400_400/B4DZ7kd3raIIAY-/0/1781949497518/tcet_capture_logo?e=1785974400&v=beta&t=zHKJHC6RhdVVLgUS2pvQ3l7G_vDVnR0WPHbWeo-dljA",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQGxHJDsdLXMKQ/company-logo_400_400/B4DZ7kd3raIIAY-/0/1781949497518/tcet_capture_logo?e=1785974400&v=beta&t=zHKJHC6RhdVVLgUS2pvQ3l7G_vDVnR0WPHbWeo-dljA",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQGxHJDsdLXMKQ/company-logo_200_200/B4DZ7kd3raIIAI-/0/1781949497518/tcet_capture_logo?e=1785974400&v=beta&t=nkS7pBp0yGwTtLUYzmGUWBn-rfJCwZbxcmR2YZEg2xE",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQGxHJDsdLXMKQ/company-logo_100_100/B4DZ7kd3raIIAM-/0/1781949497518/tcet_capture_logo?e=1785974400&v=beta&t=O6o3BoUUW2l2dI3OctyeT38Wlu5CY8h52_gBbLsPM30",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      },
+      "companyUniversalName": "tcet-capture"
+    },
+    {
+      "position": "Creative Member",
+      "location": null,
+      "employmentType": "Part-time",
+      "workplaceType": "Hybrid",
+      "companyName": "Indian Society for Technical Education (TCET)",
+      "companyLinkedinUrl": "https://www.linkedin.com/search/results/all/?keywords=Indian+Society+for+Technical+Education+%28TCET%29",
+      "duration": "9 mos",
+      "description": "1. Event Design and Coordination: Designed posters and logos for sponsors at the ZEPHYR event and created ID cards for the ISTE team.\n\n2. Competition Organization: Successfully organized and managed a Rubik's cube solving competition during AC-STEM 3.0.\n\n3.Event Management: Contributed to the discipline team during Fiesta '23, ensuring smooth event operations.\n\n4.Graphic Design: Developed various graphics and posters for the FIESTA event, enhancing the event's visual appeal.\n\n5.Technical Support: Managed backend work for error handling and supervised research papers for MULTICON '23, ensuring accuracy and efficiency.",
+      "skills": [
+        "Adobe Photoshop",
+        "Adobe Illustrator",
+        "Adobe Premiere Pro",
+        "Microsoft PowerPoint"
+      ],
+      "startDate": {
+        "month": "Sep",
+        "year": 2023,
+        "text": "Sep 2023"
+      },
+      "endDate": {
+        "month": "May",
+        "year": 2024,
+        "text": "May 2024"
       }
     }
   ],
   "education": [
     {
-      "schoolName": "Thakur College Of Engineering and Technology",
-      "schoolLinkedinUrl": "https://www.linkedin.com/company/11448647/",
-      "schoolId": "11448647",
-      "degree": "Bachelor of Engineering",
-      "fieldOfStudy": "Computer Science",
-      "period": "Jan 2023 - Jan 2027",
+      "schoolName": "Thakur College of Engineering & Technology Shaymnarayan Thakur Marg Thakur Villaige Samata Nagar Kandivli (E) Mumbai 400 101",
+      "schoolLinkedinUrl": "https://www.linkedin.com/company/15152250/",
+      "schoolId": "15152250",
+      "degree": "Bachelor of Engineering - BE",
+      "fieldOfStudy": "Computer Engineering",
+      "skills": [
+        "Problem Solving",
+        "JavaScript",
+        "Python (Programming Language)",
+        "C (Programming Language)",
+        "Microsoft PowerPoint"
+      ],
       "startDate": {
-        "month": "Jan",
+        "month": "Aug",
         "year": 2023,
-        "text": "Jan 2023"
+        "text": "Aug 2023"
       },
       "endDate": {
-        "month": "Jan",
+        "month": "May",
         "year": 2027,
-        "text": "Jan 2027"
+        "text": "May 2027"
       },
-      "schoolLogo": {
-        "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M",
-        "sizes": [
-          {
-            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M",
-            "width": 400,
-            "height": 400
-          },
-          {
-            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_200_200/company-logo_200_200/0/1631391930064?e=1785974400&v=beta&t=0N8ZKMwcPWRiCr_2BzJJotaN0GfL88oq8dPNJorAkbg",
-            "width": 200,
-            "height": 200
-          },
-          {
-            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_100_100/company-logo_100_100/0/1631391930064?e=1785974400&v=beta&t=_3pryI0PUMXkycQWaCcngC25wQWbRWz1KzhOyhPYk1I",
-            "width": 100,
-            "height": 100
-          }
-        ]
-      }
+      "period": "Aug 2023 - May 2027",
+      "schoolLogo": null
+    },
+    {
+      "schoolName": "Nirmala Memorial Foundation College of Commerce & Science",
+      "schoolLinkedinUrl": "https://www.linkedin.com/company/9104390/",
+      "schoolId": "9104390",
+      "degree": "Computer Science",
+      "fieldOfStudy": null,
+      "skills": [
+        "HTML5",
+        "Cascading Style Sheets (CSS)",
+        "C++",
+        "Java"
+      ],
+      "startDate": {
+        "month": "Jun",
+        "year": 2021,
+        "text": "Jun 2021"
+      },
+      "endDate": {
+        "month": "Apr",
+        "year": 2023,
+        "text": "Apr 2023"
+      },
+      "period": "Jun 2021 - Apr 2023",
+      "schoolLogo": null
     }
   ],
   "certifications": [
     {
-      "title": "Program with PL/SQL",
-      "issuedBy": "HackerRank",
-      "issuedAt": "Issued Jun 2026 · Expires Dec 2026",
-      "link": "https://www.hackerrank.com/certificates/42f3c399b64b",
-      "issuedByLink": "https://www.linkedin.com/company/435210/",
+      "title": "Google Cybersecurity",
+      "issuedAt": "Issued Dec 2024",
+      "link": "https://www.coursera.org/account/accomplishments/specialization/80S653R81POS",
+      "issuedBy": "Google",
+      "issuedByLink": "https://www.linkedin.com/company/1441/",
       "issuedByLogo": {
-        "url": "https://media.licdn.com/dms/image/v2/D560BAQE8MivsmbT7Ig/company-logo_400_400/company-logo_400_400/0/1705561459405/hackerrank_logo?e=1785974400&v=beta&t=JRtnJi4kW_mU-zIv3LxAvOvZ8-uRbl7yC-zpF7WNvPk",
+        "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
         "sizes": [
           {
-            "url": "https://media.licdn.com/dms/image/v2/D560BAQE8MivsmbT7Ig/company-logo_400_400/company-logo_400_400/0/1705561459405/hackerrank_logo?e=1785974400&v=beta&t=JRtnJi4kW_mU-zIv3LxAvOvZ8-uRbl7yC-zpF7WNvPk",
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
             "width": 400,
             "height": 400
           },
           {
-            "url": "https://media.licdn.com/dms/image/v2/D560BAQE8MivsmbT7Ig/company-logo_200_200/company-logo_200_200/0/1705561459405/hackerrank_logo?e=1785974400&v=beta&t=1-KsXaewixyC9fN4bF6iw1TMsAqyqPay_6fRkedkmUk",
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_200_200/B4EZmhegXHGcAM-/0/1759350753990/google_logo?e=1785974400&v=beta&t=1VF5b-DgWxhmAS04xFngkRTSOZYt4JyW2CCRTZW41sg",
             "width": 200,
             "height": 200
           },
           {
-            "url": "https://media.licdn.com/dms/image/v2/D560BAQE8MivsmbT7Ig/company-logo_100_100/company-logo_100_100/0/1705561459405/hackerrank_logo?e=1785974400&v=beta&t=qT2tligf18S1O-qhIeb0CZixsjmDEiZzm69PVfKQAf0",
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_100_100/B4EZmhegXHGcAU-/0/1759350753990/google_logo?e=1785974400&v=beta&t=P2GmZXnLiMluGL6nr7eIvTmq94cmoR4aPPhlr5CQhPg",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Automate Cybersecurity Tasks with Python",
+      "issuedAt": "Issued Dec 2024",
+      "link": "https://coursera.org/verify/M5VMN7H6CRJF",
+      "issuedBy": "Google",
+      "issuedByLink": "https://www.linkedin.com/company/1441/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_200_200/B4EZmhegXHGcAM-/0/1759350753990/google_logo?e=1785974400&v=beta&t=1VF5b-DgWxhmAS04xFngkRTSOZYt4JyW2CCRTZW41sg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_100_100/B4EZmhegXHGcAU-/0/1759350753990/google_logo?e=1785974400&v=beta&t=P2GmZXnLiMluGL6nr7eIvTmq94cmoR4aPPhlr5CQhPg",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Sound the Alarm: Detection and Response",
+      "issuedAt": "Issued Dec 2024",
+      "link": "https://coursera.org/verify/TLNGF7LPNTJ2",
+      "issuedBy": "Google",
+      "issuedByLink": "https://www.linkedin.com/company/1441/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_200_200/B4EZmhegXHGcAM-/0/1759350753990/google_logo?e=1785974400&v=beta&t=1VF5b-DgWxhmAS04xFngkRTSOZYt4JyW2CCRTZW41sg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_100_100/B4EZmhegXHGcAU-/0/1759350753990/google_logo?e=1785974400&v=beta&t=P2GmZXnLiMluGL6nr7eIvTmq94cmoR4aPPhlr5CQhPg",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Assets, Threats, and Vulnerabilities",
+      "issuedAt": "Issued Dec 2024",
+      "link": "https://coursera.org/verify/A7OXONILKYQI",
+      "issuedBy": "Google",
+      "issuedByLink": "https://www.linkedin.com/company/1441/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_200_200/B4EZmhegXHGcAM-/0/1759350753990/google_logo?e=1785974400&v=beta&t=1VF5b-DgWxhmAS04xFngkRTSOZYt4JyW2CCRTZW41sg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_100_100/B4EZmhegXHGcAU-/0/1759350753990/google_logo?e=1785974400&v=beta&t=P2GmZXnLiMluGL6nr7eIvTmq94cmoR4aPPhlr5CQhPg",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Tools of the Trade: Linux and SQL",
+      "issuedAt": "Issued Dec 2024",
+      "link": "https://coursera.org/verify/MER8P07T0M5E",
+      "issuedBy": "Google",
+      "issuedByLink": "https://www.linkedin.com/company/1441/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_200_200/B4EZmhegXHGcAM-/0/1759350753990/google_logo?e=1785974400&v=beta&t=1VF5b-DgWxhmAS04xFngkRTSOZYt4JyW2CCRTZW41sg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_100_100/B4EZmhegXHGcAU-/0/1759350753990/google_logo?e=1785974400&v=beta&t=P2GmZXnLiMluGL6nr7eIvTmq94cmoR4aPPhlr5CQhPg",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Connect and Protect: Networks and Network Security",
+      "issuedAt": "Issued Dec 2024",
+      "link": "https://coursera.org/verify/3G99ZDFXINB5",
+      "issuedBy": "Google",
+      "issuedByLink": "https://www.linkedin.com/company/1441/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_200_200/B4EZmhegXHGcAM-/0/1759350753990/google_logo?e=1785974400&v=beta&t=1VF5b-DgWxhmAS04xFngkRTSOZYt4JyW2CCRTZW41sg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_100_100/B4EZmhegXHGcAU-/0/1759350753990/google_logo?e=1785974400&v=beta&t=P2GmZXnLiMluGL6nr7eIvTmq94cmoR4aPPhlr5CQhPg",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Postman API Fundamental Student Expert",
+      "link": "https://api.badgr.io/public/assertions/Ykigzf2EQYCqNIcNMF4kAQ",
+      "issuedBy": "Postman",
+      "issuedByLink": "https://www.linkedin.com/company/3795851/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/C560BAQFf8sH83foEVg/company-logo_400_400/company-logo_400_400/0/1654794308958/postman_platform_logo?e=1785974400&v=beta&t=7jXHvxG3wv3VXgh7YWJhQY9z26L0C9AVzEJP-Caw_NE",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C560BAQFf8sH83foEVg/company-logo_400_400/company-logo_400_400/0/1654794308958/postman_platform_logo?e=1785974400&v=beta&t=7jXHvxG3wv3VXgh7YWJhQY9z26L0C9AVzEJP-Caw_NE",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C560BAQFf8sH83foEVg/company-logo_200_200/company-logo_200_200/0/1654794308958/postman_platform_logo?e=1785974400&v=beta&t=O4i1zWWFQRjyB2fDyitqv64zG29acy-rvHmtrYXcjTg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/C560BAQFf8sH83foEVg/company-logo_100_100/company-logo_100_100/0/1654794308958/postman_platform_logo?e=1785974400&v=beta&t=WkzvGSOnlhrIobubgAyAk50_706QL_8LlVTWRcxpGSA",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Play It Safe: Manage Security Risks",
+      "issuedAt": "Issued Jul 2024",
+      "link": "https://www.coursera.org/account/accomplishments/records/7GU7J7ZETMJ9",
+      "issuedBy": "Google",
+      "issuedByLink": "https://www.linkedin.com/company/1441/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_200_200/B4EZmhegXHGcAM-/0/1759350753990/google_logo?e=1785974400&v=beta&t=1VF5b-DgWxhmAS04xFngkRTSOZYt4JyW2CCRTZW41sg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_100_100/B4EZmhegXHGcAU-/0/1759350753990/google_logo?e=1785974400&v=beta&t=P2GmZXnLiMluGL6nr7eIvTmq94cmoR4aPPhlr5CQhPg",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Python 3.4.3",
+      "link": null,
+      "issuedBy": "Spoken Tutorial, EduPyramids, SINE, IIT Bombay",
+      "issuedByLink": "https://www.linkedin.com/company/67571740/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D560BAQHlSIobDYoePA/company-logo_400_400/B56ZrZGPUHJkAc-/0/1764578883285/spokentutorial_logo?e=1785974400&v=beta&t=9xPzyAn0Sh5cJ_A-cpD5TFKuFhJUUxhI9o0xc7dpgxs",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D560BAQHlSIobDYoePA/company-logo_400_400/B56ZrZGPUHJkAc-/0/1764578883285/spokentutorial_logo?e=1785974400&v=beta&t=9xPzyAn0Sh5cJ_A-cpD5TFKuFhJUUxhI9o0xc7dpgxs",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D560BAQHlSIobDYoePA/company-logo_200_200/B56ZrZGPUHJkAM-/0/1764578883285/spokentutorial_logo?e=1785974400&v=beta&t=RPf6F1sBr8kqiNXLKZmnIbehpDbRGHNBJB4UIlSyPe0",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D560BAQHlSIobDYoePA/company-logo_100_100/B56ZrZGPUHJkAU-/0/1764578883285/spokentutorial_logo?e=1785974400&v=beta&t=85JXBsYhlJ6jHyZrBOlz3xZOukxD0Zg-27lQxVle76M",
+            "width": 100,
+            "height": 100
+          }
+        ]
+      }
+    },
+    {
+      "title": "Foundations of Cybersecurity",
+      "issuedAt": "Issued Jan 2024",
+      "link": "https://www.coursera.org/account/accomplishments/records/SBZWBC3737A8",
+      "issuedBy": "Google",
+      "issuedByLink": "https://www.linkedin.com/company/1441/",
+      "issuedByLogo": {
+        "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+        "sizes": [
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_400_400/B4EZmhegXHGcAc-/0/1759350753990/google_logo?e=1785974400&v=beta&t=RcgJIu9eMn5VWtZxZ4tuAHkF3Gag0pHBSaydtcCEqOY",
+            "width": 400,
+            "height": 400
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_200_200/B4EZmhegXHGcAM-/0/1759350753990/google_logo?e=1785974400&v=beta&t=1VF5b-DgWxhmAS04xFngkRTSOZYt4JyW2CCRTZW41sg",
+            "width": 200,
+            "height": 200
+          },
+          {
+            "url": "https://media.licdn.com/dms/image/v2/D4E0BAQGv3cqOuUMY7g/company-logo_100_100/B4EZmhegXHGcAU-/0/1759350753990/google_logo?e=1785974400&v=beta&t=P2GmZXnLiMluGL6nr7eIvTmq94cmoR4aPPhlr5CQhPg",
             "width": 100,
             "height": 100
           }
@@ -216,86 +743,326 @@
       }
     }
   ],
-  "projects": [
-    {
-      "title": "Data-Cleaning Platform",
-      "duration": null,
-      "startDate": null,
-      "endDate": null,
-      "description": "Architected an automated data-cleaning pipeline using structural parsing to efficiently ingest, format, and optimize chaotic datasets for downstream analytics."
-    }
-  ],
+  "projects": [],
   "volunteering": [],
   "receivedRecommendations": [],
   "skills": [
     {
-      "name": "Tableau"
+      "name": "Problem Solving",
+      "positions": [
+        "Thakur College of Engineering & Technology"
+      ]
     },
     {
-      "name": "Pandas (Software)"
+      "name": "Artificial Intelligence (AI)",
+      "positions": [
+        "Machine Learning Intern at SEQURETEK"
+      ]
     },
     {
-      "name": "Microsoft Office"
+      "name": "Reinforcement Learning",
+      "positions": [
+        "Machine Learning Intern at SEQURETEK"
+      ]
     },
     {
-      "name": "Microsoft Power BI"
+      "name": "IML",
+      "positions": [
+        "Machine Learning Intern at SEQURETEK"
+      ]
     },
     {
-      "name": "Python (Programming Language)"
+      "name": "Unsupervised Learning",
+      "positions": [
+        "Machine Learning Intern at SEQURETEK"
+      ]
     },
     {
-      "name": "Microsoft Excel"
+      "name": "Ai automation",
+      "positions": [
+        "AI Developer Intern at VidyarthiMitra.org"
+      ]
     },
     {
-      "name": "SQL"
+      "name": "n8n",
+      "positions": [
+        "AI Developer Intern at VidyarthiMitra.org"
+      ]
     },
     {
-      "name": "Data Preparation"
+      "name": "Tesseract",
+      "positions": [
+        "AI Developer Intern at VidyarthiMitra.org"
+      ]
     },
     {
-      "name": "Database Analysis"
+      "name": "TypeScript",
+      "positions": [
+        "Frontend Developer at LonelyBag FoodRescue Private Limited"
+      ]
     },
     {
-      "name": "Trend Analysis"
+      "name": "Web Interface Design",
+      "positions": [
+        "Frontend Developer at LonelyBag FoodRescue Private Limited"
+      ]
     },
     {
-      "name": "Engineering Education"
+      "name": "GitHub",
+      "positions": [
+        "Frontend Developer at LonelyBag FoodRescue Private Limited"
+      ]
     },
     {
-      "name": "Job Analysis"
+      "name": "Front-End Design",
+      "positions": [
+        "Frontend Developer at LonelyBag FoodRescue Private Limited"
+      ]
     },
     {
-      "name": "Supply Chain Operations"
+      "name": "Next.js",
+      "positions": [
+        "Frontend Developer at LonelyBag FoodRescue Private Limited"
+      ]
     },
     {
-      "name": "Platform Architecture"
+      "name": "Computer Programming",
+      "positions": [
+        "Automate Cybersecurity Tasks with Python"
+      ]
     },
     {
-      "name": "Spatial Modeling"
+      "name": "Python Programming",
+      "positions": [
+        "Automate Cybersecurity Tasks with Python"
+      ]
     },
     {
-      "name": "Datasets"
+      "name": "Coding",
+      "positions": [
+        "Automate Cybersecurity Tasks with Python"
+      ]
     },
     {
-      "name": "Spreadsheets"
+      "name": "PEP 8 style guide",
+      "positions": [
+        "Automate Cybersecurity Tasks with Python"
+      ]
     },
     {
-      "name": "Database Management System (DBMS)"
+      "name": "Security Information and Event Management (SIEM) tools",
+      "positions": [
+        "Sound the Alarm: Detection and Response"
+      ]
     },
     {
-      "name": "Relational Data Modeling"
+      "name": "Intrusion Detection Systems (IDS)",
+      "positions": [
+        "Sound the Alarm: Detection and Response"
+      ]
     },
     {
-      "name": "Data Cleaning"
+      "name": "Packet Analyzer",
+      "positions": [
+        "Sound the Alarm: Detection and Response"
+      ]
     },
     {
-      "name": "Data Pipelines"
+      "name": "Authentication",
+      "positions": [
+        "Assets, Threats, and Vulnerabilities"
+      ]
     },
     {
-      "name": "Developer Tools"
+      "name": "Vulnerability Assessment",
+      "positions": [
+        "Assets, Threats, and Vulnerabilities"
+      ]
     },
     {
-      "name": "Spatial Data"
+      "name": "Cryptography",
+      "positions": [
+        "Assets, Threats, and Vulnerabilities"
+      ]
+    },
+    {
+      "name": "Threat Analysis",
+      "positions": [
+        "Assets, Threats, and Vulnerabilities"
+      ]
+    },
+    {
+      "name": "Security Audits",
+      "positions": [
+        "Play It Safe: Manage Security Risks"
+      ]
+    },
+    {
+      "name": "Hardware Security Module (HSM)",
+      "positions": [
+        "Connect and Protect: Networks and Network Security"
+      ]
+    },
+    {
+      "name": "Network Architecture",
+      "positions": [
+        "Connect and Protect: Networks and Network Security"
+      ]
+    },
+    {
+      "name": "Application Programming Interfaces (API)",
+      "positions": [
+        "Postman API Fundamental Student Expert"
+      ]
+    },
+    {
+      "name": "API Testing",
+      "positions": [
+        "Postman API Fundamental Student Expert"
+      ]
+    },
+    {
+      "name": "Creative Imaging",
+      "positions": [
+        "Creative Designer at TCET CAPTURE"
+      ]
+    },
+    {
+      "name": "Creative Concept Design",
+      "positions": [
+        "Creative Designer at TCET CAPTURE"
+      ]
+    },
+    {
+      "name": "SQL",
+      "positions": [
+        "Tools of the Trade: Linux and SQL"
+      ]
+    },
+    {
+      "name": "Linux",
+      "positions": [
+        "Tools of the Trade: Linux and SQL"
+      ]
+    },
+    {
+      "name": "Bash",
+      "positions": [
+        "Tools of the Trade: Linux and SQL"
+      ]
+    },
+    {
+      "name": "Postman API",
+      "positions": [
+        "Postman API Fundamental Student Expert"
+      ]
+    },
+    {
+      "name": "REST APIs",
+      "positions": [
+        "Postman API Fundamental Student Expert"
+      ]
+    },
+    {
+      "name": "Adobe Photoshop"
+    },
+    {
+      "name": "Adobe Illustrator"
+    },
+    {
+      "name": "Adobe Premiere Pro"
+    },
+    {
+      "name": "JavaScript",
+      "positions": [
+        "Thakur College of Engineering & Technology"
+      ]
+    },
+    {
+      "name": "C (Programming Language)",
+      "positions": [
+        "Thakur College of Engineering & Technology"
+      ]
+    },
+    {
+      "name": "Python (Programming Language)",
+      "positions": [
+        "AI Developer Intern at VidyarthiMitra.org",
+        "Thakur College of Engineering & Technology",
+        "Python 3.4.3"
+      ]
+    },
+    {
+      "name": "C++",
+      "positions": [
+        "Nirmala Memorial Foundation College of Commerce & Science"
+      ]
+    },
+    {
+      "name": "Java",
+      "positions": [
+        "Nirmala Memorial Foundation College of Commerce & Science"
+      ]
+    },
+    {
+      "name": "HTML5",
+      "positions": [
+        "Nirmala Memorial Foundation College of Commerce & Science"
+      ]
+    },
+    {
+      "name": "Cascading Style Sheets (CSS)",
+      "positions": [
+        "Nirmala Memorial Foundation College of Commerce & Science"
+      ]
+    },
+    {
+      "name": "Microsoft PowerPoint",
+      "positions": [
+        "Thakur College of Engineering & Technology"
+      ]
+    },
+    {
+      "name": "asset classification",
+      "positions": [
+        "Assets, Threats, and Vulnerabilities"
+      ]
+    },
+    {
+      "name": "Command line interface (CLI)",
+      "positions": [
+        "Tools of the Trade: Linux and SQL"
+      ]
+    },
+    {
+      "name": "Information Security (INFOSEC)",
+      "positions": [
+        "Play It Safe: Manage Security Risks"
+      ]
+    },
+    {
+      "name": "NIST Risk Management Framework (RMF)",
+      "positions": [
+        "Play It Safe: Manage Security Risks"
+      ]
+    },
+    {
+      "name": "NIST Cybersecurity Framework (CSF)",
+      "positions": [
+        "Play It Safe: Manage Security Risks"
+      ]
+    },
+    {
+      "name": "Transmission Control Protocol / Internet Protocol (TCP/IP)",
+      "positions": [
+        "Connect and Protect: Networks and Network Security"
+      ]
+    },
+    {
+      "name": "Cloud Networks",
+      "positions": [
+        "Connect and Protect: Networks and Network Security"
+      ]
     }
   ],
   "publications": [],
@@ -305,64 +1072,91 @@
   "languages": [],
   "organizations": [],
   "causes": [],
-  "featured": null,
+  "featured": {
+    "images": [],
+    "link": null,
+    "title": null,
+    "subtitle": null,
+    "slides": [
+      {
+        "title": null,
+        "subtitle": null,
+        "description": null,
+        "url": "https://www.linkedin.com/feed/update/urn:li:activity:7474361978946437120?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7474361978946437120%29",
+        "image": {
+          "url": "https://media.licdn.com/dms/image/v2/D4D05AQHsK8ppXjDMVw/videocover-high/B4DZ7pEjOJHQBQ-/0/1782026751628?e=1784721600&v=beta&t=mT3p28sqBReOWOAufB0ePDPvyM_7y6bjav_nOYqGC9o"
+        }
+      },
+      {
+        "title": null,
+        "subtitle": null,
+        "description": null,
+        "url": "https://www.linkedin.com/feed/update/urn:li:activity:7441340574969786368?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7441340574969786368%29",
+        "image": {
+          "url": "https://media.licdn.com/dms/image/v2/D4D05AQFsTs6TsvN-4A/videocover-high/B4DZ0RnoKJIIBY-/0/1774117102192?e=1784721600&v=beta&t=j6FnDxi1L8UyPKfjf1PTFa9k1cj2OmmrsvrsPqpevyM"
+        }
+      },
+      {
+        "title": null,
+        "subtitle": null,
+        "description": null,
+        "url": "https://www.linkedin.com/feed/update/urn:li:activity:7439365954574221312?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7439365954574221312%29",
+        "image": {
+          "url": "https://media.licdn.com/dms/image/v2/D4D22AQGbjHTDvP6HvQ/feedshare-image-high-res/B4DZz3vrxpG0AY-/0/1773682998774?e=1785974400&v=beta&t=1Osh0ZiRb-kaoTkC-gPrDwAlFHNaanfEe0zpuKvcKwk"
+        }
+      },
+      {
+        "title": null,
+        "subtitle": null,
+        "description": null,
+        "url": "https://www.linkedin.com/feed/update/urn:li:activity:7366197999758168064?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A7366197999758168064%29",
+        "image": {
+          "url": "https://media.licdn.com/dms/image/v2/D4D22AQFxezhutiQQhA/feedshare-shrink_1280/B4DZjnKxnkH0Aw-/0/1756225019323?e=1785974400&v=beta&t=lbmVyqmi1LVemPXqW4cCLNflpiahVfnOZ7GP7y47oA4"
+        }
+      }
+    ]
+  },
   "composeOptionType": "UPSELL",
   "moreProfiles": [
     {
-      "id": "ACoAADHxlEIB7wzxPbdQ-UZY1sl3DjxMW4IUxqI",
-      "firstName": "Sonu ",
+      "id": "ACoAAEQjqaoBDxRVzOgms-yUCNePn70KQfhQo6U",
+      "firstName": "Hardik",
+      "lastName": "Bansal",
+      "position": "Backend Developer | Java, Spring Boot, Node.js, Distributed Systems | Ex-Sequretek ML Intern",
+      "publicIdentifier": "hardikbansal31",
+      "linkedinUrl": "https://www.linkedin.com/in/hardikbansal31"
+    },
+    {
+      "id": "ACoAADZcOb8BKLkiVyIqXactyB35TM8_gpeMjA8",
+      "firstName": "Parth",
       "lastName": "Gupta",
-      "position": "Aspiring Data Analyst | Power BI | SQL | Excel | Python | Data Visualization | Ex-Journalist",
-      "publicIdentifier": "sonugupta1211",
-      "linkedinUrl": "https://www.linkedin.com/in/sonugupta1211"
+      "position": "CS Undergrad | AI & Web Development Enthusiast",
+      "publicIdentifier": "parth-gupta20",
+      "linkedinUrl": "https://www.linkedin.com/in/parth-gupta20"
     },
     {
-      "id": "ACoAADiX4pAB7G9C0jWCBSakNN0JQBuxBwUQWYI",
-      "firstName": "Pranav",
-      "lastName": "Bhavsar",
-      "position": "Data Analyst - Private Equity @ Morningstar | Foreign Exchange (FX) Trading",
-      "publicIdentifier": "pranavkbhavsar",
-      "linkedinUrl": "https://www.linkedin.com/in/pranavkbhavsar"
+      "id": "ACoAADqToYABYMZ12txShJLRJfPS0wSeGdDIfKM",
+      "firstName": "Shreevathsa",
+      "lastName": "Bhat",
+      "position": "Tcet27 | Building products |Full Stack + GenAI Intern, Tech Lead @RCTCET;Hackathon: 1xWinner, 7xFinalist",
+      "publicIdentifier": "shreevathsa05",
+      "linkedinUrl": "https://www.linkedin.com/in/shreevathsa05"
     },
     {
-      "id": "ACoAAFb1XJQBxXD_tsIVl5FaVIvU3xL6VY_b-qw",
-      "firstName": "Hanshika",
-      "lastName": "Kottala",
-      "position": "Data Analyst | SQL | Python | Power BI | Machine Learning & NLP | EDA | Turning Data into Insights | 2026 Graduate",
-      "publicIdentifier": "hanshika-kottala-90470a348",
-      "linkedinUrl": "https://www.linkedin.com/in/hanshika-kottala-90470a348"
+      "id": "ACoAAErkBHcBGRPxvqUH7oeWQYQCBWGYZU4nejE",
+      "firstName": "Sumit",
+      "lastName": "Sonkamble",
+      "position": "2× Hackathon Finalist | Full Stack Developer Intern @ AIKings Solution",
+      "publicIdentifier": "sumit-sonkamble",
+      "linkedinUrl": "https://www.linkedin.com/in/sumit-sonkamble"
     },
     {
-      "id": "ACoAAD-YjK4B1ekkuKaP0cSvVwYi6kAAiCTAQhY",
-      "firstName": "Vishnu Ram Sachin",
-      "lastName": "D",
-      "position": "Data Analyst Intern @AtliQ Technologies | MySQL · Power BI · Excel | Turning Unstructured Business Data Into Decisions That Actually Make Sense |",
-      "publicIdentifier": "vishnu-ram-sachin-d-",
-      "linkedinUrl": "https://www.linkedin.com/in/vishnu-ram-sachin-d-"
-    },
-    {
-      "id": "ACoAAFDu-NsBgHZ8HLTYnZSC9GFr4tqJ7fKLHBI",
-      "firstName": "Khushi",
-      "lastName": "Chandel",
-      "position": "TCET’27 | PYTHON |Data Analyst",
-      "publicIdentifier": "khushi-chandel-24b8a231a",
-      "linkedinUrl": "https://www.linkedin.com/in/khushi-chandel-24b8a231a"
-    },
-    {
-      "id": "ACoAAEPUiykBBho3FNbfHJoyfKoNH8Yx0TzLIG4",
-      "firstName": "Harsh",
-      "lastName": "Pandey",
-      "position": "Artificial Intelligence And Data Science Enthusiast | TCET’27",
-      "publicIdentifier": "harsh-pandey-489146279",
-      "linkedinUrl": "https://www.linkedin.com/in/harsh-pandey-489146279"
-    },
-    {
-      "id": "ACoAAFKMFYwBagwWok1QpIxo1ubzZo7_hmmp_Rs",
-      "firstName": "Reetika",
-      "lastName": "Yadav",
-      "position": "1st Place Winner-Knowcode 3.0 Hackathon’26 @KJSIT | Computer Engineering @TCET’27 | Data Analyst",
-      "publicIdentifier": "reetika-yadav-a38979327",
-      "linkedinUrl": "https://www.linkedin.com/in/reetika-yadav-a38979327"
+      "id": "ACoAAEs41yoBHN4U5nQslp1I2XNXaPfvahSpER0",
+      "firstName": "Karan ",
+      "lastName": "Gupta",
+      "position": "CS Undergrad",
+      "publicIdentifier": "karan-gupta-60a7912b2",
+      "linkedinUrl": "https://www.linkedin.com/in/karan-gupta-60a7912b2"
     },
     {
       "id": "ACoAAFJaEhIBXCqW4Wh2Xw284uHg8hAdxzKy2vk",
@@ -373,119 +1167,236 @@
       "linkedinUrl": "https://www.linkedin.com/in/vedika-gugale-06a859326"
     },
     {
-      "id": "ACoAAFy-6ToBuqhrzqxIYp_ZpXU7ub6rrM3KHq8",
-      "firstName": "GAYATHRI",
-      "lastName": "M",
-      "position": "Junior Data Analyst | Excel • SQL • Power BI • Python (Basics) | Passionate About Data Cleaning, Visualization & Insights. ",
-      "publicIdentifier": "gayathri-analytics",
-      "linkedinUrl": "https://www.linkedin.com/in/gayathri-analytics"
+      "id": "ACoAAEZgevQBcVmxYHXR_ypeMW4Os7NE1FbBSSc",
+      "firstName": "Swamini",
+      "lastName": "Yesade",
+      "position": "sde intern @Prop Firm Bridge | AI & Data Science Student | Backend Developer | Vice Chairperson at TCET Shastra Coding Club | 2* on CodeChef | Building Intelligent & Scalable Products |",
+      "publicIdentifier": "swamini-yesade-0017c",
+      "linkedinUrl": "https://www.linkedin.com/in/swamini-yesade-0017c"
     },
     {
-      "id": "ACoAAErvUioBweERROQzGeRgwaBceoZYDP_C4zI",
-      "firstName": "Hemangi",
-      "lastName": "Jha",
-      "position": "Data Analyst Intern | TCET’27 | AI&DS UG",
-      "publicIdentifier": "hemangi-jha-2620492b1",
-      "linkedinUrl": "https://www.linkedin.com/in/hemangi-jha-2620492b1"
+      "id": "ACoAAFEXG14BMFXL4UZkhKznDuONGr3yxFn_E4w",
+      "firstName": "Ritesh ",
+      "lastName": "Gupta",
+      "position": "Student at Thakur College of Engineering & Technology",
+      "publicIdentifier": "ritesh-gupta-42675031b",
+      "linkedinUrl": "https://www.linkedin.com/in/ritesh-gupta-42675031b"
     },
     {
-      "id": "ACoAAAZOFwMBKnHAaJsY5eFV5xJvAe_XAt0-QDk",
-      "firstName": "Léonid",
-      "lastName": "Igor Zohoungbogbo",
-      "position": "Finance & Operations Manager | Corporate Finance | OHADA/SYSCOHADA | IPSAS | Audit & Internal Control | UN System Experience--",
-      "publicIdentifier": "l%C3%A9onid-igor-zohoungbogbo-a2b5132b",
-      "linkedinUrl": "https://www.linkedin.com/in/l%C3%A9onid-igor-zohoungbogbo-a2b5132b"
+      "id": "ACoAADPPowMBsIHV3_AhzeZQcUE8_WNPy7rrQHI",
+      "firstName": "Ayush",
+      "lastName": "Dubey",
+      "position": "CS Student | Aspiring Backend Developer | Spring Boot Enthusiast | Love Problem Solving",
+      "publicIdentifier": "0808dubey",
+      "linkedinUrl": "https://www.linkedin.com/in/0808dubey"
     },
     {
-      "id": "ACoAAF80utgBIIgZFGf7365wry0PNkJpEWO6imA",
-      "firstName": "turquin",
-      "lastName": "Kilikwa",
-      "position": "--",
-      "publicIdentifier": "turquin-kilikwa-420b1a386",
-      "linkedinUrl": "https://www.linkedin.com/in/turquin-kilikwa-420b1a386"
+      "id": "ACoAAERJlSEB0htjlVsPmLJYjrnPmySb2RiMp2c",
+      "firstName": "Jai",
+      "lastName": "Anjaria",
+      "position": "Full stack dev | GenAI | Computer Engineering | TCET’27",
+      "publicIdentifier": "jai-anjaria-25582527b",
+      "linkedinUrl": "https://www.linkedin.com/in/jai-anjaria-25582527b"
     },
     {
-      "id": "ACoAAGM1JT0B9jVRucaEd2aGJfIRn9afZaS7yZM",
-      "firstName": "Bavon",
-      "lastName": "KADIMA MULUMBA",
-      "position": "--",
-      "publicIdentifier": "bavon-kadima-mulumba-3114b63a5",
-      "linkedinUrl": "https://www.linkedin.com/in/bavon-kadima-mulumba-3114b63a5"
+      "id": "ACoAADoT-L4B1NvloVmUuSv0HfS1KOsydJHXDyA",
+      "firstName": "Anubhav",
+      "lastName": "Verma",
+      "position": "Associate Consultant - VAPT | 8 CVEs | Zimbra Hall of Fame | Web • API • Mobile • Cloud Security",
+      "publicIdentifier": "anubhav-verma-7123a1232",
+      "linkedinUrl": "https://www.linkedin.com/in/anubhav-verma-7123a1232"
     },
     {
-      "id": "ACoAAGQKWXIBaIQ5GAtzes2timX7Z8GHuQed2wM",
-      "firstName": "Merdie",
-      "lastName": "Masuama",
-      "position": "--",
-      "publicIdentifier": "merdie-masuama-26a1143aa",
-      "linkedinUrl": "https://www.linkedin.com/in/merdie-masuama-26a1143aa"
+      "id": "ACoAAB3k360BbrPaMNS2lFasS00eqgbrLVP4_9c",
+      "firstName": "Sanket",
+      "lastName": "Lotlikar",
+      "position": "Security Analyst - Sequretek",
+      "publicIdentifier": "sanket-lotlikar",
+      "linkedinUrl": "https://www.linkedin.com/in/sanket-lotlikar"
     },
     {
-      "id": "ACoAAGTEFHkBowPUbXyoDq3D3uAzwzeQDIW9CwY",
-      "firstName": "Bienvenu",
-      "lastName": "Iwanda",
-      "position": "--",
-      "publicIdentifier": "bienvenu-iwanda-2752043b2",
-      "linkedinUrl": "https://www.linkedin.com/in/bienvenu-iwanda-2752043b2"
+      "id": "ACoAADdqxT0Bq6IMxlx5HojTETOX2c-iFeGuYK0",
+      "firstName": "Sanket",
+      "lastName": "Singh",
+      "position": "CSIR | SOC | C-JWAPT | C-VA | CNSP | CRPO ",
+      "publicIdentifier": "sanket-singh-4a545221b",
+      "linkedinUrl": "https://www.linkedin.com/in/sanket-singh-4a545221b"
     },
     {
-      "id": "ACoAAGffurUBSiBpYJr2RZsUqUsnMCe-mcV6OAo",
-      "firstName": "Pierre",
-      "lastName": "Jonathan Bikanda",
-      "position": "--",
-      "publicIdentifier": "pierre-jonathan-bikanda-b5976b407",
-      "linkedinUrl": "https://www.linkedin.com/in/pierre-jonathan-bikanda-b5976b407"
+      "id": "ACoAADz5v7IB2tmHqlCvBOpdGomgWT-59WUyUNI",
+      "firstName": "Sabari",
+      "lastName": "R",
+      "position": "AI/ML Engineer | GenAI & Agentic AI | Python | SIEM & Security AI Specialist | LLMs, RAG Pipelines, Prompts Engineering",
+      "publicIdentifier": "sabari-r-216726246",
+      "linkedinUrl": "https://www.linkedin.com/in/sabari-r-216726246"
     },
     {
-      "id": "ACoAAGbe3FgBDEUU9iUmLJvrNllVerGPQ49JH6w",
-      "firstName": "Patient",
-      "lastName": "ILUNGA",
-      "position": "--",
-      "publicIdentifier": "patient-ilunga-b88bb1401",
-      "linkedinUrl": "https://www.linkedin.com/in/patient-ilunga-b88bb1401"
+      "id": "ACoAACfCCBABzBH8U0shz5XLm-Yxh4wu3-Drw1k",
+      "firstName": "Sabyasachi",
+      "lastName": "Roy",
+      "position": "Project Manager (SOC | VAPT | MSS) | SOC Optimization & SIEM Tuning Specialist | Reducing Alert Fatigue & Improving Detection Efficiency",
+      "publicIdentifier": "sabyasachi-roy-328477167",
+      "linkedinUrl": "https://www.linkedin.com/in/sabyasachi-roy-328477167"
     },
     {
-      "id": "ACoAAF6-bV8BS75BeByqzGQsr4Bs0598sPtVb6Y",
-      "firstName": "Franck",
-      "lastName": "Kamunga",
-      "position": "--",
-      "publicIdentifier": "franck-kamunga-73b3bb384",
-      "linkedinUrl": "https://www.linkedin.com/in/franck-kamunga-73b3bb384"
+      "id": "ACoAAEOyizAB-sORDIxpNDXMUspVVRxRkJVzVb8",
+      "firstName": "Disha",
+      "lastName": "Nayak",
+      "position": "TCET’27 | Computer Engineering",
+      "publicIdentifier": "dishanayak395",
+      "linkedinUrl": "https://www.linkedin.com/in/dishanayak395"
     },
     {
-      "id": "ACoAAEqoGMQBplGYyV2F7Fvd4w2iz9eRS0dQc6g",
-      "firstName": "Parlem",
-      "lastName": "Nzau",
-      "position": "Informaticien de gestion | Déclarant en douane | Gestion des stocks & Retail",
-      "publicIdentifier": "parlem-nzau-b705772ab",
-      "linkedinUrl": "https://www.linkedin.com/in/parlem-nzau-b705772ab"
+      "id": "ACoAADFlU1gB1nroXDOzKuGeO9dxcwo7xK0bwCo",
+      "firstName": "Rahul",
+      "lastName": "Chaudhari",
+      "position": "@ SEQURETEK | CISA Associate | GRC | IT/IS Audits | GRC | CyberSecurity | ISO/IEC 27001:2022 LA",
+      "publicIdentifier": "rahul-chaudhari-8206551b1",
+      "linkedinUrl": "https://www.linkedin.com/in/rahul-chaudhari-8206551b1"
     },
     {
-      "id": "ACoAAF6TMa4BVj0AahiaSuGoXZtsC-oI2o-SWbg",
-      "firstName": "Athanase",
-      "lastName": "Edungu",
-      "position": "--",
-      "publicIdentifier": "athanase-edungu-b52473383",
-      "linkedinUrl": "https://www.linkedin.com/in/athanase-edungu-b52473383"
+      "id": "ACoAAD59eD0BfjxNrMzTf_8ZfnE_64DCG0M_y1k",
+      "firstName": "suraj",
+      "lastName": "pokale",
+      "position": "Associate Consultant \n| DLP | Antivirus | EDR | XDR | SIEM |Implementing & managing endpoint security to safeguard systems & data🔒\n▪️Cortex ▪️Symantec ▪️TrendMicro ▪️Crowdstrike ▪️Trellix ▪️Forcepoint ",
+      "publicIdentifier": "suraj-pokale-a2513a253",
+      "linkedinUrl": "https://www.linkedin.com/in/suraj-pokale-a2513a253"
+    },
+    {
+      "id": "ACoAAD8TPj0BmUrbhayGorGQGZYMFbZl-GccCCI",
+      "firstName": "Sumanth",
+      "lastName": "S",
+      "position": "AWS & Linux DevOps Engineer | CI/CD, Infrastructure as code(Iac) | Expertise in  MongoDB, Kafka, Opensearch, Graylog, Jenkins, Gitlab, Docker, Kubernetes, Ansible, Terraform, Filebeat and Logstash.",
+      "publicIdentifier": "sumanth-s-191493256",
+      "linkedinUrl": "https://www.linkedin.com/in/sumanth-s-191493256"
+    },
+    {
+      "id": "ACoAACqA9GEBQmg3dHN1VtN8P1wBV7sJknnxNU8",
+      "firstName": "Swapnil",
+      "lastName": "Gaikwad",
+      "position": "Cyber security Analyst | SOC Analyst",
+      "publicIdentifier": "swapnil-gaikwad-34199217a",
+      "linkedinUrl": "https://www.linkedin.com/in/swapnil-gaikwad-34199217a"
     }
   ],
   "interests": [
     {
+      "interestName": "Top Voices",
+      "elements": [
+        {
+          "title": "Satya Nadella",
+          "subtitle": "Chairman and CEO at Microsoft",
+          "link": "https://www.linkedin.com/in/satyanadella",
+          "caption": "12,068,765 followers",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/C5603AQHHUuOSlRVA1w/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1579726625483?e=1785974400&v=beta&t=QLbVVt524e_7CBhsvvcuQVvafZkETIQ3CamABy1yo4Y"
+          }
+        },
+        {
+          "title": "Bill Gates",
+          "subtitle": "Chair, Gates Foundation and Founder, Breakthrough Energy",
+          "link": "https://www.linkedin.com/in/williamhgates",
+          "caption": "40,515,188 followers",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/D5603AQF-RYZP55jmXA/profile-displayphoto-shrink_800_800/B56ZRi8g.aGsAc-/0/1736826818808?e=1785974400&v=beta&t=N85D86MRjsX6n0VL-gTtB00I-Wp2OVv2TlubmOaqOOI"
+          }
+        }
+      ]
+    },
+    {
       "interestName": "Companies",
       "elements": [
         {
-          "title": "Thakur College Of Engineering and Technology",
+          "title": "IBM",
           "subtitle": null,
-          "link": "https://www.linkedin.com/company/11448647/",
-          "caption": "2,975 followers",
+          "link": "https://www.linkedin.com/company/1009/",
+          "caption": "19,736,414 followers",
           "image": {
-            "url": "https://media.licdn.com/dms/image/v2/C510BAQFUDAxe5bQLgg/company-logo_400_400/company-logo_400_400/0/1631391930064?e=1785974400&v=beta&t=pQm_J3Eb3HbOINLUKmQWhbsLKFQv052xy1clTRJDm-M"
+            "url": "https://media.licdn.com/dms/image/v2/D560BAQGiz5ecgpCtkA/company-logo_400_400/company-logo_400_400/0/1688684715866/ibm_logo?e=1785974400&v=beta&t=9ymkfc_M7pEEPMkqBIu75aDkdm_VAhEKJK3ktHfLvD8"
+          }
+        },
+        {
+          "title": "Accenture",
+          "subtitle": null,
+          "link": "https://www.linkedin.com/company/1033/",
+          "caption": "14,883,590 followers",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/D4D0BAQEgtOEcxlXMog/company-logo_400_400/B4DZfqEQWkHAAg-/0/1751978673981/accenture_logo?e=1785974400&v=beta&t=NNVFztDt7hS3CS6mS4xvkMUvQgpmaPTOGvR-gaKt6Mw"
+          }
+        }
+      ]
+    },
+    {
+      "interestName": "Groups",
+      "elements": [
+        {
+          "title": "Thakur College Of Engineering & Technology",
+          "subtitle": null,
+          "link": "https://www.linkedin.com/groups/2310111",
+          "caption": "203 members",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/C4E07AQGwQgmSejiJ4Q/group-logo_image-shrink_92x92/group-logo_image-shrink_92x92/0/1631365357116?e=1784721600&v=beta&t=KyFZmDuQ7BdlhbwsAku54y72CGIEReXzrVFnPe2zDds"
+          }
+        },
+        {
+          "title": "JavaScript",
+          "subtitle": null,
+          "link": "https://www.linkedin.com/groups/121615",
+          "caption": "1,530,996 members",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/C4D07AQFK5LmvZWWTGg/group-logo_image-shrink_400x400/group-logo_image-shrink_400x400/0/1630999696851?e=1784721600&v=beta&t=fCOw1DiB_YO0kZQYRQmIZ1S-vzfPc8c2THInD-sbppk"
+          }
+        }
+      ]
+    },
+    {
+      "interestName": "Newsletters",
+      "elements": [
+        {
+          "title": "The Tech Stack",
+          "subtitle": "How big tech builds AI features and scales apps. Real architecture breakdowns, system design, and product thinking.",
+          "link": "https://www.linkedin.com/newsletters/7402234832363192320",
+          "caption": "Published weekly",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/D4D12AQF0BQZsZ1shUw/series-logo_image-shrink_300_300/B4DZroFychHsAQ-/0/1764830425069?e=1785974400&v=beta&t=yJI1rsAhE9Z6Qj8IkJKO62wl3Jea8h3CrHfZlFTqes0"
+          }
+        },
+        {
+          "title": "The Builder’s Bulletin",
+          "subtitle": "for people who love building, coding, and creating",
+          "link": "https://www.linkedin.com/newsletters/7388277842146418688",
+          "caption": "Published weekly",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/D5612AQFYM1XIVeTeTw/series-logo_image-shrink_300_300/B56ZohwQRpH8AU-/0/1761502892081?e=1785974400&v=beta&t=-zFxwYdbWTzHlqS-xrZip1K62CykEhqODi6XtN8abPE"
+          }
+        }
+      ]
+    },
+    {
+      "interestName": "Schools",
+      "elements": [
+        {
+          "title": "Indian Institute of Technology, Bombay",
+          "subtitle": null,
+          "link": "https://www.linkedin.com/school/157266/",
+          "caption": "751,463 followers",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/C4D0BAQGmDoDCx_FYpA/company-logo_400_400/company-logo_400_400/0/1660636307357/indian_institute_of_technology_bombay_logo?e=1785974400&v=beta&t=2QuugiuQ7lsCVlzVSUFaikKwETOCABUjzk8tjxvUzi4"
+          }
+        },
+        {
+          "title": "Coding Ninjas",
+          "subtitle": null,
+          "link": "https://www.linkedin.com/school/13195135/",
+          "caption": "804,778 followers",
+          "image": {
+            "url": "https://media.licdn.com/dms/image/v2/D560BAQGvBIVm8H0hyg/company-logo_400_400/B56ZtZZnb6JcAg-/0/1766731447506?e=1785974400&v=beta&t=pal8GmySP9Uf_FoJRIsokfZ8GZLmwmOObdxIyFSGRsM"
           }
         }
       ]
     }
   ],
   "originalQuery": {
-    "url": "https://www.linkedin.com/in/asmit-bagkar-79a2a4303/"
+    "url": "https://www.linkedin.com/in/tarun-asthana/"
   }
 }

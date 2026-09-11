@@ -3,9 +3,21 @@ const mongoose = require('mongoose');
 const UserSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: true,
+    sparse: true,
     unique: true,
   },
+  uid: {
+    type: String,
+    sparse: true,
+    unique: true,
+  },
+  admissionYear: { type: String, default: '' },
+  graduationYear: { type: String, default: '' },
+  branch: { type: String, default: '' },
+  division: { type: String, default: '' },
+  rollNo: { type: String, default: '' },
+  currentYear: { type: String, default: '' },
+  currentSem: { type: Number, default: null },
   password: {
     type: String,
     required: true,
@@ -31,6 +43,18 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  verificationCode: {
+    type: String,
+    default: '',
+  },
+  githubVerified: {
+    type: Boolean,
+    default: false,
+  },
+  leetcodeVerified: {
+    type: Boolean,
+    default: false,
+  },
   linkedInUrl: {
     type: String,
     default: '',
@@ -39,10 +63,32 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  lastHandleUpdateAt: {
+    type: Date,
+    default: null,
+  },
+  resetOtp: {
+    type: String,
+    default: null,
+  },
+  resetOtpExpiry: {
+    type: Date,
+    default: null,
+  },
+  resetOtpLastSent: {
+    type: Date,
+    default: null,
+  },
   scrapedData: {
     type: Object,
     default: null,
   },
+  pendingAchievements: [{
+    title: String,
+    description: String,
+    imageUrl: String,
+    date: String
+  }],
   lastScrapedAt: {
     type: Date,
     default: null,
@@ -83,6 +129,12 @@ const UserSchema = new mongoose.Schema({
       credentialUrl: String,
       fileUrl: String,
       isComplete: { type: Boolean, default: false }
+    }],
+    achievements: [{
+      title: String,
+      description: String,
+      imageUrl: String,
+      date: String
     }]
   }
 }, { timestamps: true });

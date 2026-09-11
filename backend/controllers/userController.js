@@ -1,6 +1,8 @@
 const User = require('../models/User');
-const { getgithubdata, getleetcodedata, getLinkedInData } = require('./algodimension');
+const { getgithubdata, getleetcodedata, getLinkedInData, getLinkedInPosts, filterAchievementsWithGemini, getGithubContributions } = require('./algodimension');
+const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
 const cloudinary = require('cloudinary').v2;
+const crypto = require('crypto');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -14,6 +16,12 @@ const getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    if (!user.verificationCode) {
+      user.verificationCode = `cc-verify-${crypto.randomBytes(4).toString('hex')}`;
+      await user.save();
+    }
+
     res.json(user);
   } catch (error) {
     console.error('Error fetching profile:', error);
@@ -43,7 +51,8 @@ const scrapeAndCacheMetrics = async (user) => {
 
   let linkedinData = user.scrapedData?.linkedin || null;
   if (user.linkedInUrl) {
-    const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+    // Temporarily disabled for testing - normally 24 hours
+    const TWENTY_FOUR_HOURS_MS = 0; // 24 * 60 * 60 * 1000;
     const timeSinceLastLinkedInScrape = user.lastLinkedInScrapeAt 
       ? Date.now() - new Date(user.lastLinkedInScrapeAt).getTime()
       : Infinity;
@@ -52,8 +61,27 @@ const scrapeAndCacheMetrics = async (user) => {
       try {
         linkedinData = await getLinkedInData(user.linkedInUrl);
         user.lastLinkedInScrapeAt = new Date();
+        
+        // Fetch posts and filter them with Gemini for achievements
+        const posts = await getLinkedInPosts(user.linkedInUrl);
+        const newAchievements = await filterAchievementsWithGemini(posts);
+        
+        if (newAchievements.length > 0) {
+            // Check for duplicates before pushing
+            if (!user.pendingAchievements) user.pendingAchievements = [];
+            const existingTitles = new Set([
+              ...user.pendingAchievements.map(a => a.title),
+              ...(user.resumeDetails?.achievements || []).map(a => a.title)
+            ]);
+            
+            newAchievements.forEach(ach => {
+                if (!existingTitles.has(ach.title)) {
+                    user.pendingAchievements.push(ach);
+                }
+            });
+        }
       } catch (err) {
-        console.warn('Failed to fetch linkedin data:', err.message);
+        console.warn('Failed to fetch linkedin data/posts:', err.message);
       }
     }
   }
@@ -122,8 +150,8 @@ const refreshMetrics = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check timeout: 30 minutes
-    const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+    // Check timeout: 30 minutes (Temporarily disabled for testing)
+    const THIRTY_MINUTES_MS = 0; // 30 * 60 * 1000;
     if (user.lastScrapedAt) {
       const timeSinceLastScrape = Date.now() - new Date(user.lastScrapedAt).getTime();
       if (timeSinceLastScrape < THIRTY_MINUTES_MS) {
@@ -148,7 +176,7 @@ const refreshMetrics = async (req, res) => {
 
 const updatePortfolio = async (req, res) => {
   try {
-    const { skills, education, experience, projects, certificates, portfolioUrl } = req.body;
+    const { skills, education, experience, projects, certificates, portfolioUrl, achievements, githubUsername, leetcodeUsername, linkedInUrl } = req.body;
     
     let user = await User.findById(req.user.id);
     if (!user) {
@@ -161,10 +189,37 @@ const updatePortfolio = async (req, res) => {
       education: education || (user.resumeDetails && user.resumeDetails.education) || [],
       experience: experience || (user.resumeDetails && user.resumeDetails.experience) || [],
       projects: projects || (user.resumeDetails && user.resumeDetails.projects) || [],
-      certificates: certificates || (user.resumeDetails && user.resumeDetails.certificates) || []
+      certificates: certificates || (user.resumeDetails && user.resumeDetails.certificates) || [],
+      achievements: achievements || (user.resumeDetails && user.resumeDetails.achievements) || []
     };
 
-    await user.save();
+    // Check if handles changed
+    const handlesChanged = 
+      (githubUsername !== undefined && githubUsername !== user.githubUsername) ||
+      (leetcodeUsername !== undefined && leetcodeUsername !== user.leetcodeUsername) ||
+      (linkedInUrl !== undefined && linkedInUrl !== user.linkedInUrl);
+
+    if (handlesChanged) {
+      const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+      if (user.lastHandleUpdateAt && (Date.now() - new Date(user.lastHandleUpdateAt).getTime() < ONE_DAY_MS)) {
+        const remainingHours = Math.ceil((ONE_DAY_MS - (Date.now() - new Date(user.lastHandleUpdateAt).getTime())) / (60 * 60 * 1000));
+        return res.status(400).json({ message: `Handles can only be updated once every 24 hours. Please try again in ${remainingHours} hours.` });
+      }
+
+      if (githubUsername !== undefined) user.githubUsername = githubUsername;
+      if (leetcodeUsername !== undefined) user.leetcodeUsername = leetcodeUsername;
+      if (linkedInUrl !== undefined) user.linkedInUrl = linkedInUrl;
+      
+      user.lastHandleUpdateAt = new Date();
+      
+      // Save handles first
+      await user.save();
+      
+      // Trigger a re-scrape with the new handles
+      user = await scrapeAndCacheMetrics(user);
+    } else {
+      await user.save();
+    }
 
     const userResponse = user.toObject();
     delete userResponse.password;
@@ -197,6 +252,10 @@ const uploadAvatar = async (req, res) => {
 
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    if (user.avatarUrl) {
+      await deleteCloudinaryAsset(user.avatarUrl);
+    }
     
     user.avatarUrl = avatarUrl;
     await user.save();
@@ -263,6 +322,159 @@ const getResumePdf = async (req, res) => {
   }
 };
 
+const approveAchievement = async (req, res) => {
+  try {
+    const { title } = req.body;
+    let user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const achievementIndex = user.pendingAchievements.findIndex(a => a.title === title);
+    if (achievementIndex === -1) return res.status(404).json({ message: 'Pending achievement not found' });
+
+    const achievement = user.pendingAchievements[achievementIndex];
+    
+    if (!user.resumeDetails) user.resumeDetails = {};
+    if (!user.resumeDetails.achievements) user.resumeDetails.achievements = [];
+    
+    user.resumeDetails.achievements.push(achievement);
+    user.pendingAchievements.splice(achievementIndex, 1);
+    
+    await user.save();
+    
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    res.json({ message: 'Achievement approved and added to profile', user: userResponse });
+  } catch (error) {
+    console.error('Error approving achievement:', error);
+    res.status(500).json({ message: 'Server error approving achievement' });
+  }
+};
+
+const discardAchievement = async (req, res) => {
+  try {
+    const { title } = req.body;
+    let user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const achievementIndex = user.pendingAchievements.findIndex(a => a.title === title);
+    if (achievementIndex === -1) return res.status(404).json({ message: 'Pending achievement not found' });
+
+    user.pendingAchievements.splice(achievementIndex, 1);
+    await user.save();
+    
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    res.json({ message: 'Achievement discarded', user: userResponse });
+  } catch (error) {
+    console.error('Error discarding achievement:', error);
+    res.status(500).json({ message: 'Server error discarding achievement' });
+  }
+};
+
+const addManualAchievement = async (req, res) => {
+  try {
+    const { title, description, imageUrl, date } = req.body;
+    if (!title) return res.status(400).json({ message: 'Title is required' });
+
+    let user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user.resumeDetails) user.resumeDetails = {};
+    if (!user.resumeDetails.achievements) user.resumeDetails.achievements = [];
+    
+    user.resumeDetails.achievements.push({
+      title,
+      description: description || '',
+      imageUrl: imageUrl || '',
+      date: date || new Date().toISOString()
+    });
+    
+    await user.save();
+    
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    res.json({ message: 'Achievement added successfully', user: userResponse });
+  } catch (error) {
+    console.error('Error adding achievement manually:', error);
+    res.status(500).json({ message: 'Server error adding achievement' });
+  }
+};
+
+const getGithubHeatmap = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || !user.githubUsername) {
+      return res.status(404).json({ message: 'GitHub username not found' });
+    }
+    const data = await getGithubContributions(user.githubUsername);
+    if (!data) {
+      return res.status(500).json({ message: 'Failed to fetch github contributions' });
+    }
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const verifyPlatform = async (req, res) => {
+  try {
+    const { platform } = req.body;
+    const user = await User.findById(req.user.id);
+    
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user.verificationCode) return res.status(400).json({ message: 'No verification code found for user. Please generate one first.' });
+
+    let isVerified = false;
+
+    if (platform === 'github') {
+      if (!user.githubUsername) return res.status(400).json({ message: 'No GitHub username linked' });
+      const githubData = await getgithubdata(user.githubUsername);
+      if (githubData?.profile?.bio && githubData.profile.bio.includes(user.verificationCode)) {
+        user.githubVerified = true;
+        isVerified = true;
+      }
+    } else if (platform === 'leetcode') {
+      if (!user.leetcodeUsername) return res.status(400).json({ message: 'No LeetCode username linked' });
+      const leetcodeData = await getleetcodedata(user.leetcodeUsername, true);
+      if (leetcodeData?.profile && JSON.stringify(leetcodeData.profile).includes(user.verificationCode)) {
+        user.leetcodeVerified = true;
+        isVerified = true;
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid or unsupported platform for verification' });
+    }
+
+    if (isVerified) {
+      await user.save();
+      const userResponse = user.toObject();
+      delete userResponse.password;
+      return res.json({ message: `${platform} verified successfully!`, user: userResponse });
+    } else {
+      return res.status(400).json({ message: `Verification code not found in your ${platform} profile bio/about section.` });
+    }
+  } catch (error) {
+    console.error('Error verifying platform:', error);
+    res.status(500).json({ message: 'Server error during verification' });
+  }
+};
+
+const generateVerificationCode = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.verificationCode = `cc-verify-${crypto.randomBytes(4).toString('hex')}`;
+    await user.save();
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    res.json({ message: 'Verification code generated', user: userResponse });
+  } catch (error) {
+    console.error('Error generating code:', error);
+    res.status(500).json({ message: 'Server error generating code' });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -270,5 +482,11 @@ module.exports = {
   updatePortfolio,
   uploadAvatar,
   uploadCertFile,
-  getResumePdf
+  getResumePdf,
+  approveAchievement,
+  discardAchievement,
+  addManualAchievement,
+  getGithubHeatmap,
+  verifyPlatform,
+  generateVerificationCode
 };

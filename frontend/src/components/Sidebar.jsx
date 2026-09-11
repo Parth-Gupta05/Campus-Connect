@@ -2,13 +2,16 @@ import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { FiLoader } from 'react-icons/fi';
 
 export default function Sidebar() {
   const { user, logout } = useContext(AuthContext);
+  const { showToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [hasUncheckedEvents, setHasUncheckedEvents] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -16,8 +19,31 @@ export default function Sidebar() {
       axios.get('/user/profile')
         .then(res => setProfile(res.data))
         .catch(console.error);
+
+      axios.get('/events/public')
+        .then(res => {
+          const events = res.data;
+          if (events.length > 0) {
+            const lastChecked = localStorage.getItem('lastCheckedEvents');
+            if (!lastChecked) {
+              setHasUncheckedEvents(true);
+            } else {
+              const lastCheckedDate = new Date(lastChecked).getTime();
+              const hasNew = events.some(e => new Date(e.createdAt || e.date).getTime() > lastCheckedDate);
+              setHasUncheckedEvents(hasNew);
+            }
+          }
+        })
+        .catch(console.error);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (location.pathname === '/events') {
+      setHasUncheckedEvents(false);
+      localStorage.setItem('lastCheckedEvents', new Date().toISOString());
+    }
+  }, [location.pathname]);
 
   const manualCerts = profile?.resumeDetails?.certificates || [];
   const scrapedCerts = profile?.scrapedData?.linkedin?.certifications || [];
@@ -44,13 +70,16 @@ export default function Sidebar() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     await logout();
+    showToast('Logged out successfully', 'success');
   };
 
   const studentLinks = [
     { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
     { name: 'Profile', icon: 'person', path: '/profile' },
-    { name: 'Opportunities', icon: 'work', path: '#' },
-    { name: 'Events', icon: 'event', path: '#' },
+    { name: 'Placements', icon: 'military_tech', path: '/placements' },
+    { name: 'Clubs', icon: 'groups', path: '/clubs' },
+    { name: 'Opportunities', icon: 'work', path: '/opportunities' },
+    { name: 'Events', icon: 'event', path: '/events' },
     { name: 'Certificates', icon: 'school', path: '/certificates' },
   ];
 
@@ -60,7 +89,11 @@ export default function Sidebar() {
     { name: 'System Analytics', icon: 'analytics', path: '#' },
   ];
 
-  const links = user.role === 'admin' ? adminLinks : studentLinks;
+  const clubLinks = [
+    { name: 'Club Portal', icon: 'dashboard', path: '/club' }
+  ];
+
+  const links = user.role === 'admin' ? adminLinks : (user.role === 'club' ? clubLinks : studentLinks);
 
   return (
     <aside className={`hidden md:flex flex-col bg-surface border-r border-border-light h-screen sticky top-0 shrink-0 transition-all duration-300 ${isSidebarOpen ? 'w-72' : 'w-20'} z-50`}>
@@ -75,7 +108,7 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
         {links.map((link) => {
           const isActive = location.pathname === link.path;
-          const showDot = link.name === 'Certificates' && hasIncompleteCerts;
+          const showDot = (link.name === 'Certificates' && hasIncompleteCerts) || (link.name === 'Events' && hasUncheckedEvents);
           
           return (
             <Link 

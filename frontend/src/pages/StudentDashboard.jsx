@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import { ActivityCalendar } from 'react-activity-calendar';
-import { GitHubCalendar } from 'react-github-calendar';
-import { format, fromUnixTime, subDays, parseISO, formatDistanceToNow } from 'date-fns';
+import { fromUnixTime, format, formatDistanceToNow, subDays, parseISO } from 'date-fns';
 import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
 import { FiLoader } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
 
 const CountUp = ({ end }) => {
   const [mounted, setMounted] = useState(false);
@@ -115,25 +116,94 @@ function RepoModal({ repo, onClose }) {
 export default function StudentDashboard() {
   const { user } = useContext(AuthContext);
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeHeatmap, setActiveHeatmap] = useState('github');
   const [selectedRepo, setSelectedRepo] = useState(null);
+  const [animMounted, setAnimMounted] = useState(false);
+
+  const speedometerRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setAnimMounted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (speedometerRef.current) {
+      observer.observe(speedometerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+  
+  const [githubHeatmap, setGithubHeatmap] = useState(null);
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
+  const [heatmapError, setHeatmapError] = useState(false);
+  
+  const generateDummyHeatmap = () => {
+    const data = [];
+    const today = new Date();
+    for (let i = 365; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toISOString().split('T')[0],
+        count: 0,
+        level: 0
+      });
+    }
+    return data;
+  };
   
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get('/user/profile');
-        setProfile(res.data);
+        const [profileRes, eventsRes] = await Promise.all([
+          axios.get('/user/profile'),
+          axios.get('/events/student/registered')
+        ]);
+        setProfile(profileRes.data);
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const futureEvents = eventsRes.data
+          .filter(ev => new Date(ev.date) >= today)
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+          
+        setUpcomingEvents(futureEvents.slice(0, 3));
       } catch (err) {
-        console.error('Failed to fetch profile', err);
+        console.error('Failed to fetch dashboard data', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
+    fetchData();
   }, []);
+
+  useEffect(() => {
+    if (activeHeatmap === 'github' && profile?.githubUsername && !githubHeatmap && !heatmapLoading) {
+      setHeatmapLoading(true);
+      axios.get('/user/github-heatmap')
+        .then(res => {
+          setGithubHeatmap(res.data);
+          setHeatmapError(false);
+        })
+        .catch(err => {
+          console.error('Failed to fetch github heatmap', err);
+          setHeatmapError(true);
+        })
+        .finally(() => setHeatmapLoading(false));
+    }
+  }, [activeHeatmap, profile?.githubUsername]);
 
   const handleRefreshMetrics = async () => {
     setRefreshing(true);
@@ -172,6 +242,26 @@ export default function StudentDashboard() {
     return () => clearTimeout(timer);
   }, [activeHeatmap, profile]);
 
+  const handleApproveAchievement = async (title) => {
+    try {
+      const res = await axios.post('/user/achievements/approve', { title });
+      setProfile(res.data.user);
+      showToast('Achievement added to your portfolio!', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to approve achievement', 'error');
+    }
+  };
+
+  const handleDiscardAchievement = async (title) => {
+    try {
+      const res = await axios.post('/user/achievements/discard', { title });
+      setProfile(res.data.user);
+      showToast('Achievement discarded', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to discard achievement', 'error');
+    }
+  };
+
   const dynamicGreeting = React.useMemo(() => {
     const hour = new Date().getHours();
     let timeBased = 'Good Evening';
@@ -195,7 +285,7 @@ export default function StudentDashboard() {
     return (
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
         <Sidebar />
-        <main className="flex-1 relative overflow-y-auto">
+        <main className="flex-1 relative">
           {/* Skeleton Header */}
           <div className="hidden md:flex bg-white/80 border-b border-border-light h-20 w-full"></div>
           
@@ -229,6 +319,8 @@ export default function StudentDashboard() {
   const skills = profile?.resumeDetails?.skills || [];
   const experience = profile?.resumeDetails?.experience || [];
   const projects = profile?.resumeDetails?.projects || [];
+  const achievements = profile?.resumeDetails?.achievements || [];
+  const portfolioUrl = profile?.resumeDetails?.portfolioUrl || '';
   const manualCerts = profile?.resumeDetails?.certificates || [];
   const scrapedCerts = profile?.scrapedData?.linkedin?.certifications || [];
   
@@ -237,21 +329,26 @@ export default function StudentDashboard() {
   manualCerts.forEach(cert => certificatesMap.set(cert.title, cert));
   
   const allCertificates = Array.from(certificatesMap.values());
-  const hasIncompleteCerts = allCertificates.some(cert => !cert.isComplete);
+  const hasIncompleteCerts = allCertificates.length === 0 ? false : allCertificates.some(cert => !cert.isComplete);
+  const hasCertificates = allCertificates.length > 0;
 
   const missingSections = [];
   if (skills.length === 0) missingSections.push('Skills');
   if (experience.length === 0) missingSections.push('Experience');
   if (education.length === 0) missingSections.push('Education');
   if (projects.length === 0) missingSections.push('Projects');
-  if (hasIncompleteCerts) missingSections.push('Certificates');
+  if (achievements.length === 0) missingSections.push('Achievements');
+  if (!portfolioUrl) missingSections.push('Portfolio');
+  if (!hasCertificates || hasIncompleteCerts) missingSections.push('Certificates');
 
-  let profileStrength = 20;
+  let profileStrength = 10;
   if (skills.length > 0) profileStrength += 15;
-  if (experience.length > 0) profileStrength += 20;
+  if (experience.length > 0) profileStrength += 15;
   if (education.length > 0) profileStrength += 15;
   if (projects.length > 0) profileStrength += 15;
-  if (!hasIncompleteCerts) profileStrength += 15;
+  if (achievements.length > 0) profileStrength += 10;
+  if (portfolioUrl) profileStrength += 10;
+  if (hasCertificates && !hasIncompleteCerts) profileStrength += 10;
 
   // Helper for Calendar
   const getCalendarData = () => {
@@ -285,8 +382,8 @@ export default function StudentDashboard() {
 
   const calendarData = getCalendarData();
 
-  // Calculate 30-minute refresh cooldown
-  const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+  // Calculate 30-minute refresh cooldown (Temporarily disabled for testing)
+  const THIRTY_MINUTES_MS = 0; // 30 * 60 * 1000;
   const timeSinceLastScrape = profile?.lastScrapedAt ? Date.now() - new Date(profile.lastScrapedAt).getTime() : Infinity;
   const isCooldownActive = timeSinceLastScrape < THIRTY_MINUTES_MS;
   const remainingMinutes = isCooldownActive ? Math.ceil((THIRTY_MINUTES_MS - timeSinceLastScrape) / 60000) : 0;
@@ -312,16 +409,8 @@ export default function StudentDashboard() {
       <Sidebar />
       <RepoModal repo={selectedRepo} onClose={() => setSelectedRepo(null)} />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="hidden md:flex bg-white/80 backdrop-blur-xl border-b border-border-light shadow-sm justify-between items-center px-gutter h-20 z-40 sticky top-0 w-full">
-          <div className="relative w-96">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-            <input className="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-border-light rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-body-md text-body-md text-on-surface placeholder:text-text-slate" placeholder="Search opportunities, events..." type="text" />
-          </div>
-          <div className="flex items-center gap-6">
-            <span className="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-colors">notifications</span>
-          </div>
-        </div>
+      <main className="flex-1">
+        <Topbar showSearch={true} />
 
         <div className="p-gutter md:p-8 max-w-container-max mx-auto space-y-8">
           
@@ -385,6 +474,74 @@ export default function StudentDashboard() {
             )}
           </section>
 
+          {/* Pending Achievements Inbox */}
+          {profile?.pendingAchievements?.length > 0 && (
+            <section className="bg-primary-container text-on-primary-container rounded-xl p-6 shadow-md border border-primary/20 animate-fade-in">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="material-symbols-outlined text-primary">award_star</span>
+                <h3 className="font-headline-sm font-bold">New Achievements Found</h3>
+                <span className="bg-primary text-on-primary text-xs px-2 py-1 rounded-full font-bold ml-2">{profile.pendingAchievements.length} Pending</span>
+              </div>
+              <p className="text-sm mb-6 text-on-primary-container/80">We extracted these achievements from your recent LinkedIn activity. Approve them to add them to your public portfolio.</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {profile.pendingAchievements.map((ach, idx) => (
+                  <div key={idx} className="bg-surface text-on-surface rounded-lg p-4 border border-border-light flex flex-col gap-3">
+                    {ach.imageUrl && (
+                      <img src={ach.imageUrl} alt="Achievement" className="w-full h-32 object-contain bg-surface-container rounded-md" />
+                    )}
+                    <div>
+                      <h4 className="font-bold text-sm mb-1 line-clamp-1">{ach.title}</h4>
+                      <p className="text-xs text-on-surface-variant line-clamp-2">{ach.description}</p>
+                      <span className="text-[10px] text-text-slate mt-2 block">{formatDistanceToNow(new Date(ach.date), { addSuffix: true })}</span>
+                    </div>
+                    <div className="flex gap-2 mt-auto pt-2 border-t border-border-light">
+                      <button onClick={() => handleApproveAchievement(ach.title)} className="flex-1 bg-primary text-on-primary py-1.5 rounded text-xs font-bold transition-colors hover:bg-primary/90">Approve</button>
+                      <button onClick={() => handleDiscardAchievement(ach.title)} className="flex-1 bg-surface-container-high text-on-surface hover:text-error py-1.5 rounded text-xs font-bold transition-colors">Discard</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Upcoming Club Events */}
+          {upcomingEvents.length > 0 && (
+            <section className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col w-full">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-headline-md text-headline-sm text-on-surface flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">event</span> Upcoming Club Events
+                </h3>
+                <Link to="/clubs" className="text-primary hover:underline text-sm font-medium">View All Clubs</Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {upcomingEvents.map(ev => (
+                  <div key={ev._id} className="bg-surface-variant p-4 rounded-xl border border-border-light flex flex-col h-full hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/clubs/${ev.clubId._id}`)}>
+                    <h4 className="font-bold text-label-lg mb-1">{ev.title}</h4>
+                    <p className="text-xs text-on-surface-variant flex items-center gap-1 mb-2">
+                      <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                      {new Date(ev.date).toLocaleDateString()} at {ev.time}
+                    </p>
+                    <p className="text-xs text-on-surface-variant flex items-center gap-1 mb-3">
+                      <span className="material-symbols-outlined text-[14px]">location_on</span>
+                      {ev.venue}
+                    </p>
+                    <div className="mt-auto flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-surface overflow-hidden">
+                        {ev.clubId.profilePhoto ? (
+                          <img src={ev.clubId.profilePhoto} alt={ev.clubId.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="material-symbols-outlined text-[16px] text-on-surface-variant mt-1 ml-1">groups</span>
+                        )}
+                      </div>
+                      <span className="text-xs font-medium text-on-surface">{ev.clubId.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Activity Heatmap Toggle Section */}
           <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col items-center overflow-hidden w-full">
             <div className="flex justify-between w-full items-center mb-6">
@@ -409,14 +566,36 @@ export default function StudentDashboard() {
               <div className="min-w-[800px] min-h-[180px] relative w-full">
                 {/* GitHub Heatmap */}
                 <div className={`heatmap-wrapper absolute top-0 left-0 w-full flex justify-center transition-opacity duration-300 ${activeHeatmap === 'github' ? 'opacity-100 z-10 active' : 'opacity-0 z-0 pointer-events-none'}`}>
-                  {github?.profile?.login ? (
-                    <GitHubCalendar 
-                      username={github.profile.login} 
-                      colorScheme="light"
-                      labels={{
-                        totalCount: `{{count}} contributions in the last year`,
-                      }}
-                    />
+                  {profile?.githubUsername ? (
+                    heatmapLoading ? (
+                      <div className="animate-pulse">
+                        <ActivityCalendar 
+                          data={generateDummyHeatmap()} 
+                          colorScheme="light"
+                          theme={{
+                            light: ['#cbd5e1', '#cbd5e1', '#cbd5e1', '#cbd5e1', '#cbd5e1']
+                          }}
+                          labels={{
+                            totalCount: `Loading contributions...`,
+                          }}
+                        />
+                      </div>
+                    ) : heatmapError || !githubHeatmap ? (
+                      <div className="text-error py-8">Failed to fetch GitHub activity. GitHub API might be unreachable.</div>
+                    ) : githubHeatmap.length === 0 ? (
+                       <div className="text-on-surface-variant py-8">No GitHub activity found.</div>
+                    ) : (
+                      <ActivityCalendar 
+                        data={githubHeatmap} 
+                        colorScheme="light"
+                        theme={{
+                          light: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']
+                        }}
+                        labels={{
+                          totalCount: `{{count}} contributions in the last year`,
+                        }}
+                      />
+                    )
                   ) : (
                     <div className="text-on-surface-variant py-8">GitHub profile not linked.</div>
                   )}
@@ -449,12 +628,12 @@ export default function StudentDashboard() {
             <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
               <FaGithub className="text-primary text-[28px]" /> GitHub Profile
             </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               {/* GitHub Stats Card */}
-              <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col justify-between h-full">
+              <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col gap-6">
                 {github ? (
                   <>
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-4">
                       {github.profile?.avatar_url ? (
                         <img src={github.profile.avatar_url} alt="GitHub Avatar" className="w-16 h-16 rounded-full border-2 border-border-light shadow-sm" />
                       ) : (
@@ -563,39 +742,79 @@ export default function StudentDashboard() {
 
                   {/* LeetCode Problems Solved (Progress) */}
                   <div className="bg-surface-container-lowest rounded-xl p-6 border border-border-light shadow-ambient flex flex-col justify-center">
-                    <h3 className="font-headline-sm text-on-surface font-bold mb-4">Problems Solved</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-body-sm mb-1">
-                          <span className="text-on-surface">
-                            Easy (<CountUp end={leetcode.solved?.easySolved || leetcode.profile?.easySolved || 0}/>/<CountUp end={leetcode.solved?.totalEasy || leetcode.profile?.totalEasy || 0}/>)
-                          </span>
+                    
+                    {(() => {
+                      const easySolved = leetcode.solved?.easySolved || leetcode.profile?.easySolved || 0;
+                      const mediumSolved = leetcode.solved?.mediumSolved || leetcode.profile?.mediumSolved || 0;
+                      const hardSolved = leetcode.solved?.hardSolved || leetcode.profile?.hardSolved || 0;
+                      
+                      const totalEasy = leetcode.solved?.totalEasy || leetcode.profile?.totalEasy || 0;
+                      const totalMedium = leetcode.solved?.totalMedium || leetcode.profile?.totalMedium || 0;
+                      const totalHard = leetcode.solved?.totalHard || leetcode.profile?.totalHard || 0;
+                      
+                      const totalSolved = easySolved + mediumSolved + hardSolved;
+                      const totalAvailable = (totalEasy + totalMedium + totalHard) || 4013;
+                      
+                      const radius = 40;
+                      const circumference = 2 * Math.PI * radius;
+                      const V = circumference * 0.75; // 270 degrees visible
+                      const gap = 3;
+                      
+                      // Base tracks (faded) lengths
+                      const easyBase = totalAvailable > 0 ? (totalEasy / totalAvailable) * (V - 2 * gap) : 0;
+                      const medBase = totalAvailable > 0 ? (totalMedium / totalAvailable) * (V - 2 * gap) : 0;
+                      const hardBase = totalAvailable > 0 ? (totalHard / totalAvailable) * (V - 2 * gap) : 0;
+                      
+                      // Progress tracks (bright) lengths
+                      const easyProg = totalEasy > 0 ? (easySolved / totalEasy) * easyBase : 0;
+                      const medProg = totalMedium > 0 ? (mediumSolved / totalMedium) * medBase : 0;
+                      const hardProg = totalHard > 0 ? (hardSolved / totalHard) * hardBase : 0;
+
+                      return (
+                        <div className="flex flex-col items-center gap-6 justify-center">
+                          {/* Speedometer Arc Chart */}
+                          <div className="relative w-36 h-36 shrink-0 mt-2" ref={speedometerRef}>
+                            <svg viewBox="0 0 100 100" className="w-full h-full transform rotate-[135deg] drop-shadow-sm">
+                              
+                              {/* Faded Base Tracks */}
+                              {easyBase > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#2cbb5d33" strokeWidth="4" strokeDasharray={`${Math.max(0, easyBase)} ${circumference}`} strokeDashoffset={0} strokeLinecap="round" />}
+                              {medBase > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#ffc01e33" strokeWidth="4" strokeDasharray={`${Math.max(0, medBase)} ${circumference}`} strokeDashoffset={-(easyBase + gap)} strokeLinecap="round" />}
+                              {hardBase > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#ef474333" strokeWidth="4" strokeDasharray={`${Math.max(0, hardBase)} ${circumference}`} strokeDashoffset={-(easyBase + gap + medBase + gap)} strokeLinecap="round" />}
+                              
+                              {/* Bright Progress Tracks */}
+                              {easyProg > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#2cbb5d" strokeWidth="4" strokeDasharray={`${animMounted ? Math.max(0, easyProg) : 0} ${circumference}`} strokeDashoffset={0} strokeLinecap="round" className="transition-all duration-1000 ease-out" />}
+                              {medProg > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#ffc01e" strokeWidth="4" strokeDasharray={`${animMounted ? Math.max(0, medProg) : 0} ${circumference}`} strokeDashoffset={-(easyBase + gap)} strokeLinecap="round" className="transition-all duration-1000 ease-out" />}
+                              {hardProg > 0 && <circle cx="50" cy="50" r={radius} fill="none" stroke="#ef4743" strokeWidth="4" strokeDasharray={`${animMounted ? Math.max(0, hardProg) : 0} ${circumference}`} strokeDashoffset={-(easyBase + gap + medBase + gap)} strokeLinecap="round" className="transition-all duration-1000 ease-out" />}
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center mt-[-10px]">
+                              <div className="flex items-baseline">
+                                <span className="text-3xl font-bold text-on-surface"><CountUp end={totalSolved} /></span>
+                                <span className="text-xs text-on-surface-variant font-medium ml-0.5">/{totalAvailable}</span>
+                              </div>
+                              <div className="flex items-center text-xs text-on-surface-variant font-medium mt-1">
+                                <span className="text-[#2cbb5d] mr-1 text-sm leading-none">✓</span> Solved
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Cards (Easy, Med, Hard) */}
+                          <div className="flex flex-col gap-2 w-full max-w-[160px]">
+                            <div className="flex flex-col items-center justify-center py-2 px-4 rounded-lg bg-surface-container-high border border-border-light">
+                              <span className="text-[#2cbb5d] font-medium text-sm">Easy</span>
+                              <span className="text-on-surface font-semibold text-sm">{easySolved}<span className="text-on-surface-variant font-normal">/{totalEasy}</span></span>
+                            </div>
+                            <div className="flex flex-col items-center justify-center py-2 px-4 rounded-lg bg-surface-container-high border border-border-light">
+                              <span className="text-[#ffc01e] font-medium text-sm">Med.</span>
+                              <span className="text-on-surface font-semibold text-sm">{mediumSolved}<span className="text-on-surface-variant font-normal">/{totalMedium}</span></span>
+                            </div>
+                            <div className="flex flex-col items-center justify-center py-2 px-4 rounded-lg bg-surface-container-high border border-border-light">
+                              <span className="text-[#ef4743] font-medium text-sm">Hard</span>
+                              <span className="text-on-surface font-semibold text-sm">{hardSolved}<span className="text-on-surface-variant font-normal">/{totalHard}</span></span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="w-full bg-surface-container-high rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${((leetcode.solved?.easySolved || leetcode.profile?.easySolved) / (leetcode.solved?.totalEasy || leetcode.profile?.totalEasy)) * 100 || 0}%`}}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-body-sm mb-1">
-                          <span className="text-on-surface">
-                            Medium (<CountUp end={leetcode.solved?.mediumSolved || leetcode.profile?.mediumSolved || 0}/>/<CountUp end={leetcode.solved?.totalMedium || leetcode.profile?.totalMedium || 0}/>)
-                          </span>
-                        </div>
-                        <div className="w-full bg-surface-container-high rounded-full h-2">
-                          <div className="bg-yellow-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${((leetcode.solved?.mediumSolved || leetcode.profile?.mediumSolved) / (leetcode.solved?.totalMedium || leetcode.profile?.totalMedium)) * 100 || 0}%`}}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-body-sm mb-1">
-                          <span className="text-on-surface">
-                            Hard (<CountUp end={leetcode.solved?.hardSolved || leetcode.profile?.hardSolved || 0}/>/<CountUp end={leetcode.solved?.totalHard || leetcode.profile?.totalHard || 0}/>)
-                          </span>
-                        </div>
-                        <div className="w-full bg-surface-container-high rounded-full h-2">
-                          <div className="bg-red-500 h-2 rounded-full transition-all duration-1000 ease-out" style={{width: `${((leetcode.solved?.hardSolved || leetcode.profile?.hardSolved) / (leetcode.solved?.totalHard || leetcode.profile?.totalHard)) * 100 || 0}%`}}></div>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </div>
 
                   {/* LeetCode Recent Submissions */}
