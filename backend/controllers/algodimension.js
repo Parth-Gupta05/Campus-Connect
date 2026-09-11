@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Applicant = require('../models/Applicants');
 const Opportunity = require('../models/Opportunities');
+const Resume = require('../models/Resume');
 
 /**
  * Calculates the cosine similarity between two vectors.
@@ -160,70 +161,56 @@ const evaluateApplicantMatch = async (userId, opportunityId) => {
             await opportunity.save();
         }
 
-        // 2, 3 & 4. Parse Resume using Gemini if available
+        // 2, 3 & 4. Get Resume and compute/cache resumeVector
         let parsedResumeData = { skills: [], education: [], experience: [], projects: [] };
-        const targetResumeUrl = applicant.resumeUrl || user.resumeUrl;
+        let resume = null;
+        let resumeVector = [];
 
-        if (targetResumeUrl && process.env.GEMINI_API_KEY) {
-            try {
-                const response = await axios.get(targetResumeUrl, { responseType: 'arraybuffer', timeout: 10000 });
-                const pdfBuffer = response.data;
-                const pdfData = await pdfParse(pdfBuffer);
-                const resumeText = pdfData.text || '';
+        if (applicant.resumeId) {
+            resume = await Resume.findById(applicant.resumeId);
+        } else if (applicant.resumeUrl || user.resumeUrl) {
+            // Backwards compatibility for old records without resumeId but with resumeUrl
+            // Try to find if a Resume object was created for this URL
+            const targetUrl = applicant.resumeUrl || user.resumeUrl;
+            resume = await Resume.findOne({ fileUrl: targetUrl, userId });
+        }
 
-                if (resumeText.trim()) {
-                    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-                    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        if (resume && resume.resumeVector && resume.resumeVector.length > 0) {
+            // Use cached vector! No need to recompute.
+            console.log(`[MATCH EVAL] Using cached resumeVector for Resume ${resume._id}`);
+            resumeVector = resume.resumeVector;
+        } else {
+            console.log(`[MATCH EVAL] Computing resumeVector...`);
+            if (resume && resume.parsedData) {
+                parsedResumeData = resume.parsedData;
+            }
 
-                    const prompt = `
-          You are an expert resume parser. I have provided the text extracted from a resume.
-          Extract the following information from the resume.
-          Return ONLY a valid JSON object matching this schema exactly without markdown wrapping:
-          {
-            "skills": ["skill1", "skill2"],
-            "education": [{"institution": "...", "degree": "...", "startYear": "...", "endYear": "..."}],
-            "experience": [{"company": "...", "role": "...", "startDate": "...", "endDate": "...", "description": "..."}],
-            "projects": [{"title": "...", "link": "...", "description": "..."}]
-          }
-
-          RESUME TEXT:
-          ${resumeText}
-          `;
-
-                    const result = await model.generateContent([prompt]);
-                    let responseText = result.response.text();
-                    responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-
-                    try {
-                        parsedResumeData = JSON.parse(responseText);
-                    } catch (parseError) {
-                        console.warn('[MATCH EVAL] Failed to parse Gemini response as JSON:', responseText);
-                    }
+            // Merge resumeDetails from User document if available (for backwards compatibility)
+            if (user.resumeDetails) {
+                if (user.resumeDetails.skills && user.resumeDetails.skills.length > 0) {
+                    parsedResumeData.skills = Array.from(new Set([...(parsedResumeData.skills || []), ...user.resumeDetails.skills]));
                 }
-            } catch (resumeErr) {
-                console.warn('[MATCH EVAL] Resume fetch/parsing skipped or failed (using profile data):', resumeErr.message);
+                if (user.resumeDetails.certificates) {
+                    parsedResumeData.certificates = user.resumeDetails.certificates;
+                }
+            }
+
+            // 5 & 6. Merge resume data with user.scrapedData and Compute the 10-dimensional vector
+            resumeVector = computeRuleBasedSkillVector(parsedResumeData, user.scrapedData);
+
+            // Save the computed vector on the Resume document to cache it
+            if (resume) {
+                resume.resumeVector = resumeVector;
+                await resume.save();
+                console.log(`[MATCH EVAL] Cached resumeVector to Resume ${resume._id}`);
             }
         }
-
-        // Merge resumeDetails from User document if available
-        if (user.resumeDetails) {
-            if (user.resumeDetails.skills && user.resumeDetails.skills.length > 0) {
-                parsedResumeData.skills = Array.from(new Set([...(parsedResumeData.skills || []), ...user.resumeDetails.skills]));
-            }
-            if (user.resumeDetails.certificates) {
-                parsedResumeData.certificates = user.resumeDetails.certificates;
-            }
-        }
-
-        // 5 & 6. Merge resume data with user.scrapedData and Compute the 10-dimensional applicant vector
-        const applicantVector = computeRuleBasedSkillVector(parsedResumeData, user.scrapedData);
 
         // 7 & 8. Compute cosine similarity with Opportunity.jobVector & Calculate matchScore
-        const similarity = calculateCosineSimilarity(applicantVector, opportunity.jobVector);
+        const similarity = calculateCosineSimilarity(resumeVector, opportunity.jobVector);
         const matchScore = Math.min(Math.max(Math.round(similarity * 100), 0), 100);
 
         // 9. Populate matchDetails
-        applicant.applicantVector = applicantVector;
         applicant.matchScore = matchScore;
         applicant.matchScoreCalculated = true;
         applicant.matchDetails = {
@@ -277,7 +264,7 @@ const evaluateApplicantMatchController = async (req, res) => {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash"
+    model: "gemini-3.6-flash"
 });
 
 async function generateRequirementVector(opportunity) {

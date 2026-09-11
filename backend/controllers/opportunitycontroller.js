@@ -46,6 +46,12 @@ const getOpportunities = async (req, res) => {
 
     const total = await Opportunity.countDocuments(query);
 
+    let appliedOppIds = [];
+    if (req.user && req.user.id) {
+      const applications = await Applicant.find({ userId: req.user.id }, 'opportunityId');
+      appliedOppIds = applications.map(app => app.opportunityId.toString());
+    }
+
     res.status(200).json({
       success: true,
       count: opportunities.length,
@@ -53,6 +59,7 @@ const getOpportunities = async (req, res) => {
       page: pageNum,
       totalPages: Math.ceil(total / limitNum),
       opportunities,
+      appliedOppIds,
     });
   } catch (error) {
     console.error('Error fetching opportunities:', error);
@@ -127,14 +134,23 @@ const applyForOpportunity = async (req, res) => {
       });
     }
 
-    let resumeUrl = '';
+    let resumeId = null;
 
-    // Upload resume file to Cloudinary if provided in request
-    if (req.file) {
+    // If user selected an existing resume from the dropdown
+    if (req.body.resumeId) {
+      const Resume = require('../models/Resume');
+      const existingResume = await Resume.findOne({ _id: req.body.resumeId, userId });
+      if (!existingResume) {
+        return res.status(404).json({ success: false, message: 'Selected resume not found or unauthorized' });
+      }
+      resumeId = existingResume._id;
+    }
+    // Upload new resume file to Cloudinary if provided in request
+    else if (req.file) {
       try {
         const uploadStream = new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { folder: 'applicant_resumes', resource_type: 'raw' },
+            { folder: 'applicant_resumes', resource_type: 'auto' },
             (error, result) => {
               if (error) reject(error);
               else resolve(result.secure_url);
@@ -142,7 +158,27 @@ const applyForOpportunity = async (req, res) => {
           );
           stream.end(req.file.buffer);
         });
-        resumeUrl = await uploadStream;
+        const resumeUrl = await uploadStream;
+
+        // Create new Resume document
+        const Resume = require('../models/Resume');
+        const newResume = new Resume({
+          userId,
+          fileUrl: resumeUrl,
+          fileName: req.file.originalname || 'Resume',
+          isPrimary: false
+        });
+        await newResume.save();
+        
+        // Add to user's resumes array
+        const UserObj = await User.findById(userId);
+        if (UserObj) {
+          if (!UserObj.resumes) UserObj.resumes = [];
+          UserObj.resumes.push(newResume._id);
+          await UserObj.save();
+        }
+
+        resumeId = newResume._id;
       } catch (uploadErr) {
         console.error('Cloudinary resume upload error:', uploadErr);
         return res.status(500).json({
@@ -150,19 +186,14 @@ const applyForOpportunity = async (req, res) => {
           message: 'Failed to upload resume file',
         });
       }
-    }
-
-    const user = await User.findById(userId);
-    let applicantVector = [];
-
-    if (user) {
-      if (!req.file && user.resumeUrl) {
-        resumeUrl = user.resumeUrl;
-      }
-      if (user.scrapedData && user.scrapedData.vector) {
-        applicantVector = Array.isArray(user.scrapedData.vector)
-          ? user.scrapedData.vector
-          : Object.values(user.scrapedData.vector);
+    } else {
+      // For backwards compatibility or if no resume is strictly required, though ideally we return 400
+      // Let's check if the user has any resume
+      const UserObj = await User.findById(userId);
+      if (UserObj && UserObj.resumes && UserObj.resumes.length > 0) {
+        resumeId = UserObj.resumes[0]; // Just use the first one
+      } else {
+        return res.status(400).json({ success: false, message: 'Please provide a resume to apply.' });
       }
     }
 
@@ -170,8 +201,7 @@ const applyForOpportunity = async (req, res) => {
     const application = new Applicant({
       userId,
       opportunityId,
-      resumeUrl,
-      applicantVector,
+      resumeId,
       status: 'applied',
       matchScoreCalculated: false,
     });

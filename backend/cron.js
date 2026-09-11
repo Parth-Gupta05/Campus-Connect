@@ -6,6 +6,7 @@ require('dotenv').config({ path: path.join(__dirname, 'backend', '.env') });
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const Opportunity = require('./models/Opportunities');
+const Applicant = require('./models/Applicants');
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000/api';
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -74,11 +75,69 @@ async function processPendingOpportunityVectors() {
   }
 }
 
+/**
+ * Worker task: Fetch applicants where matchScoreCalculated is false and process them
+ */
+async function processPendingApplications() {
+  try {
+    await connectDB();
+
+    const pendingApplications = await Applicant.find({
+      matchScoreCalculated: false,
+    });
+
+    if (pendingApplications.length === 0) {
+      console.log(`[CRON ${new Date().toLocaleTimeString()}] No pending applications for match score calculation.`);
+      return;
+    }
+
+    console.log(
+      `[CRON ${new Date().toLocaleTimeString()}] Found ${pendingApplications.length} pending application(s) for match scoring.`
+    );
+
+    for (const applicant of pendingApplications) {
+      // The endpoint might be /evaluate-applicant-match/:userId/:opportunityId
+      const endpoint = `${API_BASE_URL}/algodimension/evaluate-applicant-match/${applicant.userId}/${applicant.opportunityId}`;
+      console.log(`[CRON] Processing application ID: ${applicant._id} for user ${applicant.userId}`);
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+          data = await response.text();
+        }
+
+        if (response.ok) {
+          console.log(`[CRON] Successfully calculated match score for application ID: ${applicant._id}`);
+        } else {
+          console.error(`[CRON] Failed to calculate score for application ${applicant._id}:`, data.message || data);
+        }
+      } catch (reqErr) {
+        console.error(`[CRON] Error hitting endpoint for application ${applicant._id}:`, reqErr.message);
+      }
+    }
+  } catch (err) {
+    console.error('[CRON] Error in processPendingApplications task:', err);
+  }
+}
+
 // Execute immediately on startup
 processPendingOpportunityVectors();
+processPendingApplications();
 
 // Schedule worker task to run every 1 minute (60,000 ms)
 const INTERVAL_MS = 60 * 1000;
-setInterval(processPendingOpportunityVectors, INTERVAL_MS);
+setInterval(() => {
+  processPendingOpportunityVectors();
+  processPendingApplications();
+}, INTERVAL_MS);
 
-console.log('[CRON Worker] Opportunity Vector Cron Service started. Running every 1 minute...');
+console.log('[CRON Worker] Opportunity Vector & Application Match Cron Service started. Running every 1 minute...');

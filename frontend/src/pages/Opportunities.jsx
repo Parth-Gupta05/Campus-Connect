@@ -20,6 +20,19 @@ export default function Opportunities() {
   // Apply Modal state
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
+  const [selectedResumeId, setSelectedResumeId] = useState('');
+  const [uploadMode, setUploadMode] = useState(false);
+
+  useEffect(() => {
+    if (isApplyModalOpen) {
+      if (user?.resumes?.length > 0) {
+        setUploadMode(false);
+        setSelectedResumeId(user.resumes[0]._id || user.resumes[0]);
+      } else {
+        setUploadMode(true);
+      }
+    }
+  }, [isApplyModalOpen, user]);
 
   const fetchOpportunities = async () => {
     setLoading(true);
@@ -31,6 +44,9 @@ export default function Opportunities() {
       const res = await axios.get('/opportunities', { params });
       const list = res.data.opportunities || [];
       setOpportunities(list);
+      if (res.data.appliedOppIds) {
+        setAppliedOppIds(new Set(res.data.appliedOppIds));
+      }
 
       // Maintain selection or select first item
       if (list.length > 0) {
@@ -61,11 +77,20 @@ export default function Opportunities() {
     if (e) e.preventDefault();
     if (!selectedOpp) return;
 
+    if (!uploadMode && !selectedResumeId && (!user?.resumes || user.resumes.length === 0)) {
+        showToast('Please select a resume or upload a new one.', 'error');
+        return;
+    }
+
     setApplying(true);
     try {
       const formData = new FormData();
-      if (resumeFile) {
+      if (uploadMode && resumeFile) {
         formData.append('resume', resumeFile);
+      } else if (!uploadMode && selectedResumeId) {
+        formData.append('resumeId', selectedResumeId);
+      } else if (!uploadMode && user?.resumes?.length > 0 && !selectedResumeId) {
+        formData.append('resumeId', user.resumes[0]._id || user.resumes[0]);
       }
 
       const res = await axios.post(`/opportunities/${selectedOpp._id}/apply`, formData, {
@@ -76,6 +101,7 @@ export default function Opportunities() {
       setAppliedOppIds(prev => new Set(prev).add(selectedOpp._id));
       setIsApplyModalOpen(false);
       setResumeFile(null);
+      setSelectedResumeId('');
     } catch (err) {
       console.error('Error applying for opportunity:', err);
       const msg = err.response?.data?.message || 'Failed to submit application';
@@ -414,40 +440,91 @@ export default function Opportunities() {
             </div>
 
             <form onSubmit={handleApplySubmit} className="space-y-5">
-              {/* Resume File Upload Box */}
-              <div>
-                <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2">
-                  Attach Resume PDF (Optional)
-                </label>
-                <div className="border-2 border-dashed border-border-light hover:border-primary/50 bg-surface-container-low rounded-2xl p-6 text-center transition-colors relative cursor-pointer">
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setResumeFile(e.target.files[0])}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                  {resumeFile ? (
-                    <div className="text-primary font-bold text-xs flex flex-col items-center gap-1">
-                      <FiCheckCircle className="text-2xl text-success" />
-                      <span>{resumeFile.name}</span>
-                      <span className="text-[10px] text-on-surface-variant font-normal">Click to change PDF</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-1 text-on-surface-variant">
-                      <FiUploadCloud className="text-3xl text-primary mb-1" />
-                      <span className="text-xs font-bold text-on-surface">Upload custom PDF resume</span>
-                      <span className="text-[11px]">
-                        {user?.resumeUrl ? 'Or leave empty to use default profile resume' : 'Drag & drop or click to browse'}
-                      </span>
-                    </div>
-                  )}
+              
+              {user?.resumes && user.resumes.length > 0 && (
+                <div className="flex bg-surface-container-low p-1 rounded-xl w-full border border-border-light">
+                  <button
+                    type="button"
+                    onClick={() => setUploadMode(false)}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${
+                      !uploadMode ? 'bg-surface shadow-sm text-primary transform scale-[1.02]' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/30'
+                    }`}
+                  >
+                    Select Existing Resume
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUploadMode(true)}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${
+                      uploadMode ? 'bg-surface shadow-sm text-primary transform scale-[1.02]' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/30'
+                    }`}
+                  >
+                    Upload New
+                  </button>
                 </div>
-              </div>
+              )}
 
-              {user?.resumeUrl && !resumeFile && (
-                <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-xs text-primary flex items-center gap-2">
-                  <FiCheckCircle className="text-base shrink-0 text-success" />
-                  <span>Default profile resume will be attached automatically.</span>
+              {!uploadMode && user?.resumes && user.resumes.length > 0 ? (
+                <div className="space-y-3 max-h-56 overflow-y-auto pr-2 custom-scrollbar">
+                  <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2">
+                    Choose a Resume
+                  </label>
+                  {user.resumes.map((res) => (
+                    <div
+                      key={res._id || res}
+                      onClick={() => setSelectedResumeId(res._id || res)}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-between shadow-sm ${
+                        selectedResumeId === (res._id || res)
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
+                          : 'border-border-light hover:border-primary/40 bg-surface-container-lowest'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className={`p-2 rounded-lg transition-colors duration-300 ${selectedResumeId === (res._id || res) ? 'bg-primary text-on-primary shadow-sm' : 'bg-surface-variant text-on-surface-variant'}`}>
+                          <FiCheckCircle className="text-lg" />
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-sm font-bold text-on-surface truncate">{res.fileName || 'Resume Document'}</p>
+                          <p className="text-[10px] text-on-surface-variant">Parsed Skills: {res.parsedData?.skills?.length || 0}</p>
+                        </div>
+                      </div>
+                      {res.fileUrl && (
+                        <a href={res.fileUrl} target="_blank" rel="noopener noreferrer" className="p-2 text-on-surface-variant hover:text-primary transition-colors shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <FiExternalLink />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Resume File Upload Box */
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2">
+                    Attach New Resume PDF
+                  </label>
+                  <div className="border-2 border-dashed border-border-light hover:border-primary/50 bg-surface-container-low rounded-2xl p-6 text-center transition-all duration-300 relative cursor-pointer hover:shadow-inner">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => setResumeFile(e.target.files[0])}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                    {resumeFile ? (
+                      <div className="text-primary font-bold text-xs flex flex-col items-center gap-2 transform transition-transform scale-105">
+                        <FiCheckCircle className="text-3xl text-success" />
+                        <span>{resumeFile.name}</span>
+                        <span className="text-[10px] text-on-surface-variant font-normal">Click to change PDF</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-on-surface-variant transition-transform hover:scale-105">
+                        <FiUploadCloud className="text-4xl text-primary mb-1" />
+                        <span className="text-xs font-bold text-on-surface">Upload custom PDF resume</span>
+                        <span className="text-[11px]">
+                          Drag & drop or click to browse
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

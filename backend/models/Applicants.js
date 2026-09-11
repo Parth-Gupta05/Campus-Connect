@@ -21,11 +21,6 @@ const ApplicantSchema = new mongoose.Schema(
       min: 0,
       max: 100,
     },
-    // Snapshot of applicant's skill/talent vector at the time of application
-    applicantVector: {
-      type: [Number],
-      default: [],
-    },
     // Flag to track whether background queue workers have completed the match calculation
     matchScoreCalculated: {
       type: Boolean,
@@ -46,9 +41,10 @@ const ApplicantSchema = new mongoose.Schema(
       index: true,
     },
     // Snapshot of the resume used at the time of application
-    resumeUrl: {
-      type: String,
-      default: '',
+    resumeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Resume',
+      required: false,
     },
     // Admin / Employer notes & feedback
     adminNotes: {
