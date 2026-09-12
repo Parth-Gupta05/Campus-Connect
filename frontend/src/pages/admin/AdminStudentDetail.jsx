@@ -579,7 +579,7 @@ export default function AdminStudentDetail() {
                           <div className="absolute inset-0 flex flex-col items-center justify-center mt-[-10px]">
                             <div className="flex items-baseline">
                               <span className="text-3xl font-bold text-on-surface"><CountUp end={totalSolved} /></span>
-                              <span className="text-xs text-on-surface-variant font-medium ml-0.5">/${totalAvailable}</span>
+                              <span className="text-xs text-on-surface-variant font-medium ml-0.5">/{totalAvailable}</span>
                             </div>
                             <div className="flex items-center text-xs text-on-surface-variant font-medium mt-1">
                               <span className="text-[#2cbb5d] mr-1 text-sm leading-none">✓</span> Solved
@@ -590,15 +590,15 @@ export default function AdminStudentDetail() {
                         <div className="w-full grid grid-cols-3 gap-2 text-center text-xs border-t border-border-light pt-4">
                           <div>
                             <div className="text-[#2cbb5d] font-bold">Easy</div>
-                            <div className="text-on-surface font-medium">${easySolved} <span className="text-on-surface-variant">/${totalEasy}</span></div>
+                            <div className="text-on-surface font-medium">{easySolved} <span className="text-on-surface-variant">/{totalEasy}</span></div>
                           </div>
                           <div>
                             <div className="text-[#ffc01e] font-bold">Med</div>
-                            <div className="text-on-surface font-medium">${mediumSolved} <span className="text-on-surface-variant">/${totalMedium}</span></div>
+                            <div className="text-on-surface font-medium">{mediumSolved} <span className="text-on-surface-variant">/{totalMedium}</span></div>
                           </div>
                           <div>
                             <div className="text-[#ef4743] font-bold">Hard</div>
-                            <div className="text-on-surface font-medium">${hardSolved} <span className="text-on-surface-variant">/${totalHard}</span></div>
+                            <div className="text-on-surface font-medium">{hardSolved} <span className="text-on-surface-variant">/{totalHard}</span></div>
                           </div>
                         </div>
                       </div>
