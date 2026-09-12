@@ -732,18 +732,191 @@ const getgithubdata = async (githubuserid) => {
 
 const getleetcodedata = async (leetcodeuserid, profileOnly = false) => {
     if (!leetcodeuserid) return null;
+    const cleanUsername = leetcodeuserid.trim().replace(/^@/, '').replace(/^https?:\/\/(www\.)?leetcode\.com\/(u\/)?/, '').replace(/\/$/, '');
+    if (!cleanUsername) return null;
 
+    // 1. Try official LeetCode GraphQL API first (fast, reliable, avoids third-party 429 rate limits)
+    try {
+        const query = `
+          query getUserData($username: String!) {
+            matchedUser(username: $username) {
+              username
+              githubUrl
+              linkedinUrl
+              profile {
+                realName
+                aboutMe
+                userAvatar
+                reputation
+                ranking
+                school
+                countryName
+                company
+                skillTags
+              }
+              submitStats: submitStatsGlobal {
+                acSubmissionNum {
+                  difficulty
+                  count
+                  submissions
+                }
+                totalSubmissionNum {
+                  difficulty
+                  count
+                  submissions
+                }
+              }
+              badges {
+                id
+                displayName
+                icon
+                creationDate
+              }
+              userCalendar {
+                streak
+                totalActiveDays
+                submissionCalendar
+              }
+            }
+            userContestRanking(username: $username) {
+              attendedContestsCount
+              rating
+              globalRanking
+              totalParticipants
+              topPercentage
+              badge {
+                name
+              }
+            }
+            recentSubmissionList(username: $username, limit: 15) {
+              title
+              titleSlug
+              timestamp
+              statusDisplay
+              lang
+            }
+            matchedUserSkill: matchedUser(username: $username) {
+              tagProblemCounts {
+                advanced {
+                  tagName
+                  tagSlug
+                  problemsSolved
+                }
+                intermediate {
+                  tagName
+                  tagSlug
+                  problemsSolved
+                }
+                fundamental {
+                  tagName
+                  tagSlug
+                  problemsSolved
+                }
+              }
+            }
+          }
+        `;
+
+        const res = await fetch('https://leetcode.com/graphql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Referer': 'https://leetcode.com',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            body: JSON.stringify({ query, variables: { username: cleanUsername } })
+        });
+
+        if (res.ok) {
+            const json = await res.json();
+            const matched = json?.data?.matchedUser;
+            if (matched) {
+                const acSubmissions = matched.submitStats?.acSubmissionNum || [];
+                const allSolved = acSubmissions.find(s => s.difficulty === 'All')?.count || 0;
+                const easySolved = acSubmissions.find(s => s.difficulty === 'Easy')?.count || 0;
+                const mediumSolved = acSubmissions.find(s => s.difficulty === 'Medium')?.count || 0;
+                const hardSolved = acSubmissions.find(s => s.difficulty === 'Hard')?.count || 0;
+
+                const totalSubmissions = matched.submitStats?.totalSubmissionNum || [];
+                const totalEasy = totalSubmissions.find(s => s.difficulty === 'Easy')?.count || 0;
+                const totalMedium = totalSubmissions.find(s => s.difficulty === 'Medium')?.count || 0;
+                const totalHard = totalSubmissions.find(s => s.difficulty === 'Hard')?.count || 0;
+
+                let parsedCalendar = {};
+                try {
+                    parsedCalendar = matched.userCalendar?.submissionCalendar 
+                        ? JSON.parse(matched.userCalendar.submissionCalendar) 
+                        : {};
+                } catch (e) {}
+
+                const profile = {
+                    username: matched.username,
+                    name: matched.profile?.realName || '',
+                    realName: matched.profile?.realName || '',
+                    about: matched.profile?.aboutMe || '',
+                    aboutMe: matched.profile?.aboutMe || '',
+                    avatar: matched.profile?.userAvatar || '',
+                    userAvatar: matched.profile?.userAvatar || '',
+                    ranking: matched.profile?.ranking || 0,
+                    reputation: matched.profile?.reputation || 0,
+                    country: matched.profile?.countryName || '',
+                    company: matched.profile?.company || '',
+                    school: matched.profile?.school || '',
+                    skillTags: matched.profile?.skillTags || [],
+                    totalSolved: allSolved,
+                    easySolved,
+                    mediumSolved,
+                    hardSolved,
+                    totalQuestions: totalEasy + totalMedium + totalHard,
+                    totalEasy,
+                    totalMedium,
+                    totalHard,
+                    submissionCalendar: parsedCalendar,
+                    recentSubmissions: json.data?.recentSubmissionList || []
+                };
+
+                if (profileOnly) {
+                    return { profile };
+                }
+
+                return {
+                    profile,
+                    solved: {
+                        solvedProblem: allSolved,
+                        easySolved,
+                        mediumSolved,
+                        hardSolved,
+                        totalSubmissionNum: totalSubmissions,
+                        acSubmissionNum: acSubmissions
+                    },
+                    calendar: {
+                        streak: matched.userCalendar?.streak || 0,
+                        totalActiveDays: matched.userCalendar?.totalActiveDays || 0,
+                        submissionCalendar: matched.userCalendar?.submissionCalendar || '{}'
+                    },
+                    contest: json.data?.userContestRanking || null,
+                    badges: matched.badges || [],
+                    skills: json.data?.matchedUserSkill?.tagProblemCounts || { fundamental: [], intermediate: [], advanced: [] },
+                    submission: json.data?.recentSubmissionList || []
+                };
+            }
+        }
+    } catch (graphError) {
+        console.warn('Direct LeetCode GraphQL fetch failed, attempting fallback API:', graphError.message);
+    }
+
+    // 2. Fallback to alfa-leetcode-api if direct GraphQL failed
     const endpoints = profileOnly ? {
-        profile: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/profile`
+        profile: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/profile`
     } : {
-        profile: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/profile`,
-        badges: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/badges`,
-        solved: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/solved`,
-        contest: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/contest`,
-        submission: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/submission`,
-        calendar: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/calendar`,
-        skills: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/skill`,
-        languages: `https://alfa-leetcode-api.onrender.com/${leetcodeuserid}/language`
+        profile: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/profile`,
+        badges: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/badges`,
+        solved: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/solved`,
+        contest: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/contest`,
+        submission: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/submission`,
+        calendar: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/calendar`,
+        skills: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/skill`,
+        languages: `https://alfa-leetcode-api.onrender.com/${cleanUsername}/language`
     };
 
     try {
@@ -771,14 +944,14 @@ const getleetcodedata = async (leetcodeuserid, profileOnly = false) => {
 
         // Verify that we got at least some basic profile/solved information back
         if (!leetcodeData.profile && !leetcodeData.solved && !profileOnly) {
-            throw new Error(`Could not retrieve any profile data for LeetCode user '${leetcodeuserid}'`);
+            throw new Error(`Could not retrieve any profile data for LeetCode user '${cleanUsername}'`);
         } else if (profileOnly && !leetcodeData.profile) {
-            throw new Error(`Could not retrieve profile data for LeetCode verification '${leetcodeuserid}'`);
+            throw new Error(`Could not retrieve profile data for LeetCode verification '${cleanUsername}'`);
         }
 
         return leetcodeData;
     } catch (error) {
-        console.error(`Error in getleetcodedata for ${leetcodeuserid}:`, error);
+        console.error(`Error in getleetcodedata for ${cleanUsername}:`, error.message);
         throw error;
     }
 };
