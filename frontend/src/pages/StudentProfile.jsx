@@ -8,7 +8,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
-import { FiLoader, FiGithub, FiLinkedin, FiX } from 'react-icons/fi';
+import { FiLoader, FiGithub, FiLinkedin, FiX, FiMessageSquare } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
 const formatExternalUrl = (url) => {
@@ -1052,8 +1052,9 @@ export default function StudentProfile() {
                             </span>
 
                             <div className="flex items-center gap-3">
-                              <span className="flex items-center gap-1 font-mono text-[11px]">
-                                💬 {post.commentCount || 0}
+                              <span className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface-variant">
+                                <FiMessageSquare className="text-[12px] text-on-surface-variant" />
+                                <span>{post.commentCount || 0}</span>
                               </span>
                               <Link
                                 to={`/placements/${post._id}`}

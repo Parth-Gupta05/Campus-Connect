@@ -6,7 +6,7 @@ import { ActivityCalendar } from 'react-activity-calendar';
 import { fromUnixTime, format, subDays } from 'date-fns';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
-import { FiArrowLeft, FiLoader } from 'react-icons/fi';
+import { FiArrowLeft, FiLoader, FiMessageSquare } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import PdfViewerModal from '../../components/PdfViewerModal';
@@ -843,8 +843,9 @@ export default function AdminStudentDetail() {
                           </span>
 
                           <div className="flex items-center gap-3">
-                            <span className="flex items-center gap-1 font-mono text-[11px]">
-                              💬 {post.commentCount || 0}
+                            <span className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface-variant">
+                              <FiMessageSquare className="text-[12px] text-on-surface-variant" />
+                              <span>{post.commentCount || 0}</span>
                             </span>
                             <Link
                               to={`/placements/${post._id}`}
