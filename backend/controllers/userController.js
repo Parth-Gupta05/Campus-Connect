@@ -404,16 +404,29 @@ const addManualAchievement = async (req, res) => {
 
 const getGithubHeatmap = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user || !user.githubUsername) {
-      return res.status(404).json({ message: 'GitHub username not found' });
+    let targetUsername = req.query.username;
+    if (!targetUsername) {
+      const user = await User.findById(req.user.id);
+      if (!user || !user.githubUsername) {
+        return res.status(404).json({ message: 'GitHub username not found' });
+      }
+      targetUsername = user.githubUsername;
     }
-    const data = await getGithubContributions(user.githubUsername);
+
+    // Clean up username if full URL or leading @ was provided
+    targetUsername = targetUsername.trim().replace(/^@/, '').replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '');
+
+    if (!targetUsername) {
+      return res.status(400).json({ message: 'Invalid GitHub username' });
+    }
+
+    const data = await getGithubContributions(targetUsername);
     if (!data) {
       return res.status(500).json({ message: 'Failed to fetch github contributions' });
     }
     res.json(data);
   } catch (error) {
+    console.error('Error fetching github heatmap:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

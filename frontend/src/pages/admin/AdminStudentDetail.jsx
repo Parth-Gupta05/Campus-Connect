@@ -160,11 +160,12 @@ export default function AdminStudentDetail() {
   }, [loading]);
 
   const profile = data?.user || {};
+  const effectiveGithubUsername = profile?.githubUsername || data?.github?.profile?.login || '';
   
   useEffect(() => {
-    if (activeHeatmap === 'github' && profile?.githubUsername && !githubHeatmap && !heatmapLoading && !loading) {
+    if (activeHeatmap === 'github' && effectiveGithubUsername && !githubHeatmap && !heatmapLoading && !loading) {
       setHeatmapLoading(true);
-      axios.get(`/user/github-heatmap?username=${profile.githubUsername}`) // Assuming this route exists and can take a username. If not, admin backend route needs to provide this. Actually, the admin route /admin/students/:id might not fetch github heatmap. Let's just mock it or assume the backend has it.
+      axios.get(`/user/github-heatmap?username=${encodeURIComponent(effectiveGithubUsername)}`)
         .then(res => {
           setGithubHeatmap(res.data);
           setHeatmapError(false);
@@ -175,7 +176,7 @@ export default function AdminStudentDetail() {
         })
         .finally(() => setHeatmapLoading(false));
     }
-  }, [activeHeatmap, profile?.githubUsername, loading]);
+  }, [activeHeatmap, effectiveGithubUsername, loading]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -309,8 +310,8 @@ export default function AdminStudentDetail() {
                     <span className="material-symbols-outlined text-[18px]">language</span> Portfolio
                   </a>
                 )}
-                {user.githubUsername && (
-                  <a href={`https://github.com/${user.githubUsername}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-green-50 border-green-200 hover:bg-green-100 text-green-800">
+                {effectiveGithubUsername && (
+                  <a href={`https://github.com/${effectiveGithubUsername}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-green-50 border-green-200 hover:bg-green-100 text-green-800">
                     <FaGithub className="text-[18px]" /> GitHub
                   </a>
                 )}
@@ -352,7 +353,7 @@ export default function AdminStudentDetail() {
               <div className="min-w-[800px] min-h-[180px] relative w-full">
                 {/* GitHub Heatmap */}
                 <div className={`heatmap-wrapper absolute top-0 left-0 w-full flex justify-center transition-opacity duration-300 ${activeHeatmap === 'github' ? 'opacity-100 z-10 active' : 'opacity-0 z-0 pointer-events-none'}`}>
-                  {user?.githubUsername ? (
+                  {effectiveGithubUsername ? (
                     heatmapLoading ? (
                       <div className="animate-pulse py-8 text-on-surface-variant">Loading contributions...</div>
                     ) : heatmapError || !githubHeatmap ? (

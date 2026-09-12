@@ -988,7 +988,14 @@ const filterAchievementsWithGemini = async (posts) => {
 
 const getGithubContributions = async (githubuserid) => {
     if (!githubuserid) return null;
-    if (!GITHUB_TOKEN) return null;
+    const cleanLogin = githubuserid.trim().replace(/^@/, '').replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '');
+    if (!cleanLogin) return null;
+
+    const token = process.env.GITHUB_TOKEN || GITHUB_TOKEN;
+    if (!token) {
+        console.warn('GITHUB_TOKEN not configured in backend environment.');
+        return null;
+    }
 
     const query = `
       query($login: String!) {
@@ -1013,20 +1020,23 @@ const getGithubContributions = async (githubuserid) => {
         const res = await fetch('https://api.github.com/graphql', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
                 'User-Agent': 'Campus-Connect-Backend'
             },
-            body: JSON.stringify({ query, variables: { login: githubuserid } })
+            body: JSON.stringify({ query, variables: { login: cleanLogin } })
         });
 
         if (!res.ok) {
-            console.error('Failed to fetch github contributions via GraphQL', res.status);
+            console.error('Failed to fetch github contributions via GraphQL status:', res.status);
             return null;
         }
 
         const data = await res.json();
-        if (data.errors || !data.data?.user) return null;
+        if (data.errors || !data.data?.user) {
+            if (data.errors) console.error('GitHub GraphQL returned errors:', data.errors);
+            return null;
+        }
 
         const calendar = data.data.user.contributionsCollection.contributionCalendar;
         const result = [];
