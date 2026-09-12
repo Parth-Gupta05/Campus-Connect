@@ -2,6 +2,7 @@ const cloudinary = require('cloudinary').v2;
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const pdfParse = require('pdf-parse');
 const User = require('../models/User');
+const Resume = require('../models/Resume');
 const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
 
 cloudinary.config({
@@ -70,7 +71,7 @@ const uploadAndParseResume = async (req, res) => {
     try {
       const uploadStream = new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: 'resumes', resource_type: 'raw' },
+          { folder: 'applicant_resumes', resource_type: 'auto' },
           (error, result) => {
             if (error) reject(error);
             else resolve(result.secure_url);
@@ -84,19 +85,30 @@ const uploadAndParseResume = async (req, res) => {
       // We don't fail the parsing if upload fails, we just don't save the URL.
     }
 
-    // 4. Save URL to User (we don't save the parsed data yet, the frontend form will do that on "Save")
+    // 4. Save Resume document and link to User
+    let newResume = null;
     if (resumeUrl) {
+      newResume = new Resume({
+        userId: req.user.id,
+        fileUrl: resumeUrl,
+        fileName: req.file.originalname || 'Resume',
+        parsedData: parsedData,
+        isPrimary: true // Default as primary for now
+      });
+      await newResume.save();
+
       const user = await User.findById(req.user.id);
       if (user) {
-        if (user.resumeUrl) {
-          await deleteCloudinaryAsset(user.resumeUrl);
-        }
-        user.resumeUrl = resumeUrl;
+        if (!user.resumes) user.resumes = [];
+        user.resumes.push(newResume._id);
+        
+        // Ensure no old resumeUrl lingers, though schema removed it.
+        // If other resumes exist, maybe clear isPrimary, but we'll leave that logic to frontend API if needed.
         await user.save();
       }
     }
 
-    res.json({ message: 'Resume parsed successfully', parsedData, resumeUrl });
+    res.json({ message: 'Resume parsed successfully', parsedData, resumeUrl, resumeId: newResume ? newResume._id : null });
   } catch (error) {
     console.error('Error processing resume:', error);
     res.status(500).json({ message: 'Server error processing resume' });

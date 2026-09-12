@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
@@ -16,12 +16,17 @@ import CreatePlacementPost from './pages/CreatePlacementPost';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminSidebar from './components/admin/AdminSidebar';
+import AdminOpportunities from './pages/admin/AdminOpportunities';
+import AdminOpportunityDetail from './pages/admin/AdminOpportunityDetail';
+import AdminStudents from './pages/admin/AdminStudents';
+import AdminStudentDetail from './pages/admin/AdminStudentDetail';
 
-function AdminPlaceholder() {
+function AdminLayout({ children }) {
   return (
-    <div className="p-8 text-center text-on-surface">
-      <h1 className="text-headline-lg mb-4">Admin Dashboard</h1>
-      <p>Welcome, Admin! This is a placeholder for the global sidebar test.</p>
+    <div className="flex bg-background min-h-screen text-on-surface">
+      <AdminSidebar />
+      {children}
     </div>
   );
 }
@@ -108,11 +113,37 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path="/admin" element={
+          <Route path="/admin" element={<Navigate to="/admin/opportunities" replace />} />
+
+          <Route path="/admin/opportunities" element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <div className="flex bg-background min-h-screen text-on-surface">
-                <AdminPlaceholder />
-              </div>
+              <AdminLayout>
+                <AdminOpportunities />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/opportunities/:id" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout>
+                <AdminOpportunityDetail />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/students" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout>
+                <AdminStudents />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/students/:id" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout>
+                <AdminStudentDetail />
+              </AdminLayout>
             </ProtectedRoute>
           } />
         </Routes>

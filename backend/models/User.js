@@ -97,46 +97,10 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
-  resumeUrl: {
-    type: String,
-    default: '',
-  },
-  resumeDetails: {
-    portfolioUrl: { type: String, default: '' },
-    skills: { type: [String], default: [] },
-    education: [{
-      institution: String,
-      degree: String,
-      startYear: String,
-      endYear: String
-    }],
-    experience: [{
-      company: String,
-      role: String,
-      startDate: String,
-      endDate: String,
-      description: String
-    }],
-    projects: [{
-      title: String,
-      link: String,
-      description: String
-    }],
-    certificates: [{
-      title: String,
-      issuer: String,
-      issueDate: String,
-      credentialUrl: String,
-      fileUrl: String,
-      isComplete: { type: Boolean, default: false }
-    }],
-    achievements: [{
-      title: String,
-      description: String,
-      imageUrl: String,
-      date: String
-    }]
-  }
+  resumes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Resume'
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
