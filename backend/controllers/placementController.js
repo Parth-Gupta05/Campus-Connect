@@ -19,6 +19,16 @@ const uploadToCloudinary = (fileBuffer, folder, resourceType = 'image') => {
   });
 };
 
+// Helper to parse array fields from form data
+const parseArrayField = (field) => {
+  if (!field) return [];
+  try {
+    return typeof field === 'string' ? JSON.parse(field) : field;
+  } catch (e) {
+    return field.toString().split(',').map(item => item.trim()).filter(Boolean);
+  }
+};
+
 // ==========================================
 // 1. COMPANY SEARCH (Logo.dev Proxy)
 // ==========================================
@@ -105,16 +115,19 @@ const getFeed = async (req, res) => {
       query.postType = postType;
     }
     if (assessmentType) {
-      query.assessmentType = assessmentType;
+      query.$or = query.$or || [];
+      query.$or.push({ assessmentTypes: assessmentType }, { assessmentType: assessmentType });
     }
     if (assessmentMode) {
       query.assessmentMode = assessmentMode;
     }
     if (interviewType) {
-      query.interviewType = interviewType;
+      query.$or = query.$or || [];
+      query.$or.push({ interviewTypes: interviewType }, { interviewType: interviewType });
     }
     if (interviewMode) {
-      query.interviewMode = interviewMode;
+      query.$or = query.$or || [];
+      query.$or.push({ interviewModes: interviewMode }, { interviewMode: interviewMode });
     }
     if (jobType) {
       query.jobType = jobType;
@@ -288,10 +301,9 @@ const createPost = async (req, res) => {
       salaryAmount,
       salaryCurrency = 'INR',
       salaryPeriod = 'annual',
-      assessmentType,
-      assessmentMode,
-      interviewType,
-      interviewMode,
+      assessmentTypes,
+      interviewTypes,
+      interviewModes,
       numberOfRounds,
       difficulty,
       outcome,
@@ -369,6 +381,10 @@ const createPost = async (req, res) => {
       }
     }
 
+    const parsedAssessmentTypes = parseArrayField(assessmentTypes);
+    const parsedInterviewTypes = parseArrayField(interviewTypes);
+    const parsedInterviewModes = parseArrayField(interviewModes);
+
     const newPost = new PlacementPost({
       author: user._id,
       company: {
@@ -384,10 +400,9 @@ const createPost = async (req, res) => {
         currency: salaryCurrency || 'INR',
         period: salaryPeriod || 'annual'
       },
-      assessmentType: assessmentType || null,
-      assessmentMode: assessmentMode || null,
-      interviewType: interviewType || null,
-      interviewMode: interviewMode || null,
+      assessmentTypes: parsedAssessmentTypes,
+      interviewTypes: parsedInterviewTypes,
+      interviewModes: parsedInterviewModes,
       numberOfRounds: numberOfRounds ? Number(numberOfRounds) : null,
       difficulty: difficulty || null,
       outcome: outcome || null,
@@ -447,10 +462,9 @@ const updatePost = async (req, res) => {
       salaryAmount,
       salaryCurrency,
       salaryPeriod,
-      assessmentType,
-      assessmentMode,
-      interviewType,
-      interviewMode,
+      assessmentTypes,
+      interviewTypes,
+      interviewModes,
       numberOfRounds,
       difficulty,
       outcome,
@@ -483,10 +497,15 @@ const updatePost = async (req, res) => {
       if (salaryPeriod) post.salary.period = salaryPeriod;
     }
 
-    if (assessmentType !== undefined) post.assessmentType = assessmentType || null;
-    if (assessmentMode !== undefined) post.assessmentMode = assessmentMode || null;
-    if (interviewType !== undefined) post.interviewType = interviewType || null;
-    if (interviewMode !== undefined) post.interviewMode = interviewMode || null;
+    if (assessmentTypes !== undefined) {
+      post.assessmentTypes = parseArrayField(assessmentTypes);
+    }
+    if (interviewTypes !== undefined) {
+      post.interviewTypes = parseArrayField(interviewTypes);
+    }
+    if (interviewModes !== undefined) {
+      post.interviewModes = parseArrayField(interviewModes);
+    }
     if (numberOfRounds !== undefined) post.numberOfRounds = numberOfRounds ? Number(numberOfRounds) : null;
     if (difficulty !== undefined) post.difficulty = difficulty || null;
     if (outcome !== undefined) post.outcome = outcome || null;

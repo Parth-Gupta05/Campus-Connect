@@ -9,11 +9,11 @@ import {
   FiExternalLink,
   FiClock,
   FiMapPin,
-  FiDollarSign,
   FiCheckCircle,
   FiXCircle,
   FiAlertCircle
 } from 'react-icons/fi';
+import { FaRupeeSign } from 'react-icons/fa';
 
 export default function PlacementPostCard({ post }) {
   const navigate = useNavigate();
@@ -175,7 +175,7 @@ export default function PlacementPostCard({ post }) {
       <div className="flex items-center gap-2 flex-wrap mb-3 text-xs">
         {formatSalary(post.salary) && (
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 font-bold border border-emerald-500/20">
-            <FiDollarSign className="text-xs" />
+            <FaRupeeSign className="text-[10px]" />
             {formatSalary(post.salary)}
           </span>
         )}
@@ -186,17 +186,29 @@ export default function PlacementPostCard({ post }) {
           </span>
         )}
 
-        {post.assessmentType && (
+        {post.assessmentTypes?.length > 0 ? (
+          post.assessmentTypes.slice(0, 2).map((t, idx) => (
+            <span key={`a-${idx}`} className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
+              {t.replace(/_/g, ' ')}
+            </span>
+          ))
+        ) : post.assessmentType ? (
           <span className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
-            {post.assessmentType.replace('_', ' ')}
+            {post.assessmentType.replace(/_/g, ' ')}
           </span>
-        )}
+        ) : null}
 
-        {post.interviewType && (
+        {post.interviewTypes?.length > 0 ? (
+          post.interviewTypes.slice(0, 2).map((t, idx) => (
+            <span key={`i-${idx}`} className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
+              {t.replace(/_/g, ' ')}
+            </span>
+          ))
+        ) : post.interviewType ? (
           <span className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
-            {post.interviewType.replace('_', ' ')} Interview
+            {post.interviewType.replace(/_/g, ' ')}
           </span>
-        )}
+        ) : null}
 
         {post.jobType && (
           <span className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">

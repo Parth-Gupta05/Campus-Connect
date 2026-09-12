@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import PlacementCommentItem from './PlacementCommentItem';
 import { FiMessageSquare, FiSend } from 'react-icons/fi';
 
-export default function PlacementCommentSection({ postId, commentCount = 0 }) {
+export default function PlacementCommentSection({ postId, postAuthorId, commentCount = 0 }) {
   const { user } = useContext(AuthContext);
   const { showToast } = useToast();
   const [comments, setComments] = useState([]);
@@ -126,6 +126,7 @@ export default function PlacementCommentSection({ postId, commentCount = 0 }) {
               key={comment._id}
               comment={comment}
               postId={postId}
+              postAuthorId={postAuthorId}
               onCommentDeleted={handleCommentDeleted}
             />
           ))}

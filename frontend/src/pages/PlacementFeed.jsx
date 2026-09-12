@@ -114,28 +114,32 @@ export default function PlacementFeed() {
   };
 
   return (
-    <div className="flex h-screen bg-surface overflow-hidden">
+    <div className="flex min-h-screen bg-background text-on-surface font-body-lg">
       <Sidebar />
 
-      <main className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto bg-surface custom-scrollbar">
+      <main className="flex-1 overflow-y-auto bg-surface-container-lowest">
         <Topbar />
 
-        <div className="max-w-5xl w-full mx-auto px-4 md:px-8 py-8 space-y-6">
+        <div className="max-w-6xl mx-auto p-4 sm:p-8 space-y-8">
           {/* Top Header */}
-          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2">
-            <div>
-              <h1 className="font-display-hero text-display-hero text-on-surface flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-primary text-3xl">military_tech</span>
-                Placement &amp; Interview Experiences
-              </h1>
-              <p className="text-body-lg text-on-surface-variant mt-1.5">
-                Real interview questions, coding round breakdowns, HR insights, and packages shared by seniors and peers.
-              </p>
+          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2 border-b border-border-light">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-2xs">
+                <span className="material-symbols-outlined text-2xl">military_tech</span>
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-on-surface">
+                  Placement &amp; Interview Experiences
+                </h1>
+                <p className="text-sm text-on-surface-variant mt-0.5">
+                  Real interview questions, coding round breakdowns, HR insights, and packages shared by seniors and peers.
+                </p>
+              </div>
             </div>
 
             <Link
               to="/placements/create"
-              className="shrink-0 bg-primary text-on-primary px-6 py-3 rounded-xl font-button-text hover:bg-on-primary-fixed transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+              className="whitespace-nowrap shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-semibold hover:bg-on-primary-fixed transition-colors shadow-sm cursor-pointer"
             >
               <span className="material-symbols-outlined text-lg">add</span>
               <span>Share Experience</span>

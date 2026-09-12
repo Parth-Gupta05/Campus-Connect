@@ -7,10 +7,10 @@ import {
   FiTrendingUp,
   FiClock,
   FiMessageSquare,
-  FiDollarSign,
   FiBookmark,
   FiUserCheck
 } from 'react-icons/fi';
+import { FaRupeeSign } from 'react-icons/fa';
 
 export default function PlacementFilterBar({
   filters,
@@ -77,10 +77,10 @@ export default function PlacementFilterBar({
 
   const difficulties = [
     { value: '', label: 'All Difficulties' },
-    { value: 'easy', label: '🟢 Easy' },
-    { value: 'medium', label: '🟡 Medium' },
-    { value: 'hard', label: '🟠 Hard' },
-    { value: 'very_hard', label: '🔴 Very Hard' }
+    { value: 'easy', label: 'Easy' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'hard', label: 'Hard' },
+    { value: 'very_hard', label: 'Very Hard' }
   ];
 
   const outcomes = [
@@ -148,77 +148,81 @@ export default function PlacementFilterBar({
                 setLocalSearch('');
                 onChange({ ...filters, search: '', page: 1 });
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant hover:text-on-surface"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1"
             >
               <FiX className="text-sm" />
             </button>
           )}
         </div>
 
-        {/* Sort Pill Buttons */}
-        <div className="flex items-center gap-1 p-1 bg-surface-container-low border border-border-light rounded-xl text-xs font-semibold overflow-x-auto custom-scrollbar">
+        {/* Sort Options Segmented Control */}
+        <div className="flex items-center gap-1 p-1 bg-surface-container-low border border-border-light rounded-xl shadow-2xs overflow-x-auto shrink-0">
           <button
             type="button"
             onClick={() => handleFilterChange('sort', 'recent')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-              (!filters.sort || filters.sort === 'recent')
-                ? 'bg-primary text-on-primary font-bold shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              filters.sort === 'recent' || !filters.sort
+                ? 'bg-primary text-on-primary shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
             }`}
           >
-            <FiClock /> Latest
+            <FiClock className="text-xs" /> Latest
           </button>
           <button
             type="button"
             onClick={() => handleFilterChange('sort', 'popular')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               filters.sort === 'popular'
-                ? 'bg-primary text-on-primary font-bold shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface'
+                ? 'bg-primary text-on-primary shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
             }`}
           >
-            <FiTrendingUp /> Popular
+            <FiTrendingUp className="text-xs" /> Popular
           </button>
           <button
             type="button"
-            onClick={() => handleFilterChange('sort', 'most_commented')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-              filters.sort === 'most_commented'
-                ? 'bg-primary text-on-primary font-bold shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface'
+            onClick={() => handleFilterChange('sort', 'discussed')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              filters.sort === 'discussed'
+                ? 'bg-primary text-on-primary shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
             }`}
           >
-            <FiMessageSquare /> Most Discussed
+            <FiMessageSquare className="text-xs" /> Most Discussed
           </button>
           <button
             type="button"
             onClick={() => handleFilterChange('sort', 'salary_high')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               filters.sort === 'salary_high'
-                ? 'bg-primary text-on-primary font-bold shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface'
+                ? 'bg-primary text-on-primary shadow-xs'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
             }`}
           >
-            <FiDollarSign /> Top Package
+            <FaRupeeSign className="text-[10px]" /> Top Package
           </button>
         </div>
       </div>
 
-      {/* Filter Chips Row (Horizontal Scrollable) */}
-      <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 text-xs">
+      {/* Filter Chips Row (Flex-wrap to eliminate overflow clipping) */}
+      <div className="flex flex-wrap items-center gap-2 text-xs relative z-40">
         {/* Post Type Filter */}
-        <div className="relative shrink-0">
+        <div className="relative">
           <button
             type="button"
             onClick={() => handleToggle('postType')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
               filters.postType
                 ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
                 : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
             }`}
           >
             <span>{postTypes.find((p) => p.value === filters.postType)?.label || 'Post Type'}</span>
-            <FiChevronDown className="text-xs" />
+            <FiChevronDown
+              className={`text-xs transition-transform duration-200 ${
+                activeDropdown === 'postType' ? 'rotate-180' : ''
+              }`}
+            />
           </button>
 
           {activeDropdown === 'postType' && (
@@ -231,7 +235,7 @@ export default function PlacementFilterBar({
                     handleFilterChange('postType', pt.value);
                     setActiveDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                     filters.postType === pt.value
                       ? 'bg-primary text-on-primary font-bold'
                       : 'hover:bg-surface-variant text-on-surface'
@@ -246,18 +250,22 @@ export default function PlacementFilterBar({
 
         {/* Company Filter */}
         {meta.companies && meta.companies.length > 0 && (
-          <div className="relative shrink-0">
+          <div className="relative">
             <button
               type="button"
               onClick={() => handleToggle('company')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
                 filters.company
                   ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
                   : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
               }`}
             >
               <span>{filters.company || 'Company'}</span>
-              <FiChevronDown className="text-xs" />
+              <FiChevronDown
+                className={`text-xs transition-transform duration-200 ${
+                  activeDropdown === 'company' ? 'rotate-180' : ''
+                }`}
+              />
             </button>
 
             {activeDropdown === 'company' && (
@@ -268,7 +276,7 @@ export default function PlacementFilterBar({
                     handleFilterChange('company', '');
                     setActiveDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                     !filters.company ? 'bg-primary text-on-primary font-bold' : 'hover:bg-surface-variant'
                   }`}
                 >
@@ -282,7 +290,7 @@ export default function PlacementFilterBar({
                       handleFilterChange('company', c);
                       setActiveDropdown(null);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                       filters.company === c ? 'bg-primary text-on-primary font-bold' : 'hover:bg-surface-variant'
                     }`}
                   >
@@ -295,18 +303,22 @@ export default function PlacementFilterBar({
         )}
 
         {/* Difficulty Filter */}
-        <div className="relative shrink-0">
+        <div className="relative">
           <button
             type="button"
             onClick={() => handleToggle('difficulty')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
               filters.difficulty
                 ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
                 : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
             }`}
           >
             <span>{difficulties.find((d) => d.value === filters.difficulty)?.label || 'Difficulty'}</span>
-            <FiChevronDown className="text-xs" />
+            <FiChevronDown
+              className={`text-xs transition-transform duration-200 ${
+                activeDropdown === 'difficulty' ? 'rotate-180' : ''
+              }`}
+            />
           </button>
 
           {activeDropdown === 'difficulty' && (
@@ -319,7 +331,7 @@ export default function PlacementFilterBar({
                     handleFilterChange('difficulty', d.value);
                     setActiveDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                     filters.difficulty === d.value
                       ? 'bg-primary text-on-primary font-bold'
                       : 'hover:bg-surface-variant'
@@ -333,18 +345,22 @@ export default function PlacementFilterBar({
         </div>
 
         {/* Outcome Filter */}
-        <div className="relative shrink-0">
+        <div className="relative">
           <button
             type="button"
             onClick={() => handleToggle('outcome')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
               filters.outcome
                 ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
                 : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
             }`}
           >
             <span>{outcomes.find((o) => o.value === filters.outcome)?.label || 'Outcome'}</span>
-            <FiChevronDown className="text-xs" />
+            <FiChevronDown
+              className={`text-xs transition-transform duration-200 ${
+                activeDropdown === 'outcome' ? 'rotate-180' : ''
+              }`}
+            />
           </button>
 
           {activeDropdown === 'outcome' && (
@@ -357,7 +373,7 @@ export default function PlacementFilterBar({
                     handleFilterChange('outcome', o.value);
                     setActiveDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                     filters.outcome === o.value
                       ? 'bg-primary text-on-primary font-bold'
                       : 'hover:bg-surface-variant'
@@ -371,18 +387,22 @@ export default function PlacementFilterBar({
         </div>
 
         {/* Assessment Type Filter */}
-        <div className="relative shrink-0">
+        <div className="relative">
           <button
             type="button"
             onClick={() => handleToggle('assessmentType')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
               filters.assessmentType
                 ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
                 : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
             }`}
           >
             <span>{assessmentTypes.find((a) => a.value === filters.assessmentType)?.label || 'Assessment Type'}</span>
-            <FiChevronDown className="text-xs" />
+            <FiChevronDown
+              className={`text-xs transition-transform duration-200 ${
+                activeDropdown === 'assessmentType' ? 'rotate-180' : ''
+              }`}
+            />
           </button>
 
           {activeDropdown === 'assessmentType' && (
@@ -395,7 +415,7 @@ export default function PlacementFilterBar({
                     handleFilterChange('assessmentType', a.value);
                     setActiveDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                     filters.assessmentType === a.value
                       ? 'bg-primary text-on-primary font-bold'
                       : 'hover:bg-surface-variant'
@@ -409,18 +429,22 @@ export default function PlacementFilterBar({
         </div>
 
         {/* Interview Type Filter */}
-        <div className="relative shrink-0">
+        <div className="relative">
           <button
             type="button"
             onClick={() => handleToggle('interviewType')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
               filters.interviewType
                 ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
                 : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
             }`}
           >
             <span>{interviewTypes.find((i) => i.value === filters.interviewType)?.label || 'Interview Type'}</span>
-            <FiChevronDown className="text-xs" />
+            <FiChevronDown
+              className={`text-xs transition-transform duration-200 ${
+                activeDropdown === 'interviewType' ? 'rotate-180' : ''
+              }`}
+            />
           </button>
 
           {activeDropdown === 'interviewType' && (
@@ -433,7 +457,7 @@ export default function PlacementFilterBar({
                     handleFilterChange('interviewType', i.value);
                     setActiveDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                     filters.interviewType === i.value
                       ? 'bg-primary text-on-primary font-bold'
                       : 'hover:bg-surface-variant'
@@ -448,18 +472,22 @@ export default function PlacementFilterBar({
 
         {/* Branch Filter */}
         {meta.branches && meta.branches.length > 0 && (
-          <div className="relative shrink-0">
+          <div className="relative">
             <button
               type="button"
               onClick={() => handleToggle('branch')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
                 filters.branch
                   ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
                   : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
               }`}
             >
               <span>{filters.branch || 'Branch'}</span>
-              <FiChevronDown className="text-xs" />
+              <FiChevronDown
+                className={`text-xs transition-transform duration-200 ${
+                  activeDropdown === 'branch' ? 'rotate-180' : ''
+                }`}
+              />
             </button>
 
             {activeDropdown === 'branch' && (
@@ -470,7 +498,7 @@ export default function PlacementFilterBar({
                     handleFilterChange('branch', '');
                     setActiveDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                     !filters.branch ? 'bg-primary text-on-primary font-bold' : 'hover:bg-surface-variant'
                   }`}
                 >
@@ -484,7 +512,7 @@ export default function PlacementFilterBar({
                       handleFilterChange('branch', b);
                       setActiveDropdown(null);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                       filters.branch === b ? 'bg-primary text-on-primary font-bold' : 'hover:bg-surface-variant'
                     }`}
                   >
@@ -497,18 +525,22 @@ export default function PlacementFilterBar({
         )}
 
         {/* Job Type & Work Mode */}
-        <div className="relative shrink-0">
+        <div className="relative">
           <button
             type="button"
             onClick={() => handleToggle('jobType')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
               filters.jobType
                 ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
                 : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
             }`}
           >
             <span>{jobTypes.find((j) => j.value === filters.jobType)?.label || 'Job Type'}</span>
-            <FiChevronDown className="text-xs" />
+            <FiChevronDown
+              className={`text-xs transition-transform duration-200 ${
+                activeDropdown === 'jobType' ? 'rotate-180' : ''
+              }`}
+            />
           </button>
 
           {activeDropdown === 'jobType' && (
@@ -521,7 +553,7 @@ export default function PlacementFilterBar({
                     handleFilterChange('jobType', j.value);
                     setActiveDropdown(null);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
                     filters.jobType === j.value
                       ? 'bg-primary text-on-primary font-bold'
                       : 'hover:bg-surface-variant'
@@ -534,17 +566,18 @@ export default function PlacementFilterBar({
           )}
         </div>
 
-        {/* Logged in student toggles */}
+        {/* User-specific quick toggles */}
         {isLoggedIn && (
           <>
             <button
               type="button"
-              onClick={() => handleFilterChange('bookmarkedOnly', filters.bookmarkedOnly === 'true' ? '' : 'true')}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-                filters.bookmarkedOnly === 'true'
+              onClick={() => handleFilterChange('bookmarkedOnly', filters.bookmarkedOnly ? '' : 'true')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
+                filters.bookmarkedOnly
                   ? 'bg-primary text-on-primary border-primary shadow-xs font-bold'
                   : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
               }`}
+              title="Filter by posts you bookmarked"
             >
               <FiBookmark className="text-xs" />
               <span>Saved</span>
@@ -552,25 +585,26 @@ export default function PlacementFilterBar({
 
             <button
               type="button"
-              onClick={() => handleFilterChange('myPostsOnly', filters.myPostsOnly === 'true' ? '' : 'true')}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-                filters.myPostsOnly === 'true'
+              onClick={() => handleFilterChange('myPostsOnly', filters.myPostsOnly ? '' : 'true')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
+                filters.myPostsOnly
                   ? 'bg-primary text-on-primary border-primary shadow-xs font-bold'
                   : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
               }`}
+              title="Filter only your posted experiences"
             >
               <FiUserCheck className="text-xs" />
-              <span>My Experiences</span>
+              <span>My Posts</span>
             </button>
           </>
         )}
 
-        {/* Clear All Filters Button */}
+        {/* Reset Filters */}
         {activeCount > 0 && (
           <button
             type="button"
             onClick={onReset}
-            className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-xl bg-error/10 text-error hover:bg-error/20 font-bold transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-3 py-2 rounded-xl text-error bg-error/10 hover:bg-error/20 font-bold transition-colors cursor-pointer"
           >
             <FiX className="text-xs" />
             <span>Reset ({activeCount})</span>

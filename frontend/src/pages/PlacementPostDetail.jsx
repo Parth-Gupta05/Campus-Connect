@@ -15,7 +15,6 @@ import {
   FiEdit2,
   FiTrash2,
   FiBriefcase,
-  FiDollarSign,
   FiMapPin,
   FiGlobe,
   FiCheckCircle,
@@ -41,7 +40,9 @@ export default function PlacementPostDetail() {
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null); // Lightbox modal
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false); // Lightbox modal
 
   const fetchPost = async () => {
     try {
@@ -61,15 +62,17 @@ export default function PlacementPostDetail() {
     fetchPost();
   }, [id]);
 
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this placement experience post?')) return;
-
+  const confirmDelete = async () => {
     try {
+      setDeleting(true);
       await axios.delete(`/placements/${id}`);
       showToast('Experience post deleted successfully', 'success');
+      setShowDeleteModal(false);
       navigate('/placements');
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to delete post', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -166,13 +169,13 @@ export default function PlacementPostDetail() {
   const fallbackInitial = (post.company?.name || 'C').charAt(0).toUpperCase();
 
   return (
-    <div className="flex h-screen bg-surface overflow-hidden">
+    <div className="flex min-h-screen bg-background text-on-surface font-body-lg">
       <Sidebar />
 
-      <main className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto bg-surface custom-scrollbar">
+      <main className="flex-1 overflow-y-auto bg-surface-container-lowest">
         <Topbar />
 
-        <div className="max-w-4xl w-full mx-auto px-4 md:px-8 py-8 space-y-6">
+        <div className="max-w-6xl mx-auto p-4 sm:p-8 space-y-8">
           {/* Top Bar: Back & Author Controls */}
           <div className="flex items-center justify-between gap-4">
             <Link
@@ -198,10 +201,10 @@ export default function PlacementPostDetail() {
 
                   <button
                     type="button"
-                    onClick={handleDelete}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-error/10 text-error hover:bg-error/20 text-xs font-bold transition-all"
+                    onClick={() => setShowDeleteModal(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-error/30 text-error hover:bg-error/10 text-xs font-bold transition-colors cursor-pointer"
                   >
-                    <FiTrash2 className="text-xs" /> Delete
+                    <FiTrash2 /> Delete
                   </button>
                 </>
               )}
@@ -289,20 +292,35 @@ export default function PlacementPostDetail() {
                 </div>
               )}
 
-              {post.assessmentType && (
+              {((post.assessmentTypes && post.assessmentTypes.length > 0) || post.assessmentType) && (
                 <div className="p-3 rounded-2xl bg-surface-container-low border border-border-light">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Assessment</div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Assessment Rounds</div>
                   <div className="text-sm font-extrabold text-on-surface mt-0.5 capitalize">
-                    {post.assessmentType.replace('_', ' ')} ({post.assessmentMode || 'Online'})
+                    {post.assessmentTypes?.length > 0
+                      ? post.assessmentTypes.map((t) => t.replace(/_/g, ' ')).join(', ')
+                      : post.assessmentType?.replace(/_/g, ' ')}
                   </div>
                 </div>
               )}
 
-              {post.interviewType && (
+              {((post.interviewTypes && post.interviewTypes.length > 0) || post.interviewType) && (
                 <div className="p-3 rounded-2xl bg-surface-container-low border border-border-light">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Interview Type</div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Interview Rounds</div>
                   <div className="text-sm font-extrabold text-on-surface mt-0.5 capitalize">
-                    {post.interviewType.replace('_', ' ')} ({post.interviewMode || 'Online'})
+                    {post.interviewTypes?.length > 0
+                      ? post.interviewTypes.map((t) => t.replace(/_/g, ' ')).join(', ')
+                      : post.interviewType?.replace(/_/g, ' ')}
+                  </div>
+                </div>
+              )}
+
+              {((post.interviewModes && post.interviewModes.length > 0) || post.interviewMode) && (
+                <div className="p-3 rounded-2xl bg-surface-container-low border border-border-light">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Evaluation Mode</div>
+                  <div className="text-sm font-extrabold text-on-surface mt-0.5 capitalize">
+                    {post.interviewModes?.length > 0
+                      ? post.interviewModes.map((m) => m.replace(/_/g, ' ')).join(', ')
+                      : post.interviewMode?.replace(/_/g, ' ')}
                   </div>
                 </div>
               )}
@@ -481,12 +499,63 @@ export default function PlacementPostDetail() {
 
           {/* Threaded Discussion Section */}
           <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-8 shadow-xs">
-            <PlacementCommentSection postId={post._id} commentCount={post.commentCount} />
+            <PlacementCommentSection
+              postId={post._id}
+              postAuthorId={post.author?._id || post.author}
+              commentCount={post.commentCount}
+            />
           </div>
         </div>
       </main>
 
-      {/* Image Lightbox Modal */}
+      {/* Custom Delete Post Modal */}
+      {showDeleteModal && (
+        <div
+          onClick={() => setShowDeleteModal(false)}
+          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[160] flex items-center justify-center p-4 animate-in fade-in duration-150"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-surface-container-lowest border border-border-light rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 text-center"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-error/10 text-error flex items-center justify-center text-xl mx-auto shadow-2xs">
+              <FiTrash2 />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="font-bold text-base text-on-surface">Delete Experience Post?</h3>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                Are you sure you want to delete this placement experience post and all associated discussion comments? This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-border-light text-xs font-bold text-on-surface hover:bg-surface-variant transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={confirmDelete}
+                className="flex-1 py-2.5 rounded-xl bg-error text-white hover:bg-error/90 text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? (
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <FiTrash2 className="text-xs" /> Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}

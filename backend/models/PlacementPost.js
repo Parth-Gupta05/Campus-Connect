@@ -47,48 +47,18 @@ const PlacementPostSchema = new mongoose.Schema({
     }
   },
 
-  // --- Assessment Specifics ---
-  assessmentType: {
-    type: String,
-    enum: [
-      'online_test',
-      'coding_round',
-      'mcq',
-      'aptitude',
-      'case_study',
-      'group_discussion',
-      'hackathon',
-      'take_home_assignment',
-      'other'
-    ],
-    default: null
-  },
-  assessmentMode: {
-    type: String,
-    enum: ['online', 'offline', 'hybrid'],
-    default: null
-  },
+  // --- Assessment Specifics (Multi-select) ---
+  assessmentTypes: [{
+    type: String
+  }],
 
-  // --- Interview Specifics ---
-  interviewType: {
-    type: String,
-    enum: [
-      'technical',
-      'hr',
-      'behavioral',
-      'system_design',
-      'managerial',
-      'culture_fit',
-      'panel',
-      'other'
-    ],
-    default: null
-  },
-  interviewMode: {
-    type: String,
-    enum: ['online', 'offline', 'hybrid'],
-    default: null
-  },
+  // --- Interview Specifics (Multi-select) ---
+  interviewTypes: [{
+    type: String
+  }],
+  interviewModes: [{
+    type: String
+  }],
   numberOfRounds: {
     type: Number,
     default: null,
