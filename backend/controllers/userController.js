@@ -301,12 +301,17 @@ const uploadCertFile = async (req, res) => {
 
 const getResumePdf = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user || !user.resumeUrl) {
-      return res.status(404).send('No resume found');
+    let targetUrl = req.query.url;
+    if (!targetUrl) {
+      const studentId = req.query.studentId || req.user.id;
+      const user = await User.findById(studentId);
+      if (!user || !user.resumeUrl) {
+        return res.status(404).send('No resume found');
+      }
+      targetUrl = user.resumeUrl;
     }
 
-    const response = await fetch(user.resumeUrl);
+    const response = await fetch(targetUrl);
     if (!response.ok) {
       return res.status(response.status).send('Failed to fetch resume from storage');
     }

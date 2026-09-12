@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import ImageCropperModal from '../components/ImageCropperModal';
+import PdfViewerModal from '../components/PdfViewerModal';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
@@ -104,36 +105,6 @@ function ProfileSetupOverlay({ onComplete, user }) {
             {loading ? <FiLoader className="animate-spin text-[24px]" /> : 'Complete Setup'}
           </button>
         </form>
-      </div>
-    </div>
-  );
-}
-
-function PdfViewerModal({ url, onClose }) {
-  return (
-    <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex justify-center items-center p-4">
-      <div className="bg-surface-container-lowest w-full max-w-4xl h-[85vh] rounded-2xl shadow-ambient flex flex-col overflow-hidden relative">
-        <div className="flex justify-between items-center p-4 border-b border-border-light">
-          <h2 className="text-label-lg font-bold">Resume PDF</h2>
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors">
-            <span className="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
-        <div className="flex-1 w-full bg-surface-container">
-          <iframe 
-            src={`http://localhost:5000/api/user/portfolio/resume/pdf?token=${localStorage.getItem('accessToken')}`} 
-            className="w-full h-full border-none" 
-            title="Resume PDF"
-          >
-            <div className="p-8 text-center text-on-surface-variant flex flex-col items-center justify-center h-full gap-4">
-              <span className="material-symbols-outlined text-[48px]">picture_as_pdf</span>
-              <p>Your browser cannot display this PDF inline.</p>
-              <a href={url} target="_blank" rel="noopener noreferrer" className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-container transition-colors">
-                Download PDF
-              </a>
-            </div>
-          </iframe>
-        </div>
       </div>
     </div>
   );

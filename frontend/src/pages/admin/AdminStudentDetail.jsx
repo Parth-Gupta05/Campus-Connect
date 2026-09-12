@@ -9,6 +9,7 @@ import { SiLeetcode } from 'react-icons/si';
 import { FiArrowLeft, FiLoader } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import PdfViewerModal from '../../components/PdfViewerModal';
 
 const CountUp = ({ end }) => {
   const [mounted, setMounted] = useState(false);
@@ -122,6 +123,8 @@ export default function AdminStudentDetail() {
   const [heatmapLoading, setHeatmapLoading] = useState(false);
   const [heatmapError, setHeatmapError] = useState(false);
   const [selectedRepo, setSelectedRepo] = useState(null);
+  const [selectedPdfUrl, setSelectedPdfUrl] = useState(null);
+  const [selectedPdfTitle, setSelectedPdfTitle] = useState('Resume PDF');
   const [animMounted, setAnimMounted] = useState(false);
   const speedometerRef = useRef(null);
 
@@ -289,6 +292,13 @@ export default function AdminStudentDetail() {
 
       <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
         <RepoModal repo={selectedRepo} onClose={() => setSelectedRepo(null)} />
+        {selectedPdfUrl && (
+          <PdfViewerModal 
+            url={selectedPdfUrl} 
+            title={selectedPdfTitle} 
+            onClose={() => setSelectedPdfUrl(null)} 
+          />
+        )}
         
         <div className="max-w-7xl mx-auto space-y-8 pb-16">
           
@@ -309,6 +319,19 @@ export default function AdminStudentDetail() {
                   <a href={user.resumeDetails.portfolioUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
                     <span className="material-symbols-outlined text-[18px]">language</span> Portfolio
                   </a>
+                )}
+                {(user.resumeUrl || resumes[0]?.fileUrl) && (
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      const url = user.resumeUrl || resumes[0]?.fileUrl;
+                      setSelectedPdfUrl(url);
+                      setSelectedPdfTitle(resumes[0]?.fileName || `${user.name || 'Student'}'s Resume`);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">visibility</span> Resume
+                  </button>
                 )}
                 {effectiveGithubUsername && (
                   <a href={`https://github.com/${effectiveGithubUsername}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-green-50 border-green-200 hover:bg-green-100 text-green-800">
@@ -870,13 +893,23 @@ export default function AdminStudentDetail() {
                   </h2>
                   <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                     {resumes.length > 0 ? resumes.map((resume) => (
-                      <a key={resume._id} href={resume.fileUrl} target="_blank" rel="noreferrer" className="block bg-surface-container-lowest border border-border-light p-4 rounded-xl hover:bg-primary/5 hover:border-primary transition-all">
+                      <button 
+                        key={resume._id} 
+                        type="button"
+                        onClick={() => {
+                          setSelectedPdfUrl(resume.fileUrl);
+                          setSelectedPdfTitle(resume.fileName || `${user.name || 'Student'}'s Resume`);
+                        }}
+                        className="w-full text-left block bg-surface-container-lowest border border-border-light p-4 rounded-xl hover:bg-primary/5 hover:border-primary transition-all cursor-pointer group shadow-sm hover:shadow"
+                      >
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-sm text-on-surface line-clamp-1 flex-1 pr-4">{resume.fileName || 'Resume Document'}</span>
-                          <span className="material-symbols-outlined text-primary">open_in_new</span>
+                          <span className="font-bold text-sm text-on-surface line-clamp-1 flex-1 pr-4 group-hover:text-primary transition-colors">
+                            {resume.fileName || 'Resume Document'}
+                          </span>
+                          <span className="material-symbols-outlined text-primary text-[20px]">visibility</span>
                         </div>
                         <p className="text-[10px] text-on-surface-variant mt-2">Uploaded {new Date(resume.createdAt).toLocaleDateString()}</p>
-                      </a>
+                      </button>
                     )) : (
                       <div className="text-center py-8 text-on-surface-variant text-xs bg-surface-container-low rounded-xl border border-dashed border-border-light">No resumes uploaded.</div>
                     )}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useToast } from '../../context/ToastContext';
 import { FiArrowLeft, FiFilter, FiExternalLink, FiClock, FiZap, FiUser, FiMail, FiUsers } from 'react-icons/fi';
+import PdfViewerModal from '../../components/PdfViewerModal';
 
 export default function AdminOpportunityDetail() {
   const { id } = useParams();
@@ -13,6 +14,8 @@ export default function AdminOpportunityDetail() {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('time'); // 'time' or 'score'
+  const [selectedPdfUrl, setSelectedPdfUrl] = useState(null);
+  const [selectedPdfTitle, setSelectedPdfTitle] = useState('Applicant Resume');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -150,14 +153,17 @@ export default function AdminOpportunityDetail() {
 
                       <div className="flex flex-col items-end gap-2">
                         {(app.resumeId?.fileUrl || app.resumeUrl) ? (
-                          <a
-                            href={app.resumeId?.fileUrl || app.resumeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary hover:text-on-primary transition-all flex items-center gap-2"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const url = app.resumeId?.fileUrl || app.resumeUrl;
+                              setSelectedPdfUrl(url);
+                              setSelectedPdfTitle(`${app.userId?.name || 'Applicant'}'s Resume`);
+                            }}
+                            className="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary hover:text-on-primary transition-all flex items-center gap-2 cursor-pointer"
                           >
                             View Resume <FiExternalLink />
-                          </a>
+                          </button>
                         ) : (
                           <span className="text-xs font-medium text-error px-4 py-2 bg-error/10 rounded-xl border border-error/20">No Resume</span>
                         )}
@@ -172,6 +178,14 @@ export default function AdminOpportunityDetail() {
               </div>
             )}
           </div>
+        )}
+
+        {selectedPdfUrl && (
+          <PdfViewerModal
+            url={selectedPdfUrl}
+            title={selectedPdfTitle}
+            onClose={() => setSelectedPdfUrl(null)}
+          />
         )}
       </main>
     </div>
