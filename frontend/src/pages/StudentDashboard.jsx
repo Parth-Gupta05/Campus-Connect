@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -313,10 +313,8 @@ export default function StudentDashboard() {
   const github = profile?.scrapedData?.github;
   const leetcode = profile?.scrapedData?.leetcode;
 
-  const studentCgpa = useMemo(() => {
-    const val = profile?.cgpa || profile?.resumeDetails?.cgpa || education.find(e => e && (e.grade || e.cgpa || e.score))?.grade || education.find(e => e && (e.grade || e.cgpa || e.score))?.cgpa || null;
-    return val ? String(val).trim() : null;
-  }, [profile, education]);
+  const rawCgpa = profile?.cgpa || profile?.resumeDetails?.cgpa || education.find(e => e && (e.grade || e.cgpa || e.score))?.grade || education.find(e => e && (e.grade || e.cgpa || e.score))?.cgpa || null;
+  const studentCgpa = rawCgpa ? String(rawCgpa).trim() : null;
 
   // Profile strength
   const skills = profile?.resumeDetails?.skills || [];
