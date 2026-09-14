@@ -229,6 +229,15 @@ const updatePortfolio = async (req, res) => {
       achievements: achievements || (user.resumeDetails && user.resumeDetails.achievements) || []
     };
 
+    if (req.body.cgpa !== undefined) {
+      user.cgpa = String(req.body.cgpa).trim();
+    } else if (Array.isArray(education)) {
+      const eduWithGrade = education.find(e => e && (e.grade || e.cgpa));
+      if (eduWithGrade) {
+        user.cgpa = String(eduWithGrade.grade || eduWithGrade.cgpa).trim();
+      }
+    }
+
     // Check if handles changed
     const handlesChanged = 
       (githubUsername !== undefined && githubUsername !== user.githubUsername) ||

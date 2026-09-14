@@ -18,6 +18,7 @@ const UserSchema = new mongoose.Schema({
   rollNo: { type: String, default: '' },
   currentYear: { type: String, default: '' },
   currentSem: { type: Number, default: null },
+  cgpa: { type: String, default: '' },
   password: {
     type: String,
     required: true,

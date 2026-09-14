@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -313,6 +313,11 @@ export default function StudentDashboard() {
   const github = profile?.scrapedData?.github;
   const leetcode = profile?.scrapedData?.leetcode;
 
+  const studentCgpa = useMemo(() => {
+    const val = profile?.cgpa || profile?.resumeDetails?.cgpa || education.find(e => e && (e.grade || e.cgpa || e.score))?.grade || education.find(e => e && (e.grade || e.cgpa || e.score))?.cgpa || null;
+    return val ? String(val).trim() : null;
+  }, [profile, education]);
+
   // Profile strength
   const skills = profile?.resumeDetails?.skills || [];
   const experience = profile?.resumeDetails?.experience || [];
@@ -570,9 +575,18 @@ export default function StudentDashboard() {
                 </div>
 
                 <div className="p-5 flex flex-col justify-center">
-                  <div className="text-[11px] font-mono text-gray-700 uppercase tracking-wider">Portfolio Strength</div>
-                  <div className="text-2xl font-bold font-sans text-teal-700 mt-1">
-                    {profileStrength}%
+                  <div className="text-[11px] font-mono text-gray-700 uppercase tracking-wider">Academic CGPA</div>
+                  <div className="text-2xl font-bold font-sans text-teal-700 mt-1 flex items-baseline">
+                    {studentCgpa ? (
+                      <>
+                        <span>{studentCgpa}</span>
+                        {!studentCgpa.includes('/') && !isNaN(Number(studentCgpa)) && (
+                          <span className="text-xs font-mono font-normal text-gray-600 ml-1.5">/ 10.0</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-gray-500 font-mono text-base font-normal">—</span>
+                    )}
                   </div>
                 </div>
               </div>

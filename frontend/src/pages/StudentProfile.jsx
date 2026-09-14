@@ -601,6 +601,18 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
                               onChange={e => updateEdu(idx, 'endYear', e.target.value)} 
                             />
                           </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">CGPA / Grade</label>
+                            <input 
+                              placeholder="e.g. 8.85"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
+                              value={edu.grade || edu.cgpa || ''} 
+                              onChange={e => {
+                                updateEdu(idx, 'grade', e.target.value);
+                                updateEdu(idx, 'cgpa', e.target.value);
+                              }} 
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
