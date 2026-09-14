@@ -1084,13 +1084,13 @@ export default function AdminClubs() {
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setShowCoreModal(false)}
-                className="px-4 py-2 rounded-lg border border-gray-400 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
+                className="h-8 px-3.5 rounded-md border border-gray-400 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddCoreSubmit}
-                className="px-4 py-2 rounded-lg bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                className="h-8 px-3.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer shadow-2xs"
               >
                 Appoint Core Member
               </button>
@@ -1144,7 +1144,7 @@ export default function AdminClubs() {
                     {viewCoreClub.name}
                   </h3>
                   <p className="text-xs text-gray-600 font-sans mt-0.5">
-                    {viewCoreClub.coreMembers?.length || 0} Core Committee members accredited with 2x AICTE activity points and automatic attendance tracking.
+                    {viewCoreClub.coreMembers?.length || 0} appointed Core Committee leadership members.
                   </p>
                 </div>
               </div>
@@ -1207,26 +1207,20 @@ export default function AdminClubs() {
                       </div>
 
                       {/* Role & Actions */}
-                      <div className="flex sm:flex-col items-end justify-between sm:justify-center gap-1.5 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-300 dark:border-gray-800">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shadow-2xs">
-                            <Sparkles className="w-3 h-3 text-amber-500" />
-                            <span>{member.role || 'Core Member'}</span>
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCoreMember(viewCoreClub._id, student?._id, student?.name)}
-                            className="p-1.5 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-500/10 transition-colors cursor-pointer"
-                            title="Remove from Core Committee"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        <span className="text-[10px] font-mono text-teal-700 dark:text-teal-400 font-medium">
-                          ⚡ 2x AICTE Multiplier · Auto-Present
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shadow-2xs">
+                          <Sparkles className="w-3 h-3 text-amber-500" />
+                          <span>{member.role || 'Core Member'}</span>
                         </span>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCoreMember(viewCoreClub._id, student?._id, student?.name)}
+                          className="p-1.5 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-500/10 transition-colors cursor-pointer"
+                          title="Remove from Core Committee"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   );
@@ -1252,7 +1246,7 @@ export default function AdminClubs() {
                 <button
                   type="button"
                   onClick={() => setViewCoreClub(null)}
-                  className="px-4 py-2 rounded-lg border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer"
+                  className="h-8 px-3.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer"
                 >
                   Close
                 </button>
@@ -1263,10 +1257,10 @@ export default function AdminClubs() {
                     setViewCoreClub(null);
                     openManageCoreModal(c);
                   }}
-                  className="px-4 py-2 rounded-lg bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  className="h-8 px-3.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
-                  <span>+ Appoint New Leader</span>
+                  <span>Appoint Leader</span>
                 </button>
               </div>
             </div>
