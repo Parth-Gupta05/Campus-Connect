@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/geist-mono": "^5.3.0",
+    "@fontsource/geist-sans": "^5.3.0",
     "@tailwindcss/typography": "^0.5.20",
     "@tiptap/extension-code-block-lowlight": "^3.30.3",
     "@tiptap/extension-image": "^3.30.3",
@@ -19,10 +21,13 @@
     "@tiptap/react": "^3.30.3",
     "@tiptap/starter-kit": "^3.30.3",
     "axios": "^1.18.1",
+    "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "geist": "^1.7.2",
     "highlight.js": "^11.12.0",
     "html5-qrcode": "^2.3.8",
     "lowlight": "^3.3.0",
+    "lucide-react": "^1.45.0",
     "react": "^19.2.7",
     "react-activity-calendar": "^3.2.1",
     "react-dom": "^19.2.7",
@@ -33,6 +38,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.1",
     "rehype-raw": "^7.0.0",
+    "tailwind-merge": "^3.6.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

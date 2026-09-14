@@ -3,3 +3,5 @@ node_modules
 data.txt
 leetdata.txt
 linkedindata.txt
+*.pdf
+*.xlsx

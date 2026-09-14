@@ -2,7 +2,21 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { FiX, FiCheck, FiBell, FiInfo, FiCalendar, FiMessageSquare } from 'react-icons/fi';
+import { 
+  Bell, 
+  X, 
+  Check, 
+  CheckCheck,
+  AlertCircle, 
+  Calendar, 
+  MessageSquare, 
+  CheckCircle2, 
+  Info, 
+  BellOff, 
+  Loader2,
+  ArrowRight,
+  Award 
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function NotificationSidebar({ isOpen, onClose, unreadCount, setUnreadCount }) {
@@ -40,15 +54,18 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
     if (isOpen) {
       fetchNotifications();
       fetchProfile();
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
     }
   }, [isOpen]);
 
   useEffect(() => {
-    // Initial fetch for badge
     fetchNotifications();
     fetchProfile();
     
-    // Polling every 30 seconds
     const interval = setInterval(() => {
       fetchNotifications();
     }, 30000);
@@ -64,8 +81,6 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
       profile.leetcodeUsername && !profile.leetcodeVerified
     ].filter(Boolean).length : 0;
     
-    // We only add 1 to the badge if there are any unverified accounts, 
-    // since they are grouped into a single "Action Required" banner.
     setUnreadCount(unreadNotifications + (unverifiedCount > 0 ? 1 : 0));
   }, [notifications, profile, setUnreadCount]);
 
@@ -116,11 +131,12 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
 
   const getIconForType = (type) => {
     switch(type) {
-      case 'event_registration': return <FiCalendar className="text-primary" />;
-      case 'announcement': return <FiMessageSquare className="text-secondary" />;
-      case 'profile_update': return <FiCheck className="text-success" />;
-      case 'system': return <FiInfo className="text-info" />;
-      default: return <FiBell className="text-primary" />;
+      case 'event_registration': return <Calendar className="w-4 h-4 text-gray-1000" strokeWidth={1.5} />;
+      case 'announcement': return <MessageSquare className="w-4 h-4 text-gray-1000" strokeWidth={1.5} />;
+      case 'profile_update': return <CheckCircle2 className="w-4 h-4 text-gray-1000" strokeWidth={1.5} />;
+      case 'system': return <Info className="w-4 h-4 text-gray-1000" strokeWidth={1.5} />;
+      case 'committee_assignment': return <Award className="w-4 h-4 text-amber-500" strokeWidth={1.5} />;
+      default: return <Bell className="w-4 h-4 text-gray-1000" strokeWidth={1.5} />;
     }
   };
 
@@ -128,98 +144,125 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div className="fixed inset-0 bg-scrim/30 backdrop-blur-sm z-[60] transition-opacity duration-300" />
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-md z-[120] transition-opacity duration-300 cursor-pointer" 
+          onClick={onClose}
+          aria-hidden="true"
+        />
       )}
 
-      {/* Sidebar Panel */}
-      <div 
+      {/* Slide-over Drawer */}
+      <aside 
         ref={sidebarRef}
-        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-surface-container-lowest border-l border-border-light shadow-2xl z-[70] transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        aria-label="Notifications panel"
+        className={`fixed top-0 right-0 h-full w-full sm:w-[420px] bg-background-100 border-l border-gray-400 shadow-2xl z-[130] transform transition-transform duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-border-light">
-          <h2 className="text-title-lg font-bold flex items-center gap-2">
-            <FiBell /> Notifications
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-400">
+          <div className="flex items-center gap-2">
+            <Bell className="w-4 h-4 text-gray-1000" strokeWidth={1.5} />
+            <h2 className="text-sm font-semibold tracking-tight text-gray-1000">Notifications</h2>
             {unreadCount > 0 && (
-              <span className="bg-error text-on-error text-xs px-2 py-0.5 rounded-full">{unreadCount}</span>
+              <span className="bg-red-500/10 text-red-500 border border-red-500/20 text-[11px] font-mono font-medium px-2 py-0.5 rounded-full">
+                {unreadCount}
+              </span>
             )}
-          </h2>
-          <button onClick={onClose} className="p-2 hover:bg-surface-variant rounded-full transition-colors text-on-surface-variant">
-            <FiX className="text-xl" />
+          </div>
+          <button 
+            onClick={onClose} 
+            aria-label="Close notifications"
+            className="p-1.5 hover:bg-gray-200 rounded-md transition-colors text-gray-700 hover:text-gray-1000 cursor-pointer"
+          >
+            <X className="w-4 h-4" strokeWidth={1.5} />
           </button>
         </div>
 
-        <div className="p-3 border-b border-border-light flex justify-end bg-surface">
+        {/* Quick Action Strip */}
+        <div className="px-4 py-2 border-b border-gray-400 flex justify-end bg-background-200">
           <button 
             onClick={handleMarkAllAsRead}
             disabled={unreadCount === 0 || notifications.length === 0}
-            className="text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            className="text-xs font-medium text-gray-900 hover:text-gray-1000 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <FiCheck /> Mark all as read
+            <CheckCheck className="w-3.5 h-3.5" strokeWidth={1.5} /> Mark all as read
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        {/* Notification Stream */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {/* Action Required Banner */}
           {profile && ((profile.githubUsername && !profile.githubVerified) || (profile.leetcodeUsername && !profile.leetcodeVerified)) && (
-            <div className="p-4 bg-error/10 border-b border-error/20 flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-error font-bold text-sm">
-                <FiInfo className="text-lg" /> Action Required
+            <div className="m-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-amber-500 font-medium text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                <span>Action Required: Verification Pending</span>
               </div>
-              <p className="text-xs text-on-surface-variant">
-                You have unverified platform accounts. Please verify your {profile.githubUsername && !profile.githubVerified ? 'GitHub' : ''}{(profile.githubUsername && !profile.githubVerified) && (profile.leetcodeUsername && !profile.leetcodeVerified) ? ' and ' : ''}{profile.leetcodeUsername && !profile.leetcodeVerified ? 'LeetCode' : ''} accounts.
+              <p className="text-xs text-gray-900 leading-relaxed">
+                You have unverified platform accounts. Verify your {profile.githubUsername && !profile.githubVerified ? 'GitHub' : ''}{(profile.githubUsername && !profile.githubVerified) && (profile.leetcodeUsername && !profile.leetcodeVerified) ? ' and ' : ''}{profile.leetcodeUsername && !profile.leetcodeVerified ? 'LeetCode' : ''} profiles to unlock live telemetry.
               </p>
-              <Link to="/profile" className="text-xs font-bold text-error hover:underline w-fit" onClick={onClose}>Go to Profile to Verify &rarr;</Link>
+              <Link 
+                to="/profile" 
+                onClick={onClose}
+                className="text-xs font-medium text-amber-500 hover:underline inline-flex items-center gap-1 mt-1"
+              >
+                Go to Profile to Verify <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
           )}
           
           {loading ? (
-            <div className="flex justify-center p-8">
-              <FiLoader className="animate-spin text-primary text-2xl" />
+            <div className="flex justify-center items-center py-16">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-900" strokeWidth={1.5} />
             </div>
           ) : notifications.length > 0 ? (
-            <div className="divide-y divide-border-light">
+            <div className="divide-y divide-gray-400">
               {notifications.map(notification => (
                 <div 
                   key={notification._id} 
                   onClick={() => handleNotificationClick(notification)}
-                  className={`p-4 cursor-pointer transition-colors hover:bg-surface-variant ${!notification.isRead ? 'bg-primary-container/20' : 'bg-surface-container-lowest'}`}
+                  className={`p-4 cursor-pointer transition-colors ${
+                    !notification.isRead 
+                      ? 'bg-gray-100/70 dark:bg-gray-800/40 hover:bg-gray-200/80 dark:hover:bg-gray-800/70' 
+                      : 'hover:bg-gray-100/50 dark:hover:bg-gray-800/30'
+                  }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="mt-1 shrink-0 p-2 bg-surface rounded-full shadow-sm">
+                    <div className="mt-0.5 shrink-0 w-8 h-8 rounded-full bg-background-200 border border-gray-400 flex items-center justify-center">
                       {getIconForType(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-2">
-                        <h4 className={`text-sm ${!notification.isRead ? 'font-bold text-on-surface' : 'font-medium text-on-surface-variant'}`}>
+                        <h4 className={`text-xs ${!notification.isRead ? 'font-semibold text-gray-1000' : 'font-medium text-gray-900'}`}>
                           {notification.title}
                         </h4>
                         {!notification.isRead && (
-                          <div className="w-2 h-2 shrink-0 rounded-full bg-primary mt-1.5" />
+                          <div className="w-2 h-2 shrink-0 rounded-full bg-blue-500 mt-1" />
                         )}
                       </div>
-                      <p className={`text-sm mt-1 line-clamp-2 ${!notification.isRead ? 'text-on-surface' : 'text-on-surface-variant'}`}>
+                      <p className="text-xs mt-1 text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-on-surface-variant mt-2">
+                      <span className="text-[10px] text-gray-600 mt-2 block font-mono">
                         {new Date(notification.createdAt).toLocaleString(undefined, {
                           month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                         })}
-                      </p>
+                      </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full p-8 text-on-surface-variant text-center">
-              <div className="w-16 h-16 bg-surface-variant rounded-full flex items-center justify-center mb-4">
-                <FiBell className="text-2xl opacity-50" />
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+              <div className="w-12 h-12 rounded-full bg-background-200 border border-gray-400 flex items-center justify-center mb-3 text-gray-600">
+                <BellOff className="w-5 h-5" strokeWidth={1.5} />
               </div>
-              <p className="font-medium text-lg text-on-surface mb-1">You're all caught up!</p>
-              <p className="text-sm">Check back later for new alerts.</p>
+              <p className="font-medium text-sm text-gray-1000 mb-1">You're all caught up!</p>
+              <p className="text-xs text-gray-700">Check back later for new alerts and updates.</p>
             </div>
           )}
         </div>
-      </div>
+      </aside>
     </>
   );
 }

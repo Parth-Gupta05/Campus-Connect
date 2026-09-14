@@ -1,6 +1,201 @@
+@import "@fontsource/geist-sans/400.css";
+@import "@fontsource/geist-sans/500.css";
+@import "@fontsource/geist-sans/600.css";
+@import "@fontsource/geist-sans/700.css";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==========================================================================
+   Geist Design System Tokens (Official Vercel Spec)
+   ========================================================================== */
+
+:root {
+  /* Fonts */
+  --font-sans: 'Geist Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Backgrounds (Light Mode) */
+  --ds-background-100: #FFFFFF;
+  --ds-background-200: #FAFAFA;
+
+  /* Gray Scale (Light Mode: 100=Surface, 400=Border, 900=Secondary, 1000=Primary) */
+  --ds-gray-100: #FAFAFA;
+  --ds-gray-200: #F5F5F5;
+  --ds-gray-300: #EAEAEA;
+  --ds-gray-400: #E5E5E5;
+  --ds-gray-500: #D4D4D4;
+  --ds-gray-600: #A3A3A3;
+  --ds-gray-700: #737373;
+  --ds-gray-800: #525252;
+  --ds-gray-900: #404040;
+  --ds-gray-1000: #000000;
+
+  /* Alpha Grays (Light Mode) */
+  --ds-gray-alpha-100: rgba(0, 0, 0, 0.04);
+  --ds-gray-alpha-200: rgba(0, 0, 0, 0.08);
+  --ds-gray-alpha-400: rgba(0, 0, 0, 0.12);
+  --ds-gray-alpha-700: rgba(0, 0, 0, 0.50);
+
+  /* Accents & Status (Light Mode) */
+  --ds-blue-700: #0070F3;
+  --ds-red-700: #E60000;
+  --ds-amber-700: #F5A623;
+  --ds-teal-700: #10B981;
+  --ds-focus-color: #0070F3;
+
+  /* Letter Spacing */
+  --tracking-tightest: -0.05em;
+  --tracking-tight:    -0.04em;
+  --tracking-snug:     -0.02em;
+  --tracking-normal:   -0.01em;
+  --tracking-wide:      0.02em;
+}
+
+.dark, [data-theme="dark"] {
+  /* Backgrounds (Dark Mode) */
+  --ds-background-100: #000000;
+  --ds-background-200: #0A0A0A;
+
+  /* Gray Scale (Dark Mode: 100=Surface, 400=Border, 900=Secondary, 1000=Primary) */
+  --ds-gray-100: #111111;
+  --ds-gray-200: #1A1A1A;
+  --ds-gray-300: #262626;
+  --ds-gray-400: #2E2E2E;
+  --ds-gray-500: #404040;
+  --ds-gray-600: #525252;
+  --ds-gray-700: #737373;
+  --ds-gray-800: #A3A3A3;
+  --ds-gray-900: #A1A1A1;
+  --ds-gray-1000: #EDEDED; /* Never pure #FFFFFF in Geist Dark */
+
+  /* Alpha Grays (Dark Mode) */
+  --ds-gray-alpha-100: rgba(255, 255, 255, 0.06);
+  --ds-gray-alpha-200: rgba(255, 255, 255, 0.10);
+  --ds-gray-alpha-400: rgba(255, 255, 255, 0.145);
+  --ds-gray-alpha-700: rgba(255, 255, 255, 0.50);
+
+  /* Accents & Status (Dark Mode) */
+  --ds-blue-700: #52A8FF;
+  --ds-red-700: #FF453A;
+  --ds-amber-700: #F5A623;
+  --ds-teal-700: #50E3C2;
+  --ds-focus-color: #52A8FF;
+}
+
+/* ==========================================================================
+   Global Base & Focus Rings
+   ========================================================================== */
+
+body {
+  background-color: var(--ds-background-100);
+  color: var(--ds-gray-1000);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--ds-focus-color) !important;
+  outline-offset: 2px !important;
+}
+
+/* ==========================================================================
+   Geist Typography Classes
+   ========================================================================== */
+
+.text-heading-72 { font-size: 72px; line-height: 1.05; letter-spacing: -0.04em; font-weight: 700; }
+.text-heading-64 { font-size: 64px; line-height: 1.08; letter-spacing: -0.04em; font-weight: 700; }
+.text-heading-56 { font-size: 56px; line-height: 1.1;  letter-spacing: -0.04em; font-weight: 600; }
+.text-heading-48 { font-size: 48px; line-height: 1.12; letter-spacing: -0.04em; font-weight: 600; }
+.text-heading-40 { font-size: 40px; line-height: 1.15; letter-spacing: -0.03em; font-weight: 600; }
+.text-heading-32 { font-size: 32px; line-height: 1.2;  letter-spacing: -0.02em; font-weight: 600; }
+.text-heading-24 { font-size: 24px; line-height: 1.25; letter-spacing: -0.02em; font-weight: 600; }
+.text-heading-20 { font-size: 20px; line-height: 1.3;  letter-spacing: -0.015em; font-weight: 600; }
+.text-heading-16 { font-size: 16px; line-height: 1.35; letter-spacing: -0.01em; font-weight: 600; }
+.text-heading-14 { font-size: 14px; line-height: 1.4;  letter-spacing: -0.01em; font-weight: 600; }
+
+.text-copy-24 { font-size: 24px; line-height: 1.5; letter-spacing: -0.01em; }
+.text-copy-20 { font-size: 20px; line-height: 1.5; letter-spacing: -0.01em; }
+.text-copy-18 { font-size: 18px; line-height: 1.55; letter-spacing: -0.01em; }
+.text-copy-16 { font-size: 16px; line-height: 1.6; letter-spacing: -0.005em; }
+.text-copy-14 { font-size: 14px; line-height: 1.6; letter-spacing: 0; }
+.text-copy-13 { font-size: 13px; line-height: 1.55; letter-spacing: 0; }
+.text-copy-13-mono { font-family: var(--font-mono); font-size: 13px; line-height: 1.55; }
+
+.text-label-16 { font-size: 16px; line-height: 1.25; font-weight: 500; }
+.text-label-14 { font-size: 14px; line-height: 1.25; font-weight: 500; }
+.text-label-13 { font-size: 13px; line-height: 1.25; font-weight: 500; }
+.text-label-12 { font-size: 12px; line-height: 1.25; font-weight: 500; }
+.text-label-14-mono { font-family: var(--font-mono); font-size: 14px; line-height: 1.25; }
+.text-label-13-mono { font-family: var(--font-mono); font-size: 13px; line-height: 1.25; }
+.text-label-12-mono { font-family: var(--font-mono); font-size: 12px; line-height: 1.25; }
+
+.text-button-16 { font-size: 16px; line-height: 1; font-weight: 500; }
+.text-button-14 { font-size: 14px; line-height: 1; font-weight: 500; }
+.text-button-12 { font-size: 12px; line-height: 1; font-weight: 500; }
+
+/* ==========================================================================
+   Vercel Border Grid, Texture & Ambient Glow Utilities
+   ========================================================================== */
+
+.geist-bg-grid {
+  background-image: linear-gradient(to right, var(--ds-gray-alpha-100) 1px, transparent 1px),
+                    linear-gradient(to bottom, var(--ds-gray-alpha-100) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.geist-hero-glow {
+  background: radial-gradient(closest-side ellipse at 50% 25%, rgba(0, 112, 243, 0.16) 0%, rgba(80, 227, 194, 0.05) 45%, rgba(80, 227, 194, 0.01) 75%, transparent 100%);
+  -webkit-mask-image: radial-gradient(closest-side ellipse at 50% 30%, black 25%, transparent 100%);
+  mask-image: radial-gradient(closest-side ellipse at 50% 30%, black 25%, transparent 100%);
+  filter: blur(40px);
+}
+
+.geist-auth-glow {
+  background: radial-gradient(closest-side ellipse at 50% 50%, rgba(0, 112, 243, 0.15) 0%, rgba(80, 227, 194, 0.05) 45%, rgba(80, 227, 194, 0.01) 75%, transparent 100%);
+  -webkit-mask-image: radial-gradient(closest-side ellipse at 50% 50%, black 25%, transparent 100%);
+  mask-image: radial-gradient(closest-side ellipse at 50% 50%, black 25%, transparent 100%);
+  filter: blur(50px);
+}
+
+.geist-specular-card {
+  position: relative;
+}
+
+.geist-specular-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 40%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.dark .geist-specular-card::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 100%);
+}
+
+.light .geist-specular-card::before {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.03) 50%, transparent 100%);
+}
+
+.geist-border-grid {
+  display: grid;
+  gap: 1px;
+  background-color: var(--ds-gray-400);
+}
+
+.geist-grid-cell {
+  background-color: var(--ds-background-100);
+}
 
 @layer utilities {
   .animate-shimmer {
@@ -15,43 +210,39 @@
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .skeleton-box {
-  @apply bg-surface-container-high rounded-xl relative overflow-hidden;
+  background-color: var(--ds-gray-200);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
 }
 
 .skeleton-box::after {
   content: '';
-  @apply absolute inset-0 animate-shimmer;
+  position: absolute;
+  inset: 0;
+  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(90deg, transparent 0%, var(--ds-gray-alpha-200) 50%, transparent 100%);
+  background-size: 200% 100%;
 }
-
-/* Cascading animation delays */
-.delay-100 { animation-delay: 100ms, 100ms; }
-.delay-200 { animation-delay: 200ms, 200ms; }
-.delay-300 { animation-delay: 300ms, 300ms; }
-.delay-400 { animation-delay: 400ms, 400ms; }
-.delay-500 { animation-delay: 500ms, 500ms; }
 
 /* === Code Block & Syntax Highlighting Styles === */
 .prose pre,
 .tiptap pre {
-  background-color: #1e1e2e !important;
-  color: #cdd6f4 !important;
+  background-color: #0A0A0A !important;
+  color: #EDEDED !important;
   padding: 1rem 1.25rem !important;
-  border-radius: 0.875rem !important;
+  border-radius: 8px !important;
   overflow-x: auto !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-  font-size: 0.875rem !important;
-  line-height: 1.6 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+  line-height: 1.65 !important;
   margin: 1rem 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--ds-gray-400) !important;
   white-space: pre !important;
 }
 
@@ -69,11 +260,212 @@
 
 .prose :not(pre) > code,
 .tiptap :not(pre) > code {
-  background-color: rgba(99, 102, 241, 0.1) !important;
-  color: #4f46e5 !important;
+  background-color: var(--ds-gray-alpha-100) !important;
+  color: var(--ds-gray-1000) !important;
   padding: 0.15rem 0.375rem !important;
-  border-radius: 0.375rem !important;
+  border-radius: 4px !important;
   font-size: 0.85em !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  font-family: var(--font-mono) !important;
+  border: 1px solid var(--ds-gray-400) !important;
+}
+
+/* === Custom Thin Scrollbar === */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--ds-gray-400);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-gray-600);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-gray-400) transparent;
+}
+
+/* ==========================================================================
+   Hero Interactive Tour & Microinteraction Keyframes
+   ========================================================================== */
+
+@keyframes geistCardPop {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.965);
+    filter: blur(5px);
+  }
+  65% {
+    opacity: 0.98;
+    transform: translateY(-2px) scale(1.004);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+.animate-card-pop {
+  animation: geistCardPop 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes geistHeatmapFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-heatmap-fade {
+  animation: geistHeatmapFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes geistRipple {
+  0% {
+    transform: scale(0.2);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.animate-cursor-ripple {
+  animation: geistRipple 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes geistCaret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-caret {
+  animation: geistCaret 0.8s infinite;
+}
+
+/* ==========================================================================
+   End-to-End Landing Page Animations & Scroll Reveal Keyframes
+   ========================================================================== */
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(-50%, -18px) scale(1.05);
+    opacity: 1;
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 9s ease-in-out infinite;
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-160%) skewX(-20deg);
+  }
+  25%, 100% {
+    transform: translateX(260%) skewX(-20deg);
+  }
+}
+
+.btn-shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.24),
+    transparent
+  );
+  animation: shimmerSweep 3.5s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes beamFlow {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-beam-flow {
+  background-size: 200% 100%;
+  animation: beamFlow 2.8s linear infinite;
+}
+
+@keyframes borderGlowPulse {
+  0%, 100% {
+    opacity: 0.45;
+    filter: drop-shadow(0 0 10px rgba(0, 112, 243, 0.25));
+  }
+  50% {
+    opacity: 0.95;
+    filter: drop-shadow(0 0 20px rgba(80, 227, 194, 0.45));
+  }
+}
+
+.animate-border-glow {
+  animation: borderGlowPulse 4.5s ease-in-out infinite;
+}
+
+/* Scroll Reveal System */
+.reveal-init {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card-hover-elevate {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease;
+}
+
+.card-hover-elevate:hover {
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-slow,
+  .btn-shimmer-effect::after,
+  .animate-beam-flow,
+  .animate-border-glow,
+  .animate-card-pop,
+  .animate-heatmap-fade {
+    animation: none !important;
+  }
+  .reveal-init {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }

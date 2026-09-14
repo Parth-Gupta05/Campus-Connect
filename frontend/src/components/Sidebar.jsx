@@ -3,16 +3,67 @@ import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { FiLoader } from 'react-icons/fi';
+import { 
+  LayoutDashboard, 
+  User, 
+  Award, 
+  Users, 
+  Compass, 
+  Calendar, 
+  GraduationCap, 
+  ShieldCheck, 
+  BarChart3, 
+  LogOut, 
+  PanelLeft,
+  Loader2
+} from 'lucide-react';
 
 export default function Sidebar() {
   const { user, logout } = useContext(AuthContext);
   const { showToast } = useToast();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('cc_sidebar_open');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [profile, setProfile] = useState(null);
   const [hasUncheckedEvents, setHasUncheckedEvents] = useState(false);
   const location = useLocation();
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(prev => {
+      const next = !prev;
+      localStorage.setItem('cc_sidebar_open', String(next));
+      window.dispatchEvent(new Event('cc_sidebar_toggle'));
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handleSync = () => {
+      const saved = localStorage.getItem('cc_sidebar_open');
+      if (saved !== null) {
+        setIsSidebarOpen(saved === 'true');
+      }
+    };
+    window.addEventListener('cc_sidebar_toggle', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('cc_sidebar_toggle', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (user && user.role === 'student') {
@@ -74,70 +125,153 @@ export default function Sidebar() {
   };
 
   const studentLinks = [
-    { name: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
-    { name: 'Profile', icon: 'person', path: '/profile' },
-    { name: 'Placements', icon: 'military_tech', path: '/placements' },
-    { name: 'Clubs', icon: 'groups', path: '/clubs' },
-    { name: 'Opportunities', icon: 'work', path: '/opportunities' },
-    { name: 'Events', icon: 'event', path: '/events' },
-    { name: 'Certificates', icon: 'school', path: '/certificates' },
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+    { name: 'Profile', icon: User, path: '/profile' },
+    { name: 'Placements', icon: Award, path: '/placements' },
+    { name: 'Clubs', icon: Users, path: '/clubs' },
+    { name: 'Opportunities', icon: Compass, path: '/opportunities' },
+    { name: 'Events', icon: Calendar, path: '/events' },
+    { name: 'Certificates', icon: GraduationCap, path: '/certificates' },
   ];
 
   const adminLinks = [
-    { name: 'Admin Dashboard', icon: 'admin_panel_settings', path: '/admin' },
-    { name: 'User Management', icon: 'group', path: '#' },
-    { name: 'System Analytics', icon: 'analytics', path: '#' },
+    { name: 'Admin Dashboard', icon: ShieldCheck, path: '/admin' },
+    { name: 'User Management', icon: Users, path: '#' },
+    { name: 'System Analytics', icon: BarChart3, path: '#' },
   ];
 
   const clubLinks = [
-    { name: 'Club Portal', icon: 'dashboard', path: '/club' }
+    { name: 'Club Portal', icon: LayoutDashboard, path: '/club' }
   ];
 
   const links = user.role === 'admin' ? adminLinks : (user.role === 'club' ? clubLinks : studentLinks);
 
   return (
-    <aside className={`hidden md:flex flex-col bg-surface border-r border-border-light h-screen sticky top-0 shrink-0 transition-all duration-300 ${isSidebarOpen ? 'w-72' : 'w-20'} z-50`}>
-      <div className="px-6 h-20 flex items-center justify-between border-b border-border-light gap-2">
-        <span className={`text-lg font-bold text-on-surface whitespace-nowrap transition-all duration-300 ${isSidebarOpen ? 'opacity-100 w-full' : 'opacity-0 w-0 overflow-hidden'}`}>
-          Campus Connect
-        </span>
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-surface-variant rounded-lg transition-colors flex-shrink-0 text-on-surface-variant cursor-pointer">
-          <span className="material-symbols-outlined">{isSidebarOpen ? 'menu_open' : 'menu'}</span>
+    <aside 
+      className={`hidden md:flex flex-col bg-background-100 border-r border-gray-400 h-screen sticky top-0 shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width] ${
+        isSidebarOpen ? 'w-64' : 'w-16'
+      } z-40 select-none`}
+    >
+      {/* Brand & Toggle Header */}
+      <div className="h-14 flex items-center border-b border-gray-400 px-3 shrink-0 relative overflow-hidden">
+        <Link 
+          to="/dashboard" 
+          className={`flex items-center gap-2.5 min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isSidebarOpen 
+              ? 'opacity-100 translate-x-0' 
+              : 'opacity-0 -translate-x-4 pointer-events-none absolute left-3'
+          }`}
+          title="Campus Connect"
+        >
+          <div className="w-7 h-7 rounded-md bg-gray-1000 text-background-100 flex items-center justify-center shrink-0 shadow-2xs">
+            <svg width="12" height="11" viewBox="0 0 76 65" fill="currentColor">
+              <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+            </svg>
+          </div>
+          <span className="font-sans font-semibold text-sm tracking-tight text-gray-1000 whitespace-nowrap">
+            Campus Connect
+          </span>
+        </Link>
+
+        <button 
+          onClick={toggleSidebar} 
+          aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          className={`relative p-2 hover:bg-gray-200 rounded-md transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] text-gray-700 hover:text-gray-1000 cursor-pointer shrink-0 ${
+            isSidebarOpen ? 'ml-auto' : 'mx-auto'
+          }`}
+        >
+          <PanelLeft 
+            className={`w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isSidebarOpen ? 'rotate-0' : 'rotate-180'
+            }`} 
+            strokeWidth={1.5} 
+          />
         </button>
       </div>
-      <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+
+      {/* Nav List */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-1 custom-scrollbar">
         {links.map((link) => {
           const isActive = location.pathname === link.path;
           const showDot = (link.name === 'Certificates' && hasIncompleteCerts) || (link.name === 'Events' && hasUncheckedEvents);
+          const Icon = link.icon;
           
           return (
             <Link 
               key={link.name}
               to={link.path} 
-              className={`relative flex items-center gap-3 py-3 rounded-lg font-button-text text-button-text transition-all duration-300 ${isSidebarOpen ? 'px-4' : 'px-0 justify-center'} ${isActive ? 'bg-primary-container text-on-primary-container font-bold' : 'text-on-surface-variant hover:bg-surface-variant hover:text-primary'}`}
+              title={!isSidebarOpen ? link.name : undefined}
+              className={`relative flex items-center h-10 rounded-lg text-sm transition-all duration-200 group ${
+                isSidebarOpen ? 'px-3' : 'px-0 justify-center'
+              } ${
+                isActive 
+                  ? 'bg-gray-200 text-gray-1000 font-medium' 
+                  : 'text-gray-900 hover:text-gray-1000 hover:bg-gray-100'
+              }`}
             >
-              <div className="relative flex items-center justify-center">
-                <span className="material-symbols-outlined">{link.icon}</span>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0 relative">
+                <Icon className="w-4 h-4" strokeWidth={isActive ? 2 : 1.5} />
                 {showDot && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-surface"></span>
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-background-100" />
                 )}
               </div>
-              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0 hidden'}`}>{link.name}</span>
+              <span 
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] text-xs sm:text-sm ${
+                  isSidebarOpen 
+                    ? 'max-w-[160px] opacity-100 translate-x-0 ml-3' 
+                    : 'max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none'
+                }`}
+              >
+                {link.name}
+              </span>
+
+              {/* Floating Tooltip when Collapsed */}
+              {!isSidebarOpen && (
+                <div className="fixed left-16 ml-3 px-2.5 py-1 bg-gray-1000 text-background-100 text-xs font-medium rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-50 whitespace-nowrap">
+                  {link.name}
+                </div>
+              )}
             </Link>
           );
         })}
       </nav>
-      <div className="p-4 border-t border-border-light">
-        <div className={`flex flex-col gap-2`}>
-          <button onClick={handleLogout} disabled={isLoggingOut} className={`flex items-center py-2 text-on-surface-variant hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isSidebarOpen ? 'px-4 gap-3' : 'justify-center px-0'}`}>
+
+      {/* Footer controls: Logout */}
+      <div className="p-2 border-t border-gray-400 shrink-0 overflow-hidden">
+        {/* Animated Logout Button */}
+        <button 
+          onClick={handleLogout} 
+          disabled={isLoggingOut} 
+          aria-label="Log out"
+          title={!isSidebarOpen ? "Log out" : undefined}
+          className={`relative flex items-center h-10 rounded-lg text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-500/10 dark:text-red-400 dark:hover:text-red-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group w-full ${
+            isSidebarOpen ? 'px-3' : 'px-0 justify-center'
+          }`}
+        >
+          <div className="w-5 h-5 flex items-center justify-center shrink-0">
             {isLoggingOut ? (
-              <FiLoader className="animate-spin text-[24px]" />
+              <Loader2 className="w-4 h-4 animate-spin text-red-600 dark:text-red-400" strokeWidth={1.5} />
             ) : (
-              <span className="material-symbols-outlined">logout</span>
+              <LogOut className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" strokeWidth={1.5} />
             )}
-            <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'opacity-100 w-auto' : 'opacity-0 w-0 hidden'}`}>Logout</span>
-          </button>
-        </div>
+          </div>
+          <span 
+            className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isSidebarOpen 
+                ? 'max-w-[160px] opacity-100 translate-x-0 ml-3' 
+                : 'max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none'
+            }`}
+          >
+            Log out
+          </span>
+
+          {/* Floating Tooltip when Collapsed */}
+          {!isSidebarOpen && (
+            <div className="fixed left-16 ml-3 px-2.5 py-1 bg-red-600 text-white text-xs font-medium rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-50 whitespace-nowrap">
+              Log out
+            </div>
+          )}
+        </button>
       </div>
     </aside>
   );

@@ -3,7 +3,21 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { FiLoader } from 'react-icons/fi';
+import {
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  ArrowLeft,
+  UserCheck
+} from 'lucide-react';
+import ThemeSwitcher from '../components/ui/ThemeSwitcher';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 
 export default function SignUp() {
   const [identifier, setIdentifier] = useState('');
@@ -13,6 +27,7 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
   const { showToast } = useToast();
@@ -37,7 +52,7 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      const response = await axios.post('/auth/register', {
+      await axios.post('/auth/register', {
         identifier,
         password,
         role: 'student'
@@ -49,7 +64,7 @@ export default function SignUp() {
     } catch (err) {
       setError(
         err.response?.data?.message || 
-        'Failed to create account. Please try again.'
+        'Failed to create account. Please verify your details and try again.'
       );
     } finally {
       setLoading(false);
@@ -57,193 +72,162 @@ export default function SignUp() {
   };
 
   return (
-    <div className="h-screen bg-background flex flex-col font-body-lg overflow-hidden">
-      <main className="flex-1 flex flex-col md:flex-row overflow-y-auto">
-        {/* Left Side (Visuals) */}
-        <div className="hidden md:flex flex-col w-1/2 p-12 relative overflow-hidden bg-surface-container-lowest border-r border-border-light justify-center">
-          <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
-            <div className="absolute top-[-10%] left-[-10%] w-2/3 h-2/3 bg-ai-gradient-start rounded-full blur-[120px]"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-2/3 h-2/3 bg-ai-gradient-end rounded-full blur-[120px]"></div>
-          </div>
-          <div className="z-10 max-w-lg mx-auto">
-            <Link to="/" className="flex items-center gap-3 mb-12 hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm">
-                <span className="material-symbols-outlined text-[24px]">school</span>
-              </div>
-              <span className="font-display-hero text-headline-md text-primary tracking-tight">Campus Connect</span>
-            </Link>
-            <h1 className="font-display-hero text-display-hero text-on-surface mb-6 leading-tight">Start your legacy.</h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant mb-12">
-              Join thousands of students building their digital portfolios and tracking their engineering metrics in one unified platform.
-            </p>
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined">workspace_premium</span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-on-surface">Verified Credentials</h3>
-                  <p className="text-sm text-on-surface-variant">Secure digital certificates</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined">trending_up</span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-on-surface">Growth Analytics</h3>
-                  <p className="text-sm text-on-surface-variant">Visualize your trajectory</p>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-background-200 text-gray-1000 flex flex-col justify-between selection:bg-gray-1000 selection:text-background-100 transition-colors duration-200 geist-bg-grid relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[750px] max-w-none geist-auth-glow pointer-events-none -z-0" />
+
+      {/* Top Header Bar */}
+      <header className="h-14 border-b border-gray-400 bg-background-100/80 backdrop-blur-md px-6 flex items-center justify-between z-10">
+        <Link
+          to="/"
+          className="flex items-center gap-2 text-xs font-medium text-gray-900 hover:text-gray-1000 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Campus Connect</span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <ThemeSwitcher small />
         </div>
+      </header>
 
-        {/* Right Side (Form) */}
-        <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 bg-surface">
-          <div className="w-full max-w-md">
-            {/* Mobile Branding */}
-            <Link to="/" className="md:hidden flex items-center justify-center gap-2 mb-10 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary">
-                <span className="material-symbols-outlined text-[20px]">school</span>
+      {/* Center Auth Card */}
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 my-auto z-10">
+        <div className="w-full max-w-[420px]">
+          {/* Card Container (Geist material-medium: 12px radius, 1px border, specular highlight) */}
+          <div className="geist-specular-card rounded-xl border border-gray-400 bg-background-100/95 backdrop-blur-md p-8 sm:p-10 shadow-2xl transition-colors">
+            {/* Header / Logo */}
+            <div className="text-center mb-8">
+              <div className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gray-1000 text-background-100 shadow-sm mb-4">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+                  <path d="M8 1L15 13.5H1L8 1Z" />
+                </svg>
               </div>
-              <span className="font-display-hero text-headline-sm text-primary">Campus Connect</span>
-            </Link>
+              <h1 className="text-heading-24 font-bold text-gray-1000 tracking-tight">
+                Create an account
+              </h1>
+              <p className="text-xs text-gray-900 mt-1.5 leading-relaxed">
+                Start building your verified digital campus identity.
+              </p>
+            </div>
 
-            <div className="bg-surface-container-lowest p-8 md:p-10 rounded-3xl border border-border-light shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <div className="text-center mb-8">
-                <h2 className="font-display-hero text-headline-lg text-on-surface mb-2 tracking-tight">Create Account</h2>
-                <p className="text-body-md text-on-surface-variant">Join Campus Connect today.</p>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 rounded-md border border-red-700/40 bg-red-700/10 p-3 text-xs text-red-700 flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="leading-snug">{error}</span>
               </div>
+            )}
 
-              {error && (
-                <div className="mb-6 p-4 bg-error-container text-on-error-container rounded-xl text-sm flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">error</span>
-                  {error}
-                </div>
-              )}
+            {/* Sign Up Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                id="identifier"
+                label="Email or University UID"
+                type="text"
+                required
+                icon={Mail}
+                placeholder="e.g. 23-COMPA10-27 or student@campus.edu"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                size="lg"
+                helperText="Use your institutional email or registered UID format."
+              />
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="identifier">
-                    Email or UID
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
-                      <span className="material-symbols-outlined text-[18px]">badge</span>
-                    </div>
-                    <input
-                      id="identifier"
-                      type="text"
-                      required
-                      className="w-full pl-10 p-3.5 bg-surface border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline-variant"
-                      placeholder="Email or UID"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="password">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
-                      <span className="material-symbols-outlined text-[18px]">lock</span>
-                    </div>
-                    <input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      className="w-full pl-10 pr-10 p-3.5 bg-surface border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline-variant"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
+              <div>
+                <Input
+                  id="password"
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  icon={Lock}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  size="lg"
+                  rightElement={
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-outline hover:text-primary transition-colors focus:outline-none"
+                      className="text-gray-700 hover:text-gray-1000 transition-colors p-1"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {showPassword ? 'visibility_off' : 'visibility'}
-                      </span>
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
-                  </div>
-                </div>
+                  }
+                />
+              </div>
 
-                <div>
-                  <label className="block text-label-lg font-medium text-on-surface mb-2" htmlFor="confirmPassword">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-outline">
-                      <span className="material-symbols-outlined text-[18px]">lock_reset</span>
-                    </div>
-                    <input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      required
-                      className="w-full pl-10 pr-10 p-3.5 bg-surface border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-outline-variant"
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
+              <div>
+                <Input
+                  id="confirmPassword"
+                  label="Confirm Password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  icon={Lock}
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  size="lg"
+                  rightElement={
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-outline hover:text-primary transition-colors focus:outline-none"
+                      className="text-gray-700 hover:text-gray-1000 transition-colors p-1"
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {showConfirmPassword ? 'visibility_off' : 'visibility'}
-                      </span>
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
-                  </div>
-                </div>
-
-                <button disabled={loading} type="submit" className="w-full bg-primary text-on-primary py-3 rounded-lg font-button-text hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2">
-                  {loading ? (
-                    <FiLoader className="animate-spin text-[24px]" />
-                  ) : (
-                    <>Sign Up <span className="material-symbols-outlined text-[18px]">person_add</span></>
-                  )}
-                </button>
-              </form>
-
-              <div className="mt-8 text-center text-body-md text-on-surface-variant">
-                Already have an account?{' '}
-                <Link to="/signin" className="text-primary font-semibold hover:underline">
-                  Sign In
-                </Link>
+                  }
+                />
               </div>
+
+              {/* Submit Button */}
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  size="lg"
+                  loading={loading}
+                  className="w-full justify-center"
+                >
+                  <span>Create Account</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </form>
+
+            {/* Terms Disclaimer */}
+            <p className="mt-4 text-center text-[11px] text-gray-700 leading-relaxed">
+              By creating an account, you agree to the Campus Connect Terms of Service and Privacy Policy.
+            </p>
+
+            {/* Switch to Sign In */}
+            <div className="mt-6 pt-6 border-t border-gray-400 text-center text-xs text-gray-900">
+              Already have an account?{' '}
+              <Link to="/signin" className="text-blue-700 font-medium hover:underline">
+                Sign in
+              </Link>
             </div>
+          </div>
 
-            {/* Badges */}
-            <div className="mt-8 flex flex-row items-center justify-center gap-6 opacity-70">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px] text-on-surface-variant">shield_lock</span>
-                <span className="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Secure Auth</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px] text-on-surface-variant">verified</span>
-                <span className="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">College Verified</span>
-              </div>
+          {/* Security Subtext */}
+          <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-gray-700 font-mono">
+            <div className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
+              <span>TLS 1.3 Encryption</span>
+            </div>
+            <span>•</span>
+            <div className="flex items-center gap-1">
+              <UserCheck className="w-3.5 h-3.5 text-teal-700" />
+              <span>Verified Student Roll</span>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Standard Footer */}
-      <footer className="w-full border-t border-border-light bg-surface py-6 px-gutter flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-on-surface-variant">
-        <div className="flex items-center gap-2 font-semibold">
-          <span className="material-symbols-outlined text-[18px]">school</span> Campus Connect
-        </div>
-        <div className="flex items-center gap-6">
-          <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
-          <a href="#" className="hover:text-primary transition-colors">Help Center</a>
-        </div>
+      {/* Bottom Minimal Footer */}
+      <footer className="h-12 border-t border-gray-400 px-6 flex items-center justify-between text-[11px] text-gray-700 font-mono">
+        <span>© 2026 Campus Connect Inc.</span>
+        <span>Secure Registration</span>
       </footer>
     </div>
   );
