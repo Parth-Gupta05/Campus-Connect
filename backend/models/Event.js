@@ -39,6 +39,21 @@ const EventSchema = new mongoose.Schema({
     enum: ['upcoming', 'ongoing', 'completed'],
     default: 'upcoming'
   },
+  durationHours: {
+    type: Number,
+    default: 2,
+    min: 0.5
+  },
+  aicteCategory: {
+    type: Number,
+    default: 5,
+    min: 1,
+    max: 15
+  },
+  activitySummary: {
+    type: String,
+    default: ''
+  },
   registeredStudents: [{
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -49,11 +64,52 @@ const EventSchema = new mongoose.Schema({
       enum: ['pending', 'present', 'absent'],
       default: 'pending'
     },
+    designation: {
+      type: String,
+      default: 'Member'
+    },
+    tier: {
+      type: String,
+      enum: ['Core', 'WC', 'Member', 'General'],
+      default: 'Member'
+    },
+    aicteHours: {
+      type: Number,
+      default: 0
+    },
+    aictePoints: {
+      type: Number,
+      default: 0
+    },
     qrCode: {
       type: String,
       default: ''
+    },
+    certificateUrl: {
+      type: String,
+      default: ''
+    },
+    certificateIssuedAt: {
+      type: Date,
+      default: null
+    },
+    certificateVerified: {
+      type: Boolean,
+      default: false
     }
-  }]
+  }],
+  certificatesIssued: {
+    type: Boolean,
+    default: false
+  },
+  certificatesIssuedAt: {
+    type: Date,
+    default: null
+  },
+  certificateBatchUrl: {
+    type: String,
+    default: ''
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', EventSchema);

@@ -185,13 +185,47 @@ const updatePortfolio = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Safeguard club-issued certificates: preserve authentic club-issued credentials and prevent forgery
+    let finalCertificates = (user.resumeDetails && user.resumeDetails.certificates) || [];
+    if (Array.isArray(certificates)) {
+      const existingClubCerts = finalCertificates.filter(c => c.issuedByClub);
+      const sanitizedClientCerts = certificates.map(c => {
+        // If it matches an existing club-issued certificate, preserve the authentic verified record
+        const matchingClubCert = existingClubCerts.find(ec => ec._id?.toString() === c._id?.toString());
+        if (matchingClubCert) {
+          return matchingClubCert;
+        }
+        // Self-added certificate: cannot forge club authorization or verification
+        return {
+          title: c.title || '',
+          issuer: c.issuer || '',
+          issueDate: c.issueDate || '',
+          credentialUrl: c.credentialUrl || '',
+          fileUrl: c.fileUrl || '',
+          isComplete: !!c.fileUrl,
+          isVerified: false,
+          issuedByClub: false
+        };
+      });
+
+      // Ensure authentic club certificates are never removed by client edits
+      existingClubCerts.forEach(ec => {
+        const stillPresent = sanitizedClientCerts.some(sc => sc._id?.toString() === ec._id?.toString());
+        if (!stillPresent) {
+          sanitizedClientCerts.push(ec);
+        }
+      });
+
+      finalCertificates = sanitizedClientCerts;
+    }
+
     user.resumeDetails = {
       portfolioUrl: portfolioUrl !== undefined ? portfolioUrl : (user.resumeDetails && user.resumeDetails.portfolioUrl) || '',
       skills: skills || (user.resumeDetails && user.resumeDetails.skills) || [],
       education: education || (user.resumeDetails && user.resumeDetails.education) || [],
       experience: experience || (user.resumeDetails && user.resumeDetails.experience) || [],
       projects: projects || (user.resumeDetails && user.resumeDetails.projects) || [],
-      certificates: certificates || (user.resumeDetails && user.resumeDetails.certificates) || [],
+      certificates: finalCertificates,
       achievements: achievements || (user.resumeDetails && user.resumeDetails.achievements) || []
     };
 
@@ -214,12 +248,14 @@ const updatePortfolio = async (req, res) => {
       
       user.lastHandleUpdateAt = new Date();
       
+      user.markModified('resumeDetails');
       // Save handles first
       await user.save();
       
       // Trigger a re-scrape with the new handles
       user = await scrapeAndCacheMetrics(user);
     } else {
+      user.markModified('resumeDetails');
       await user.save();
     }
 
@@ -414,6 +450,9 @@ const getGithubHeatmap = async (req, res) => {
       const user = await User.findById(req.user.id);
       if (!user || !user.githubUsername) {
         return res.status(404).json({ message: 'GitHub username not found' });
+      }
+      if (!user.githubVerified) {
+        return res.status(403).json({ message: 'GitHub account must be verified to view telemetry activity stream' });
       }
       targetUsername = user.githubUsername;
     }
