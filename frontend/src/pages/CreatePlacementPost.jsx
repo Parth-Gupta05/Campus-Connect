@@ -9,46 +9,47 @@ import CompanySearchInput from '../components/CompanySearchInput';
 import RichTextEditor from '../components/RichTextEditor';
 
 import {
-  FiArrowLeft,
-  FiUploadCloud,
-  FiX,
-  FiPaperclip,
-  FiCheck,
-  FiBriefcase,
-  FiFileText,
-  FiLayers
-} from 'react-icons/fi';
-import { FaRupeeSign } from 'react-icons/fa';
+  ArrowLeft,
+  Check,
+  X,
+  Briefcase,
+  Layers,
+  FileText,
+  Paperclip,
+  UploadCloud,
+  IndianRupee,
+  Loader2
+} from 'lucide-react';
 
 const ASSESSMENT_TYPE_OPTIONS = [
-  { id: 'coding_round', label: 'Coding Round (DSA / Algorithms)' },
+  { id: 'coding_round', label: 'Coding Round (DSA)' },
   { id: 'online_test', label: 'Online Technical Test' },
   { id: 'mcq', label: 'MCQ Assessment' },
   { id: 'aptitude', label: 'Aptitude Round' },
   { id: 'case_study', label: 'Case Study' },
-  { id: 'group_discussion', label: 'Group Discussion (GD)' },
-  { id: 'hackathon', label: 'Hackathon / Live Project' },
+  { id: 'group_discussion', label: 'Group Discussion' },
+  { id: 'hackathon', label: 'Hackathon / Project' },
   { id: 'take_home_assignment', label: 'Take-Home Assignment' }
 ];
 
 const INTERVIEW_TYPE_OPTIONS = [
-  { id: 'technical', label: 'Technical Interview' },
-  { id: 'system_design', label: 'System Design (LLD / HLD)' },
+  { id: 'technical', label: 'Technical Round' },
+  { id: 'system_design', label: 'System Design' },
   { id: 'hr', label: 'HR Round' },
-  { id: 'behavioral', label: 'Behavioral Round' },
-  { id: 'managerial', label: 'Managerial Round' },
+  { id: 'behavioral', label: 'Behavioral' },
+  { id: 'managerial', label: 'Managerial' },
   { id: 'culture_fit', label: 'Culture Fit' },
   { id: 'panel', label: 'Panel Interview' }
 ];
 
 const INTERVIEW_MODE_OPTIONS = [
-  { id: 'online', label: 'Online (Zoom / Meet / Teams)' },
+  { id: 'online', label: 'Online (Zoom / Meet)' },
   { id: 'offline', label: 'On-Campus / In-Person' },
   { id: 'hybrid', label: 'Hybrid' }
 ];
 
 export default function CreatePlacementPost() {
-  const { id } = useParams(); // If editing
+  const { id } = useParams();
   const isEditing = Boolean(id);
   const { user } = useContext(AuthContext);
   const { showToast } = useToast();
@@ -78,7 +79,7 @@ export default function CreatePlacementPost() {
   const [difficulty, setDifficulty] = useState('medium');
   const [outcome, setOutcome] = useState('selected');
 
-  // Multi-select Checkbox States (Optional / Multi-value)
+  // Multi-select Checkbox States
   const [assessmentTypes, setAssessmentTypes] = useState([]);
   const [interviewTypes, setInterviewTypes] = useState([]);
   const [interviewModes, setInterviewModes] = useState([]);
@@ -108,7 +109,6 @@ export default function CreatePlacementPost() {
           const res = await axios.get(`/placements/${id}`);
           const p = res.data;
 
-          // Verify permission
           if (user && p.author?._id !== user.id && user.role !== 'admin') {
             showToast('You are not authorized to edit this post', 'error');
             navigate('/placements');
@@ -130,7 +130,6 @@ export default function CreatePlacementPost() {
           if (p.difficulty) setDifficulty(p.difficulty);
           if (p.outcome) setOutcome(p.outcome);
 
-          // Array or legacy string
           if (Array.isArray(p.assessmentTypes) && p.assessmentTypes.length > 0) {
             setAssessmentTypes(p.assessmentTypes);
           } else if (p.assessmentType) {
@@ -172,7 +171,6 @@ export default function CreatePlacementPost() {
     }
   }, [id, isEditing, user]);
 
-  // Toggle Checkbox Helpers
   const toggleAssessmentType = (typeId) => {
     setAssessmentTypes((prev) =>
       prev.includes(typeId) ? prev.filter((t) => t !== typeId) : [...prev, typeId]
@@ -191,7 +189,6 @@ export default function CreatePlacementPost() {
     );
   };
 
-  // Tag Handlers
   const handleAddTag = (e) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
@@ -207,7 +204,6 @@ export default function CreatePlacementPost() {
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
-  // Document Handler (max 1)
   const handleDocFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -222,7 +218,6 @@ export default function CreatePlacementPost() {
     if (docInputRef.current) docInputRef.current.value = '';
   };
 
-  // Submit Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -245,25 +240,25 @@ export default function CreatePlacementPost() {
 
     try {
       setSubmitting(true);
+
       const formData = new FormData();
-
-      formData.append('title', title.trim());
-      formData.append('content', content.trim());
-      formData.append('role', role.trim());
-      formData.append('postType', postType);
-
       formData.append('companyName', company.name);
       formData.append('companyDomain', company.domain || '');
       formData.append('companyLogoUrl', company.logoUrl || '');
-      formData.append('companyIsCustom', company.isCustom ? 'true' : 'false');
+      formData.append('isCustomCompany', company.isCustom ? 'true' : 'false');
 
-      if (salaryAmount) formData.append('salaryAmount', salaryAmount);
-      formData.append('salaryPeriod', salaryPeriod);
-      formData.append('salaryCurrency', salaryCurrency);
+      formData.append('role', role);
+      formData.append('postType', postType);
+
+      if (salaryAmount) {
+        formData.append('salaryAmount', salaryAmount);
+        formData.append('salaryPeriod', salaryPeriod);
+        formData.append('salaryCurrency', salaryCurrency);
+      }
 
       formData.append('jobType', jobType);
       formData.append('workMode', workMode);
-      formData.append('location', location.trim());
+      formData.append('location', location);
 
       formData.append('difficulty', difficulty);
       formData.append('outcome', outcome);
@@ -271,18 +266,20 @@ export default function CreatePlacementPost() {
       formData.append('assessmentTypes', JSON.stringify(assessmentTypes));
       formData.append('interviewTypes', JSON.stringify(interviewTypes));
       formData.append('interviewModes', JSON.stringify(interviewModes));
-      if (numberOfRounds) formData.append('numberOfRounds', numberOfRounds);
+      formData.append('numberOfRounds', numberOfRounds || '1');
 
-      formData.append('branch', branch.trim());
-      formData.append('graduationYear', graduationYear.trim());
+      formData.append('branch', branch);
+      formData.append('graduationYear', graduationYear);
 
+      formData.append('title', title);
+      formData.append('content', content);
       formData.append('tags', JSON.stringify(tags));
 
-      // Append document file if newly added
       if (newDocFile) {
-        formData.append('document', newDocFile);
-      } else if (!existingDoc.url && isEditing) {
-        formData.append('removeAttachment', 'true');
+        formData.append('attachment', newDocFile);
+      } else if (existingDoc.url) {
+        formData.append('existingAttachmentUrl', existingDoc.url);
+        formData.append('existingAttachmentName', existingDoc.name);
       }
 
       if (isEditing) {
@@ -308,63 +305,65 @@ export default function CreatePlacementPost() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background text-on-surface font-body-lg">
+      <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <Loader2 className="w-8 h-8 text-gray-700 animate-spin" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-on-surface font-body-lg">
+    <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
       <Sidebar />
 
-      <main className="flex-1 overflow-y-auto bg-surface-container-lowest">
+      <main className="flex-1 min-w-0 bg-background-100">
         <Topbar />
 
-        <div className="max-w-6xl mx-auto p-4 sm:p-8 space-y-8">
+        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
           {/* Top Back Navigation */}
           <div className="flex items-center justify-between gap-4">
             <Link
               to="/placements"
-              className="inline-flex items-center gap-2 text-sm font-bold text-on-surface-variant hover:text-primary transition-colors"
+              className="h-8 px-3 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors shadow-2xs inline-flex items-center gap-1.5"
             >
-              <FiArrowLeft className="text-base" /> Back to Placements Feed
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Feed</span>
             </Link>
 
-            <span className="text-xs text-on-surface-variant font-mono">
-              Posting as: <strong className="text-on-surface">{user?.name}</strong> ({user?.branch || 'Branch'} '{user?.graduationYear ? user.graduationYear.slice(-2) : ''})
+            <span className="text-xs text-gray-600 font-sans">
+              Posting as: <span className="font-semibold text-gray-900">{user?.name}</span> ({user?.branch || 'General'} '{user?.graduationYear ? user.graduationYear.slice(-2) : ''})
             </span>
           </div>
 
           {/* Header Title */}
-          <div className="flex items-center gap-3.5 pb-2 border-b border-border-light">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-2xs">
-              <span className="material-symbols-outlined text-2xl">edit_note</span>
+          <div className="flex items-center gap-3 pb-4 border-b border-gray-400">
+            <div className="w-10 h-10 rounded-xl bg-background-100 border border-gray-400 text-gray-1000 flex items-center justify-center shrink-0 shadow-2xs">
+              <FileText className="w-5 h-5" strokeWidth={1.5} />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-on-surface">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-gray-1000">
                 {isEditing ? 'Edit Placement Experience' : 'Share Placement Experience'}
               </h1>
-              <p className="text-sm text-on-surface-variant mt-0.5">
-                Help your juniors and peers prepare by sharing your selection process, online test questions, interview rounds, package details, and preparation strategy.
+              <p className="text-xs text-gray-700 font-sans mt-0.5">
+                Share your selection rounds, questions asked, compensation breakdown, and tips for juniors.
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* SECTION 1: Company & Role Details */}
-            <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
-              <h2 className="text-lg font-bold text-on-surface flex items-center gap-2 border-b border-border-light pb-3">
-                <FiBriefcase className="text-primary" /> 1. Company &amp; Role Details
+            <div className="bg-background-100 border border-gray-400 rounded-xl p-6 shadow-2xs space-y-5 text-gray-1000">
+              <h2 className="text-sm font-semibold text-gray-1000 flex items-center gap-2 border-b border-gray-400 pb-3">
+                <Briefcase className="w-4 h-4 text-gray-700" />
+                <span>1. Company &amp; Role Details</span>
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Company Autocomplete Input */}
-                <div className="space-y-2 md:col-span-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="block text-xs font-medium text-gray-800">
                     Company Name *
                   </label>
                   <CompanySearchInput
@@ -372,14 +371,14 @@ export default function CreatePlacementPost() {
                     onChange={setCompany}
                     disabled={submitting}
                   />
-                  <p className="text-[11px] text-on-surface-variant/70">
-                    Search from Logo.dev brand directory, or type manually if unlisted.
+                  <p className="text-[11px] text-gray-600 font-sans">
+                    Search from company directory or type manually if unlisted.
                   </p>
                 </div>
 
                 {/* Role / Designation */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-gray-800">
                     Role / Position *
                   </label>
                   <input
@@ -387,20 +386,20 @@ export default function CreatePlacementPost() {
                     required
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    placeholder="e.g. SDE 1, Graduate Trainee, Data Analyst"
-                    className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium transition-all shadow-2xs"
+                    placeholder="e.g. SDE Intern, Graduate Analyst"
+                    className="w-full h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 placeholder:text-gray-500 focus:outline-none focus:border-gray-900 focus:bg-background-100 text-xs font-medium transition-all shadow-2xs"
                   />
                 </div>
 
                 {/* Post Type */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-gray-800">
                     Experience Type *
                   </label>
                   <select
                     value={postType}
                     onChange={(e) => setPostType(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium transition-all shadow-2xs cursor-pointer"
+                    className="w-full h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 focus:outline-none focus:border-gray-900 focus:bg-background-100 text-xs font-medium transition-all shadow-2xs cursor-pointer"
                   >
                     <option value="interview_experience">Full Interview Experience</option>
                     <option value="assessment_experience">Online Assessment / Test Questions</option>
@@ -412,14 +411,14 @@ export default function CreatePlacementPost() {
                 </div>
 
                 {/* Job Type */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-gray-800">
                     Job Type
                   </label>
                   <select
                     value={jobType}
                     onChange={(e) => setJobType(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium transition-all shadow-2xs cursor-pointer"
+                    className="w-full h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 focus:outline-none focus:border-gray-900 focus:bg-background-100 text-xs font-medium transition-all shadow-2xs cursor-pointer"
                   >
                     <option value="full_time">Full-Time (FTE)</option>
                     <option value="internship">Internship</option>
@@ -428,15 +427,15 @@ export default function CreatePlacementPost() {
                 </div>
 
                 {/* Work Mode & Location */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-gray-800">
                     Work Mode &amp; Location
                   </label>
                   <div className="flex gap-2">
                     <select
                       value={workMode}
                       onChange={(e) => setWorkMode(e.target.value)}
-                      className="px-3 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface text-sm font-medium focus:outline-none focus:border-primary cursor-pointer shadow-2xs"
+                      className="h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 text-xs font-medium focus:outline-none focus:border-gray-900 focus:bg-background-100 cursor-pointer shadow-2xs"
                     >
                       <option value="onsite">Onsite</option>
                       <option value="remote">Remote</option>
@@ -446,61 +445,62 @@ export default function CreatePlacementPost() {
                       type="text"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      placeholder="e.g. Bangalore, Pune"
-                      className="flex-1 px-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface text-sm font-medium focus:outline-none focus:border-primary shadow-2xs"
+                      placeholder="e.g. Bangalore, Mumbai"
+                      className="flex-1 h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 text-xs font-medium focus:outline-none focus:border-gray-900 focus:bg-background-100 shadow-2xs"
                     />
                   </div>
                 </div>
 
                 {/* Compensation */}
-                <div className="space-y-2 md:col-span-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="block text-xs font-medium text-gray-800">
                     Compensation (CTC / Stipend)
                   </label>
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <div className="relative flex-1">
-                      <FaRupeeSign className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm pointer-events-none" />
+                      <IndianRupee className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       <input
                         type="number"
                         value={salaryAmount}
                         onChange={(e) => setSalaryAmount(e.target.value)}
-                        placeholder="e.g. 1500000 (15 LPA) or 45000 (stipend)"
-                        className="w-full pl-9 pr-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface text-sm font-medium focus:outline-none focus:border-primary shadow-2xs"
+                        placeholder="e.g. 1500000 (15 LPA) or 45000 (monthly)"
+                        className="w-full h-9 pl-9 pr-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 text-xs font-medium focus:outline-none focus:border-gray-900 focus:bg-background-100 shadow-2xs"
                       />
                     </div>
                     <select
                       value={salaryPeriod}
                       onChange={(e) => setSalaryPeriod(e.target.value)}
-                      className="px-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface text-sm font-medium focus:outline-none focus:border-primary cursor-pointer shadow-2xs"
+                      className="h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 text-xs font-medium focus:outline-none focus:border-gray-900 focus:bg-background-100 cursor-pointer shadow-2xs"
                     >
                       <option value="annual">Annual CTC (Per Annum)</option>
                       <option value="stipend_per_month">Monthly Stipend</option>
                       <option value="monthly">Monthly Fixed</option>
                     </select>
                   </div>
-                  <p className="text-[11px] text-on-surface-variant/70">
-                    Optional: Entering the package helps students filter by compensation tier.
+                  <p className="text-[11px] text-gray-600 font-sans">
+                    Optional: Entering the compensation helps students filter experiences by tier.
                   </p>
                 </div>
               </div>
             </div>
 
             {/* SECTION 2: Assessment & Interview Breakdown */}
-            <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
-              <h2 className="text-lg font-bold text-on-surface flex items-center gap-2 border-b border-border-light pb-3">
-                <FiLayers className="text-primary" /> 2. Assessment &amp; Interview Breakdown
+            <div className="bg-background-100 border border-gray-400 rounded-xl p-6 shadow-2xs space-y-5 text-gray-1000">
+              <h2 className="text-sm font-semibold text-gray-1000 flex items-center gap-2 border-b border-gray-400 pb-3">
+                <Layers className="w-4 h-4 text-gray-700" />
+                <span>2. Rounds &amp; Evaluation Stages</span>
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Final Outcome (Clean matching portal aesthetic, no emojis) */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Final Outcome */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-gray-800">
                     Final Outcome
                   </label>
                   <select
                     value={outcome}
                     onChange={(e) => setOutcome(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface text-sm font-medium focus:outline-none focus:border-primary cursor-pointer shadow-2xs"
+                    className="w-full h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 text-xs font-medium focus:outline-none focus:border-gray-900 focus:bg-background-100 cursor-pointer shadow-2xs"
                   >
                     <option value="selected">Selected / Received Offer</option>
                     <option value="rejected">Rejected</option>
@@ -510,14 +510,14 @@ export default function CreatePlacementPost() {
                 </div>
 
                 {/* Difficulty */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-gray-800">
                     Overall Difficulty
                   </label>
                   <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface text-sm font-medium focus:outline-none focus:border-primary cursor-pointer shadow-2xs"
+                    className="w-full h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 text-xs font-medium focus:outline-none focus:border-gray-900 focus:bg-background-100 cursor-pointer shadow-2xs"
                   >
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
@@ -527,8 +527,8 @@ export default function CreatePlacementPost() {
                 </div>
 
                 {/* Number of Rounds */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-gray-800">
                     Number of Rounds
                   </label>
                   <input
@@ -538,20 +538,20 @@ export default function CreatePlacementPost() {
                     value={numberOfRounds}
                     onChange={(e) => setNumberOfRounds(e.target.value)}
                     placeholder="e.g. 3"
-                    className="w-full px-4 py-3 rounded-xl border border-border-light bg-surface-container-low text-on-surface text-sm font-medium focus:outline-none focus:border-primary shadow-2xs"
+                    className="w-full h-9 px-3 rounded-md border border-gray-400 bg-background-200 text-gray-1000 text-xs font-medium focus:outline-none focus:border-gray-900 focus:bg-background-100 shadow-2xs"
                   />
                 </div>
               </div>
 
-              {/* Multi-Select Checkboxes for Assessment Types */}
-              <div className="space-y-3 pt-2 border-t border-border-light/60">
+              {/* Assessment Types */}
+              <div className="space-y-2 pt-2 border-t border-gray-300 dark:border-gray-800">
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                    Assessment Types (Check all rounds that were conducted)
+                  <label className="block text-xs font-medium text-gray-800">
+                    Assessment Rounds
                   </label>
-                  <span className="text-xs text-on-surface-variant/60">Optional</span>
+                  <span className="text-[10px] font-mono text-gray-600">Select all that applied</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {ASSESSMENT_TYPE_OPTIONS.map((opt) => {
                     const isChecked = assessmentTypes.includes(opt.id);
                     return (
@@ -559,35 +559,29 @@ export default function CreatePlacementPost() {
                         key={opt.id}
                         type="button"
                         onClick={() => toggleAssessmentType(opt.id)}
-                        className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-semibold text-left transition-all cursor-pointer ${
+                        className={`h-8 px-2.5 rounded-md border text-xs font-medium text-left transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                           isChecked
-                            ? 'bg-primary/10 border-primary text-primary shadow-2xs font-bold'
-                            : 'bg-surface-container-low border-border-light text-on-surface hover:bg-surface-variant'
+                            ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold shadow-xs'
+                            : 'border-gray-400 bg-background-200 text-gray-800 hover:text-gray-1000 hover:bg-gray-300 dark:hover:bg-gray-800'
                         }`}
                       >
-                        <div
-                          className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
-                            isChecked ? 'bg-primary border-primary text-on-primary' : 'border-border-light bg-white'
-                          }`}
-                        >
-                          {isChecked && <FiCheck className="text-xs" />}
-                        </div>
                         <span className="truncate">{opt.label}</span>
+                        {isChecked && <Check className="w-3 h-3 shrink-0 ml-1" />}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Multi-Select Checkboxes for Interview Types */}
-              <div className="space-y-3 pt-2 border-t border-border-light/60">
+              {/* Interview Types */}
+              <div className="space-y-2 pt-2 border-t border-gray-300 dark:border-gray-800">
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                    Interview Types (Check all interview rounds conducted)
+                  <label className="block text-xs font-medium text-gray-800">
+                    Interview Rounds
                   </label>
-                  <span className="text-xs text-on-surface-variant/60">Optional</span>
+                  <span className="text-[10px] font-mono text-gray-600">Select all that applied</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {INTERVIEW_TYPE_OPTIONS.map((opt) => {
                     const isChecked = interviewTypes.includes(opt.id);
                     return (
@@ -595,35 +589,29 @@ export default function CreatePlacementPost() {
                         key={opt.id}
                         type="button"
                         onClick={() => toggleInterviewType(opt.id)}
-                        className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-semibold text-left transition-all cursor-pointer ${
+                        className={`h-8 px-2.5 rounded-md border text-xs font-medium text-left transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                           isChecked
-                            ? 'bg-primary/10 border-primary text-primary shadow-2xs font-bold'
-                            : 'bg-surface-container-low border-border-light text-on-surface hover:bg-surface-variant'
+                            ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold shadow-xs'
+                            : 'border-gray-400 bg-background-200 text-gray-800 hover:text-gray-1000 hover:bg-gray-300 dark:hover:bg-gray-800'
                         }`}
                       >
-                        <div
-                          className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
-                            isChecked ? 'bg-primary border-primary text-on-primary' : 'border-border-light bg-white'
-                          }`}
-                        >
-                          {isChecked && <FiCheck className="text-xs" />}
-                        </div>
                         <span className="truncate">{opt.label}</span>
+                        {isChecked && <Check className="w-3 h-3 shrink-0 ml-1" />}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Multi-Select Checkboxes for Interview Modes */}
-              <div className="space-y-3 pt-2 border-t border-border-light/60">
+              {/* Interview Modes */}
+              <div className="space-y-2 pt-2 border-t border-gray-300 dark:border-gray-800">
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                    Evaluation Mode (Check all modes that applied)
+                  <label className="block text-xs font-medium text-gray-800">
+                    Evaluation Mode
                   </label>
-                  <span className="text-xs text-on-surface-variant/60">Optional</span>
+                  <span className="text-[10px] font-mono text-gray-600">Optional</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {INTERVIEW_MODE_OPTIONS.map((opt) => {
                     const isChecked = interviewModes.includes(opt.id);
                     return (
@@ -631,20 +619,14 @@ export default function CreatePlacementPost() {
                         key={opt.id}
                         type="button"
                         onClick={() => toggleInterviewMode(opt.id)}
-                        className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-semibold text-left transition-all cursor-pointer ${
+                        className={`h-8 px-2.5 rounded-md border text-xs font-medium text-left transition-all cursor-pointer shadow-2xs flex items-center justify-between ${
                           isChecked
-                            ? 'bg-primary/10 border-primary text-primary shadow-2xs font-bold'
-                            : 'bg-surface-container-low border-border-light text-on-surface hover:bg-surface-variant'
+                            ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold shadow-xs'
+                            : 'border-gray-400 bg-background-200 text-gray-800 hover:text-gray-1000 hover:bg-gray-300 dark:hover:bg-gray-800'
                         }`}
                       >
-                        <div
-                          className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
-                            isChecked ? 'bg-primary border-primary text-on-primary' : 'border-border-light bg-white'
-                          }`}
-                        >
-                          {isChecked && <FiCheck className="text-xs" />}
-                        </div>
                         <span className="truncate">{opt.label}</span>
+                        {isChecked && <Check className="w-3 h-3 shrink-0 ml-1" />}
                       </button>
                     );
                   })}
@@ -653,14 +635,15 @@ export default function CreatePlacementPost() {
             </div>
 
             {/* SECTION 3: Detailed Experience */}
-            <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
-              <h2 className="text-lg font-bold text-on-surface flex items-center gap-2 border-b border-border-light pb-3">
-                <FiFileText className="text-primary" /> 3. Detailed Experience
+            <div className="bg-background-100 border border-gray-400 rounded-xl p-6 shadow-2xs space-y-5 text-gray-1000">
+              <h2 className="text-sm font-semibold text-gray-1000 flex items-center gap-2 border-b border-gray-400 pb-3">
+                <FileText className="w-4 h-4 text-gray-700" />
+                <span>3. Detailed Experience</span>
               </h2>
 
               {/* Title */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-gray-800">
                   Post Title *
                 </label>
                 <input
@@ -670,13 +653,13 @@ export default function CreatePlacementPost() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. My Google SDE Summer Internship Experience — 3 Technical Rounds & System Design"
-                  className="w-full px-4 py-3.5 rounded-xl border border-border-light bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-base font-bold transition-all shadow-2xs"
+                  className="w-full h-10 px-3.5 rounded-md border border-gray-400 bg-background-200 text-gray-1000 placeholder:text-gray-500 focus:outline-none focus:border-gray-900 focus:bg-background-100 text-sm font-medium transition-all shadow-2xs"
                 />
               </div>
 
               {/* Text Editor */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-gray-800">
                   Experience Content *
                 </label>
                 <RichTextEditor
@@ -686,23 +669,23 @@ export default function CreatePlacementPost() {
               </div>
 
               {/* Tags Input */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                  Topics / Tags (Press Enter or Comma to add)
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-gray-800">
+                  Topics / Tags (Press Enter to add)
                 </label>
-                <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-xl border border-border-light bg-surface-container-low min-h-[48px]">
+                <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-gray-400 bg-background-200 min-h-[42px]">
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-1 px-3 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs"
+                      className="h-6 px-2 rounded-md bg-background-100 text-gray-900 border border-gray-400 font-mono text-xs flex items-center gap-1 shadow-2xs"
                     >
                       #{tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
-                        className="hover:text-error transition-colors ml-1"
+                        className="hover:text-red-500 transition-colors ml-0.5 cursor-pointer"
                       >
-                        <FiX />
+                        <X className="w-3 h-3" />
                       </button>
                     </span>
                   ))}
@@ -711,47 +694,48 @@ export default function CreatePlacementPost() {
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleAddTag}
-                    placeholder={tags.length === 0 ? "Type tag e.g. DynamicProgramming, React, HR and hit Enter" : "Add more tags..."}
-                    className="flex-1 bg-transparent text-sm text-on-surface focus:outline-none min-w-[160px]"
+                    placeholder={tags.length === 0 ? "Type tag e.g. DSA, React and hit Enter" : "Add more tags..."}
+                    className="flex-1 bg-transparent text-xs text-gray-1000 focus:outline-none min-w-[150px]"
                   />
                 </div>
               </div>
             </div>
 
             {/* SECTION 4: Attach Document (Optional) */}
-            <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-8 shadow-xs space-y-4">
-              <h2 className="text-lg font-bold text-on-surface flex items-center gap-2 border-b border-border-light pb-3">
-                <FiPaperclip className="text-primary" /> 4. Attach Document (Optional)
+            <div className="bg-background-100 border border-gray-400 rounded-xl p-6 shadow-2xs space-y-4 text-gray-1000">
+              <h2 className="text-sm font-semibold text-gray-1000 flex items-center gap-2 border-b border-gray-400 pb-3">
+                <Paperclip className="w-4 h-4 text-gray-700" />
+                <span>4. Attach Document (Optional)</span>
               </h2>
-              <p className="text-xs text-on-surface-variant">
-                Attach relevant documents such as your resume, study notes, question sheets, or offer letter (.pdf, .docx, .txt). Images and links can be inserted directly within the experience content above.
+              <p className="text-xs text-gray-700 font-sans">
+                Attach relevant preparation sheets, questions list, or offer letters (.pdf, .docx, .txt). Images can be inserted directly in the editor above.
               </p>
 
               {existingDoc.url || newDocFile ? (
-                <div className="flex items-center justify-between p-3.5 rounded-xl bg-surface-container-low border border-border-light">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <FiPaperclip className="text-primary text-lg shrink-0" />
-                    <span className="text-sm font-semibold text-on-surface truncate">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-background-200 border border-gray-400">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Paperclip className="w-4 h-4 text-gray-700 shrink-0" />
+                    <span className="text-xs font-medium text-gray-1000 truncate">
                       {newDocFile ? newDocFile.name : existingDoc.name}
                     </span>
                     {newDocFile && (
-                      <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-primary/10 text-primary">
-                        New File
+                      <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-background-100 border border-gray-400 text-gray-700">
+                        New
                       </span>
                     )}
                   </div>
                   <button
                     type="button"
                     onClick={handleRemoveDoc}
-                    className="p-1.5 hover:bg-surface-variant text-on-surface-variant hover:text-error rounded-lg transition-colors"
+                    className="p-1 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-600 hover:text-red-500 rounded-md transition-colors cursor-pointer"
                   >
-                    <FiX />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
-                <label className="border-2 border-dashed border-border-light hover:border-primary rounded-xl flex items-center justify-center gap-2 p-5 cursor-pointer hover:bg-surface-variant/40 transition-colors">
-                  <FiUploadCloud className="text-xl text-primary" />
-                  <span className="text-xs font-bold text-on-surface">Upload Document (.pdf, .docx, .txt, .xlsx)</span>
+                <label className="border border-dashed border-gray-400 hover:border-gray-900 rounded-xl flex items-center justify-center gap-2 p-5 cursor-pointer hover:bg-background-200 transition-colors">
+                  <UploadCloud className="w-5 h-5 text-gray-600" />
+                  <span className="text-xs font-medium text-gray-900">Upload Document (.pdf, .docx, .txt, .xlsx)</span>
                   <input
                     type="file"
                     ref={docInputRef}
@@ -764,26 +748,26 @@ export default function CreatePlacementPost() {
             </div>
 
             {/* Bottom Actions Bar */}
-            <div className="flex items-center justify-end gap-4 pt-4">
+            <div className="flex items-center justify-end gap-3 pt-2">
               <Link
                 to="/placements"
-                className="px-6 py-3 rounded-xl border border-border-light text-on-surface hover:bg-surface-variant text-sm font-bold transition-colors"
+                className="h-9 px-4 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors shadow-2xs flex items-center justify-center"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-8 py-3.5 rounded-xl bg-primary text-on-primary hover:bg-on-primary-fixed text-sm font-extrabold shadow-md hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="h-9 px-5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-xs disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     <span>{isEditing ? 'Updating...' : 'Publishing...'}</span>
                   </>
                 ) : (
                   <>
-                    <FiCheck className="text-base" />
+                    <Check className="w-3.5 h-3.5" />
                     <span>{isEditing ? 'Save Changes' : 'Publish Experience'}</span>
                   </>
                 )}

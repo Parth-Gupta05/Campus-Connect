@@ -5,15 +5,15 @@ export default function RichContentRenderer({ htmlContent, className = '' }) {
 
   return (
     <div
-      className={`prose max-w-none text-on-surface text-[15px] leading-relaxed 
-        prose-headings:text-on-surface prose-headings:font-bold 
-        prose-p:text-on-surface/90 prose-p:my-3 
-        prose-a:text-primary prose-a:underline hover:prose-a:text-primary-container
-        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-on-surface-variant prose-blockquote:my-4
+      className={`prose dark:prose-invert max-w-none text-gray-1000 text-sm leading-relaxed 
+        prose-headings:text-gray-1000 prose-headings:font-bold prose-headings:tracking-tight
+        prose-p:text-gray-1000 prose-p:my-3 
+        prose-a:text-blue-500 prose-a:underline hover:prose-a:text-blue-600
+        prose-blockquote:border-l-2 prose-blockquote:border-gray-400 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-700 prose-blockquote:my-4
         prose-ul:list-disc prose-ul:pl-5 prose-ul:my-2
         prose-ol:list-decimal prose-ol:pl-5 prose-ol:my-2
         prose-li:my-1
-        prose-img:rounded-xl prose-img:shadow-md prose-img:border prose-img:border-border-light prose-img:max-h-96 prose-img:mx-auto prose-img:my-4
+        prose-img:rounded-lg prose-img:shadow-sm prose-img:border prose-img:border-gray-400 prose-img:max-h-96 prose-img:mx-auto prose-img:my-4
         ${className}`}
       dangerouslySetInnerHTML={{ __html: htmlContent }}
     />

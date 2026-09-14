@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { authMiddleware, optionalAuthMiddleware } = require('../middleware/authMiddleware');
+const { authMiddleware } = require('../middleware/authMiddleware');
 const {
   getCompanySuggestions,
   getFeed,
@@ -32,14 +32,14 @@ const uploadFields = upload.fields([
   { name: 'document', maxCount: 1 }
 ]);
 
-// Public / Authenticated search & metadata
-router.get('/companies/search', getCompanySuggestions);
-router.get('/filters/meta', getFilterMeta);
+// Search & metadata
+router.get('/companies/search', authMiddleware, getCompanySuggestions);
+router.get('/filters/meta', authMiddleware, getFilterMeta);
 
 // Feed & Posts
-router.get('/', optionalAuthMiddleware, getFeed);
-router.get('/user/:userId', optionalAuthMiddleware, getUserPosts);
-router.get('/:id', optionalAuthMiddleware, getPostById);
+router.get('/', authMiddleware, getFeed);
+router.get('/user/:userId', authMiddleware, getUserPosts);
+router.get('/:id', authMiddleware, getPostById);
 
 router.post('/', authMiddleware, uploadFields, createPost);
 router.put('/:id', authMiddleware, uploadFields, updatePost);
@@ -50,7 +50,7 @@ router.post('/:id/react', authMiddleware, toggleReaction);
 router.post('/:id/bookmark', authMiddleware, toggleBookmark);
 
 // Comments & Replies
-router.get('/:postId/comments', getComments);
+router.get('/:postId/comments', authMiddleware, getComments);
 router.post('/:postId/comments', authMiddleware, addComment);
 router.delete('/comments/:commentId', authMiddleware, deleteComment);
 

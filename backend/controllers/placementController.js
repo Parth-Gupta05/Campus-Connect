@@ -923,18 +923,28 @@ const getUserPosts = async (req, res) => {
 // ==========================================
 const getFilterMeta = async (req, res) => {
   try {
-    const [companies, branches, years, tags] = await Promise.all([
+    const currentUserId = req.user ? (req.user.id || req.user._id).toString() : null;
+
+    const [companies, branches, years, tags, totalCount, savedCount, myPostsCount] = await Promise.all([
       PlacementPost.distinct('company.name', { isPublished: true }),
       PlacementPost.distinct('branch', { isPublished: true, branch: { $ne: '' } }),
       PlacementPost.distinct('graduationYear', { isPublished: true, graduationYear: { $ne: '' } }),
-      PlacementPost.distinct('tags', { isPublished: true })
+      PlacementPost.distinct('tags', { isPublished: true }),
+      PlacementPost.countDocuments({ isPublished: true }),
+      currentUserId ? PlacementPost.countDocuments({ isPublished: true, bookmarks: currentUserId }) : Promise.resolve(0),
+      currentUserId ? PlacementPost.countDocuments({ isPublished: true, author: currentUserId }) : Promise.resolve(0)
     ]);
 
     res.json({
       companies: companies.filter(Boolean).sort(),
       branches: branches.filter(Boolean).sort(),
       graduationYears: years.filter(Boolean).sort(),
-      tags: tags.filter(Boolean).sort()
+      tags: tags.filter(Boolean).sort(),
+      counts: {
+        all: totalCount,
+        saved: savedCount,
+        myPosts: myPostsCount
+      }
     });
   } catch (error) {
     console.error('Error getting filter metadata:', error);

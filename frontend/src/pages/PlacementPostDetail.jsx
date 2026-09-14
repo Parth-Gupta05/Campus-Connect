@@ -11,24 +11,25 @@ import PlacementCommentSection from '../components/PlacementCommentSection';
 import { formatDistanceToNow } from 'date-fns';
 
 import {
-  FiArrowLeft,
-  FiEdit2,
-  FiTrash2,
-  FiBriefcase,
-  FiMapPin,
-  FiGlobe,
-  FiCheckCircle,
-  FiXCircle,
-  FiAlertCircle,
-  FiClock,
-  FiLayers,
-  FiPaperclip,
-  FiDownload,
-  FiExternalLink,
-  FiCalendar,
-  FiEye,
-  FiShare2
-} from 'react-icons/fi';
+  ArrowLeft,
+  Edit2,
+  Trash2,
+  Briefcase,
+  MapPin,
+  Globe,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Clock,
+  Layers,
+  Paperclip,
+  Download,
+  ExternalLink,
+  Calendar,
+  Eye,
+  IndianRupee,
+  Share2
+} from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
 
@@ -42,7 +43,7 @@ export default function PlacementPostDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleting, setDeleting] = useState(false); // Lightbox modal
+  const [deleting, setDeleting] = useState(false);
 
   const fetchPost = async () => {
     try {
@@ -61,6 +62,19 @@ export default function PlacementPostDetail() {
   useEffect(() => {
     fetchPost();
   }, [id]);
+
+  useEffect(() => {
+    if (showDeleteModal || selectedImage) {
+      const originalBody = document.body.style.overflow;
+      const originalHtml = document.documentElement.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalBody;
+        document.documentElement.style.overflow = originalHtml;
+      };
+    }
+  }, [showDeleteModal, selectedImage]);
 
   const confirmDelete = async () => {
     try {
@@ -81,10 +95,10 @@ export default function PlacementPostDetail() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-surface">
+      <div className="flex h-screen bg-background-100">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-gray-1000 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
@@ -120,26 +134,26 @@ export default function PlacementPostDetail() {
     switch (outcome) {
       case 'selected':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-green-500/15 text-green-700 font-extrabold text-xs border border-green-500/30">
-            <FiCheckCircle className="text-sm" /> Selected / Offer
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium text-xs border border-emerald-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Selected / Offer
           </span>
         );
       case 'rejected':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-red-500/10 text-red-600 font-extrabold text-xs border border-red-500/20">
-            <FiXCircle className="text-sm" /> Rejected
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 font-medium text-xs border border-red-500/20">
+            <XCircle className="w-3.5 h-3.5" /> Rejected
           </span>
         );
       case 'waitlisted':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 text-amber-600 font-extrabold text-xs border border-amber-500/20">
-            <FiAlertCircle className="text-sm" /> Waitlisted
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium text-xs border border-amber-500/20">
+            <AlertCircle className="w-3.5 h-3.5" /> Waitlisted
           </span>
         );
       case 'in_process':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-500/10 text-blue-600 font-extrabold text-xs border border-blue-500/20">
-            <FiClock className="text-sm" /> In Process
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium text-xs border border-blue-500/20">
+            <Clock className="w-3.5 h-3.5" /> In Process
           </span>
         );
       default:
@@ -150,13 +164,13 @@ export default function PlacementPostDetail() {
   const getDifficultyBadge = (diff) => {
     switch (diff) {
       case 'easy':
-        return <span className="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 font-extrabold text-xs border border-emerald-500/20">Difficulty: Easy</span>;
+        return <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium text-xs border border-emerald-500/20">Difficulty: Easy</span>;
       case 'medium':
-        return <span className="px-3 py-1 rounded-xl bg-amber-500/10 text-amber-600 font-extrabold text-xs border border-amber-500/20">Difficulty: Medium</span>;
+        return <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium text-xs border border-amber-500/20">Difficulty: Medium</span>;
       case 'hard':
-        return <span className="px-3 py-1 rounded-xl bg-orange-500/10 text-orange-600 font-extrabold text-xs border border-orange-500/20">Difficulty: Hard</span>;
+        return <span className="px-3 py-1 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 font-medium text-xs border border-orange-500/20">Difficulty: Hard</span>;
       case 'very_hard':
-        return <span className="px-3 py-1 rounded-xl bg-rose-500/10 text-rose-600 font-extrabold text-xs border border-rose-500/20">Difficulty: Very Hard</span>;
+        return <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-medium text-xs border border-rose-500/20">Difficulty: Very Hard</span>;
       default:
         return null;
     }
@@ -169,42 +183,42 @@ export default function PlacementPostDetail() {
   const fallbackInitial = (post.company?.name || 'C').charAt(0).toUpperCase();
 
   return (
-    <div className="flex min-h-screen bg-background text-on-surface font-body-lg">
+    <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans">
       <Sidebar />
 
-      <main className="flex-1 overflow-y-auto bg-surface-container-lowest">
+      <main className="flex-1 min-w-0 bg-background-100">
         <Topbar />
 
-        <div className="max-w-6xl mx-auto p-4 sm:p-8 space-y-8">
+        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
           {/* Top Bar: Back & Author Controls */}
           <div className="flex items-center justify-between gap-4">
             <Link
               to="/placements"
-              className="inline-flex items-center gap-2 text-sm font-bold text-on-surface-variant hover:text-primary transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-medium text-gray-700 hover:text-gray-1000 transition-colors"
             >
-              <FiArrowLeft className="text-base" /> Back to Feed
+              <ArrowLeft className="w-4 h-4" /> Back to Feed
             </Link>
 
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-xs text-on-surface-variant font-mono mr-2">
-                <FiEye className="text-sm" /> {post.viewCount} views
+              <span className="flex items-center gap-1.5 text-xs text-gray-600 font-mono mr-2">
+                <Eye className="w-3.5 h-3.5" /> {post.viewCount} views
               </span>
 
               {(isAuthor || isAdmin) && (
                 <>
                   <Link
                     to={`/placements/edit/${post._id}`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border-light bg-surface-container-lowest text-on-surface hover:bg-surface-variant text-xs font-bold transition-all shadow-xs"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-400 bg-background-100 text-gray-1000 hover:bg-background-200 text-xs font-medium transition-all shadow-2xs"
                   >
-                    <FiEdit2 className="text-xs" /> Edit
+                    <Edit2 className="w-3.5 h-3.5" /> Edit
                   </Link>
 
                   <button
                     type="button"
                     onClick={() => setShowDeleteModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-error/30 text-error hover:bg-error/10 text-xs font-bold transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/10 text-xs font-medium transition-colors cursor-pointer"
                   >
-                    <FiTrash2 /> Delete
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
                   </button>
                 </>
               )}
@@ -212,11 +226,11 @@ export default function PlacementPostDetail() {
           </div>
 
           {/* Company & Header Banner */}
-          <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-8 shadow-xs">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-border-light">
+          <div className="bg-background-200 border border-gray-400 rounded-xl p-6 md:p-8 shadow-2xs">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-gray-400">
               <div className="flex items-center gap-4">
                 {/* Company Logo */}
-                <div className="w-16 h-16 rounded-2xl bg-surface-container-low border border-border-light p-2 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                <div className="w-16 h-16 rounded-xl bg-background-100 border border-gray-400 p-2 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
                   {post.company?.logoUrl ? (
                     <img
                       src={post.company.logoUrl}
@@ -231,7 +245,7 @@ export default function PlacementPostDetail() {
                   ) : null}
                   <div
                     style={{ display: post.company?.logoUrl ? 'none' : 'flex' }}
-                    className="w-full h-full rounded-xl bg-gradient-to-br from-primary-container to-secondary-container text-on-primary-container items-center justify-center font-bold text-xl"
+                    className="w-full h-full rounded-lg bg-gray-300 dark:bg-gray-800 text-gray-1000 items-center justify-center font-bold text-xl font-mono"
                   >
                     {fallbackInitial}
                   </div>
@@ -240,29 +254,29 @@ export default function PlacementPostDetail() {
                 {/* Company & Role Information */}
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-xl md:text-2xl font-extrabold text-on-surface">
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-1000 tracking-tight">
                       {post.company?.name}
                     </h1>
-                    <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 rounded-full bg-gray-300 dark:bg-gray-800 text-gray-1000 border border-gray-400 text-[11px] font-mono uppercase tracking-wider font-medium">
                       {getPostTypeLabel(post.postType)}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm text-on-surface-variant font-medium mt-1 flex-wrap">
-                    <span className="font-bold text-on-surface">{post.role}</span>
+                  <div className="flex items-center gap-3 text-xs sm:text-sm text-gray-700 font-medium mt-1.5 flex-wrap">
+                    <span className="font-semibold text-gray-1000">{post.role}</span>
                     {post.company?.domain && (
                       <a
                         href={`https://${post.company.domain}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center gap-1 text-xs text-primary hover:underline font-mono"
+                        className="flex items-center gap-1 text-xs text-gray-1000 hover:underline font-mono"
                       >
-                        <FiGlobe className="text-xs" /> {post.company.domain}
+                        <Globe className="w-3.5 h-3.5" /> {post.company.domain}
                       </a>
                     )}
                     {post.location && (
-                      <span className="flex items-center gap-1 text-xs">
-                        <FiMapPin className="text-xs" /> {post.location} ({post.workMode || 'Onsite'})
+                      <span className="flex items-center gap-1 text-xs text-gray-700">
+                        <MapPin className="w-3.5 h-3.5" /> {post.location} ({post.workMode || 'Onsite'})
                       </span>
                     )}
                   </div>
@@ -277,25 +291,25 @@ export default function PlacementPostDetail() {
             </div>
 
             {/* Structured Meta Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 text-xs">
               {formatSalary(post.salary) && (
-                <div className="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Compensation</div>
-                  <div className="text-sm font-extrabold text-emerald-800 mt-0.5">{formatSalary(post.salary)}</div>
+                <div className="p-3.5 rounded-lg bg-background-100 border border-gray-400">
+                  <div className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">Compensation</div>
+                  <div className="text-sm font-semibold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{formatSalary(post.salary)}</div>
                 </div>
               )}
 
               {post.numberOfRounds && (
-                <div className="p-3 rounded-2xl bg-surface-container-low border border-border-light">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Selection Process</div>
-                  <div className="text-sm font-extrabold text-on-surface mt-0.5">{post.numberOfRounds} Rounds Total</div>
+                <div className="p-3.5 rounded-lg bg-background-100 border border-gray-400">
+                  <div className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">Selection Process</div>
+                  <div className="text-sm font-semibold text-gray-1000 mt-1">{post.numberOfRounds} Rounds Total</div>
                 </div>
               )}
 
               {((post.assessmentTypes && post.assessmentTypes.length > 0) || post.assessmentType) && (
-                <div className="p-3 rounded-2xl bg-surface-container-low border border-border-light">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Assessment Rounds</div>
-                  <div className="text-sm font-extrabold text-on-surface mt-0.5 capitalize">
+                <div className="p-3.5 rounded-lg bg-background-100 border border-gray-400">
+                  <div className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">Assessment Rounds</div>
+                  <div className="text-sm font-semibold text-gray-1000 mt-1 capitalize">
                     {post.assessmentTypes?.length > 0
                       ? post.assessmentTypes.map((t) => t.replace(/_/g, ' ')).join(', ')
                       : post.assessmentType?.replace(/_/g, ' ')}
@@ -304,9 +318,9 @@ export default function PlacementPostDetail() {
               )}
 
               {((post.interviewTypes && post.interviewTypes.length > 0) || post.interviewType) && (
-                <div className="p-3 rounded-2xl bg-surface-container-low border border-border-light">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Interview Rounds</div>
-                  <div className="text-sm font-extrabold text-on-surface mt-0.5 capitalize">
+                <div className="p-3.5 rounded-lg bg-background-100 border border-gray-400">
+                  <div className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">Interview Rounds</div>
+                  <div className="text-sm font-semibold text-gray-1000 mt-1 capitalize">
                     {post.interviewTypes?.length > 0
                       ? post.interviewTypes.map((t) => t.replace(/_/g, ' ')).join(', ')
                       : post.interviewType?.replace(/_/g, ' ')}
@@ -315,9 +329,9 @@ export default function PlacementPostDetail() {
               )}
 
               {((post.interviewModes && post.interviewModes.length > 0) || post.interviewMode) && (
-                <div className="p-3 rounded-2xl bg-surface-container-low border border-border-light">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Evaluation Mode</div>
-                  <div className="text-sm font-extrabold text-on-surface mt-0.5 capitalize">
+                <div className="p-3.5 rounded-lg bg-background-100 border border-gray-400">
+                  <div className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">Evaluation Mode</div>
+                  <div className="text-sm font-semibold text-gray-1000 mt-1 capitalize">
                     {post.interviewModes?.length > 0
                       ? post.interviewModes.map((m) => m.replace(/_/g, ' ')).join(', ')
                       : post.interviewMode?.replace(/_/g, ' ')}
@@ -328,12 +342,12 @@ export default function PlacementPostDetail() {
           </div>
 
           {/* Author Card */}
-          <div className="flex items-center justify-between p-4 md:p-5 rounded-2xl bg-surface-container-lowest border border-border-light shadow-xs">
+          <div className="flex items-center justify-between p-4 md:p-5 rounded-xl bg-background-200 border border-gray-400 shadow-2xs">
             <Link
               to={post.author?._id ? `/profile` : '#'}
               className="flex items-center gap-3 group"
             >
-              <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden shadow-sm group-hover:ring-2 group-hover:ring-primary/40 transition-all">
+              <div className="w-10 h-10 rounded-full bg-background-100 border border-gray-400 text-gray-1000 flex items-center justify-center font-semibold text-xs shrink-0 overflow-hidden shadow-2xs group-hover:border-gray-600 transition-all">
                 {authorAvatar ? (
                   <img src={authorAvatar} alt={authorName} className="w-full h-full object-cover" />
                 ) : (
@@ -341,10 +355,10 @@ export default function PlacementPostDetail() {
                 )}
               </div>
               <div>
-                <div className="font-extrabold text-sm text-on-surface group-hover:text-primary transition-colors flex items-center gap-2">
+                <div className="font-semibold text-xs sm:text-sm text-gray-1000 group-hover:text-gray-700 transition-colors flex items-center gap-2">
                   {authorName}
                 </div>
-                <div className="text-xs text-on-surface-variant">
+                <div className="text-xs text-gray-600 font-sans">
                   {authorBranch} {authorGrad ? `Class of ${authorGrad}` : ''}
                 </div>
               </div>
@@ -356,10 +370,10 @@ export default function PlacementPostDetail() {
                   href={post.author.linkedInUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl bg-surface-container-low hover:bg-surface-variant text-on-surface-variant hover:text-[#0a66c2] transition-colors"
+                  className="p-2 rounded-lg bg-background-100 border border-gray-400 hover:bg-background-200 text-gray-700 hover:text-blue-600 transition-colors"
                   title="LinkedIn"
                 >
-                  <FaLinkedin className="text-base" />
+                  <FaLinkedin className="text-sm" />
                 </a>
               )}
               {post.author?.githubUsername && (
@@ -367,10 +381,10 @@ export default function PlacementPostDetail() {
                   href={`https://github.com/${post.author.githubUsername}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl bg-surface-container-low hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
+                  className="p-2 rounded-lg bg-background-100 border border-gray-400 hover:bg-background-200 text-gray-700 hover:text-gray-1000 transition-colors"
                   title="GitHub"
                 >
-                  <FaGithub className="text-base" />
+                  <FaGithub className="text-sm" />
                 </a>
               )}
               {post.author?.leetcodeUsername && (
@@ -378,32 +392,34 @@ export default function PlacementPostDetail() {
                   href={`https://leetcode.com/u/${post.author.leetcodeUsername}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl bg-surface-container-low hover:bg-surface-variant text-on-surface-variant hover:text-[#ffa116] transition-colors"
+                  className="p-2 rounded-lg bg-background-100 border border-gray-400 hover:bg-background-200 text-gray-700 hover:text-amber-500 transition-colors"
                   title="LeetCode"
                 >
-                  <SiLeetcode className="text-base" />
+                  <SiLeetcode className="text-sm" />
                 </a>
               )}
             </div>
           </div>
 
           {/* Main Experience Body (Rich Content) */}
-          <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-10 shadow-xs space-y-6">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-on-surface leading-snug">
+          <div className="bg-background-200 border border-gray-400 rounded-xl p-6 md:p-8 shadow-2xs space-y-6">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-1000 tracking-tight leading-snug">
               {post.title}
             </h1>
 
-            <div className="flex items-center gap-2 text-xs text-on-surface-variant font-mono pb-4 border-b border-border-light">
-              <FiCalendar /> Posted {post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : ''}
+            <div className="flex items-center gap-2 text-xs text-gray-600 font-mono pb-4 border-b border-gray-400">
+              <Calendar className="w-3.5 h-3.5" /> Posted {post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : ''}
             </div>
 
             {/* Rendered HTML */}
-            <RichContentRenderer htmlContent={post.content} />
+            <div className="text-gray-1000 text-sm leading-relaxed">
+              <RichContentRenderer htmlContent={post.content} />
+            </div>
 
             {/* Gallery Images (Click to open Lightbox) */}
             {post.images && post.images.length > 0 && (
-              <div className="pt-6 border-t border-border-light space-y-3">
-                <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider">
+              <div className="pt-6 border-t border-gray-400 space-y-3">
+                <h3 className="text-xs font-mono font-semibold text-gray-1000 uppercase tracking-wider">
                   Attached Screenshots / Whiteboards ({post.images.length})
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -411,10 +427,10 @@ export default function PlacementPostDetail() {
                     <div
                       key={idx}
                       onClick={() => setSelectedImage(img)}
-                      className="group relative aspect-video rounded-xl overflow-hidden border border-border-light shadow-xs cursor-pointer hover:border-primary transition-all"
+                      className="group relative aspect-video rounded-lg overflow-hidden border border-gray-400 shadow-2xs cursor-pointer hover:border-gray-1000 transition-all bg-background-100"
                     >
                       <img src={img} alt="Screenshot" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity">
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-medium transition-opacity">
                         View Full
                       </div>
                     </div>
@@ -425,33 +441,33 @@ export default function PlacementPostDetail() {
 
             {/* Document Download Card */}
             {post.attachmentUrl && (
-              <div className="pt-4 border-t border-border-light">
+              <div className="pt-4 border-t border-gray-400">
                 <a
                   href={post.attachmentUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-between p-4 rounded-2xl bg-surface-container-low border border-border-light hover:border-primary transition-all group"
+                  className="flex items-center justify-between p-4 rounded-lg bg-background-100 border border-gray-400 hover:border-gray-600 transition-all group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xl shrink-0">
-                      <FiPaperclip />
+                    <div className="w-9 h-9 rounded-lg bg-gray-300 dark:bg-gray-800 text-gray-1000 border border-gray-400 flex items-center justify-center text-base shrink-0">
+                      <Paperclip className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="font-bold text-sm text-on-surface group-hover:text-primary transition-colors">
+                      <div className="font-semibold text-xs sm:text-sm text-gray-1000 group-hover:text-gray-700 transition-colors">
                         {post.attachmentName || 'Attached Document'}
                       </div>
-                      <div className="text-xs text-on-surface-variant">Click to view or download file</div>
+                      <div className="text-[11px] text-gray-600 font-sans">Click to view or download file</div>
                     </div>
                   </div>
-                  <FiDownload className="text-lg text-on-surface-variant group-hover:text-primary transition-colors" />
+                  <Download className="w-4 h-4 text-gray-600 group-hover:text-gray-1000 transition-colors" />
                 </a>
               </div>
             )}
 
             {/* External Links */}
             {post.links && post.links.length > 0 && (
-              <div className="pt-4 border-t border-border-light space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+              <div className="pt-4 border-t border-gray-400 space-y-2">
+                <h4 className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">
                   Referenced Problem &amp; Preparation Links
                 </h4>
                 <div className="space-y-1.5">
@@ -461,9 +477,9 @@ export default function PlacementPostDetail() {
                       href={link}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2 text-xs text-primary font-mono hover:underline truncate"
+                      className="flex items-center gap-2 text-xs text-blue-500 hover:underline font-mono truncate"
                     >
-                      <FiExternalLink className="text-xs shrink-0" />
+                      <ExternalLink className="w-3 h-3 shrink-0" />
                       <span className="truncate">{link}</span>
                     </a>
                   ))}
@@ -473,11 +489,11 @@ export default function PlacementPostDetail() {
 
             {/* Tags */}
             {post.tags && post.tags.length > 0 && (
-              <div className="pt-4 border-t border-border-light flex items-center gap-2 flex-wrap">
+              <div className="pt-4 border-t border-gray-400 flex items-center gap-2 flex-wrap">
                 {post.tags.map((t, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 rounded-lg bg-surface-variant text-on-surface font-semibold text-xs"
+                    className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-700 font-mono text-xs"
                   >
                     #{t}
                   </span>
@@ -498,7 +514,7 @@ export default function PlacementPostDetail() {
           />
 
           {/* Threaded Discussion Section */}
-          <div className="bg-surface-container-lowest border border-border-light rounded-3xl p-6 md:p-8 shadow-xs">
+          <div className="bg-background-200 border border-gray-400 rounded-xl p-6 md:p-8 shadow-2xs">
             <PlacementCommentSection
               postId={post._id}
               postAuthorId={post.author?._id || post.author}
@@ -512,29 +528,29 @@ export default function PlacementPostDetail() {
       {showDeleteModal && (
         <div
           onClick={() => setShowDeleteModal(false)}
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[160] flex items-center justify-center p-4 animate-in fade-in duration-150"
+          className="fixed inset-0 bg-black/70 backdrop-blur-md z-[160] flex items-center justify-center p-4 animate-in fade-in duration-150"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-surface-container-lowest border border-border-light rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 text-center"
+            className="bg-background-100 border border-gray-400 rounded-xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 text-center text-gray-1000"
           >
-            <div className="w-12 h-12 rounded-2xl bg-error/10 text-error flex items-center justify-center text-xl mx-auto shadow-2xs">
-              <FiTrash2 />
+            <div className="w-12 h-12 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center justify-center text-xl mx-auto shadow-2xs">
+              <Trash2 className="w-5 h-5" />
             </div>
 
             <div className="space-y-1.5">
-              <h3 className="font-bold text-base text-on-surface">Delete Experience Post?</h3>
-              <p className="text-xs text-on-surface-variant leading-relaxed">
+              <h3 className="font-semibold text-base text-gray-1000 tracking-tight">Delete Experience Post?</h3>
+              <p className="text-xs text-gray-700 font-sans leading-relaxed">
                 Are you sure you want to delete this placement experience post and all associated discussion comments? This action cannot be undone.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-2.5 pt-2">
               <button
                 type="button"
                 disabled={deleting}
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-border-light text-xs font-bold text-on-surface hover:bg-surface-variant transition-colors cursor-pointer"
+                className="flex-1 py-2 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -542,13 +558,13 @@ export default function PlacementPostDetail() {
                 type="button"
                 disabled={deleting}
                 onClick={confirmDelete}
-                className="flex-1 py-2.5 rounded-xl bg-error text-white hover:bg-error/90 text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="flex-1 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 {deleting ? (
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <FiTrash2 className="text-xs" /> Delete
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
                   </>
                 )}
               </button>
@@ -556,6 +572,7 @@ export default function PlacementPostDetail() {
           </div>
         </div>
       )}
+
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}
@@ -564,7 +581,7 @@ export default function PlacementPostDetail() {
           <img
             src={selectedImage}
             alt="Fullscreen preview"
-            className="max-w-full max-h-[90vh] rounded-2xl object-contain shadow-2xl"
+            className="max-w-full max-h-[90vh] rounded-xl object-contain shadow-2xl border border-gray-700"
           />
         </div>
       )}

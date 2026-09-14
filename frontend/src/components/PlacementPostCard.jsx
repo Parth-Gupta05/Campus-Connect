@@ -3,17 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import ReactionButtons from './ReactionButtons';
 import {
-  FiBriefcase,
-  FiAward,
-  FiPaperclip,
-  FiExternalLink,
-  FiClock,
-  FiMapPin,
-  FiCheckCircle,
-  FiXCircle,
-  FiAlertCircle
-} from 'react-icons/fi';
-import { FaRupeeSign } from 'react-icons/fa';
+  Building2,
+  MapPin,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Clock,
+  Paperclip,
+  IndianRupee
+} from 'lucide-react';
 
 export default function PlacementPostCard({ post }) {
   const navigate = useNavigate();
@@ -28,12 +26,12 @@ export default function PlacementPostCard({ post }) {
 
   const getPostTypeLabel = (type) => {
     switch (type) {
-      case 'interview_experience': return 'Interview Experience';
+      case 'interview_experience': return 'Interview';
       case 'assessment_experience': return 'Online Assessment';
       case 'offer_received': return 'Offer Received';
       case 'rejection_experience': return 'Rejection & Learnings';
-      case 'referral_share': return 'Referral Share';
-      case 'tips_and_advice': return 'Prep Guide / Tips';
+      case 'referral_share': return 'Referral';
+      case 'tips_and_advice': return 'Prep Guide';
       default: return 'Experience';
     }
   };
@@ -41,13 +39,13 @@ export default function PlacementPostCard({ post }) {
   const getDifficultyBadge = (diff) => {
     switch (diff) {
       case 'easy':
-        return <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 font-bold text-[11px] border border-emerald-500/20">Easy</span>;
+        return <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] border border-emerald-500/20">Easy</span>;
       case 'medium':
-        return <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 font-bold text-[11px] border border-amber-500/20">Medium</span>;
+        return <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[10px] border border-amber-500/20">Medium</span>;
       case 'hard':
-        return <span className="px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-600 font-bold text-[11px] border border-orange-500/20">Hard</span>;
+        return <span className="px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 font-mono text-[10px] border border-orange-500/20">Hard</span>;
       case 'very_hard':
-        return <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 font-bold text-[11px] border border-rose-500/20">Very Hard</span>;
+        return <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono text-[10px] border border-rose-500/20">Very Hard</span>;
       default:
         return null;
     }
@@ -57,26 +55,26 @@ export default function PlacementPostCard({ post }) {
     switch (outcome) {
       case 'selected':
         return (
-          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-green-500/15 text-green-700 font-bold text-[11px] border border-green-500/30">
-            <FiCheckCircle className="text-xs" /> Selected
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-medium border border-emerald-500/20">
+            <CheckCircle2 className="w-3 h-3" /> Selected
           </span>
         );
       case 'rejected':
         return (
-          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-red-500/10 text-red-600 font-bold text-[11px] border border-red-500/20">
-            <FiXCircle className="text-xs" /> Rejected
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 font-mono text-[10px] font-medium border border-red-500/20">
+            <XCircle className="w-3 h-3" /> Rejected
           </span>
         );
       case 'waitlisted':
         return (
-          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 font-bold text-[11px] border border-amber-500/20">
-            <FiAlertCircle className="text-xs" /> Waitlisted
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono text-[10px] font-medium border border-amber-500/20">
+            <AlertCircle className="w-3 h-3" /> Waitlisted
           </span>
         );
       case 'in_process':
         return (
-          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 font-bold text-[11px] border border-blue-500/20">
-            <FiClock className="text-xs" /> In Process
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono text-[10px] font-medium border border-blue-500/20">
+            <Clock className="w-3 h-3" /> In Process
           </span>
         );
       default:
@@ -85,7 +83,7 @@ export default function PlacementPostCard({ post }) {
   };
 
   // Helper to extract plain text snippet from rich HTML
-  const getPlainTextSnippet = (html, length = 220) => {
+  const getPlainTextSnippet = (html, length = 200) => {
     if (!html) return '';
     const tmp = document.createElement('DIV');
     tmp.innerHTML = html;
@@ -116,13 +114,13 @@ export default function PlacementPostCard({ post }) {
   return (
     <article
       onClick={handleCardClick}
-      className="group relative bg-surface-container-lowest border border-border-light hover:border-primary/40 rounded-2xl p-5 md:p-6 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
+      className="group relative bg-background-100 border border-gray-400 hover:border-gray-900/40 rounded-xl p-5 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer text-gray-1000"
     >
       {/* Header: Company Info + Outcome/Difficulty */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-center gap-3 min-w-0">
           {/* Company Logo */}
-          <div className="w-11 h-11 rounded-xl bg-surface-container-low border border-border-light p-1.5 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
+          <div className="w-10 h-10 rounded-lg bg-background-200 border border-gray-400 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
             {post.company?.logoUrl ? (
               <img
                 src={post.company.logoUrl}
@@ -137,7 +135,7 @@ export default function PlacementPostCard({ post }) {
             ) : null}
             <div
               style={{ display: post.company?.logoUrl ? 'none' : 'flex' }}
-              className="w-full h-full rounded-lg bg-gradient-to-br from-primary-container to-secondary-container text-on-primary-container items-center justify-center font-bold text-base"
+              className="w-full h-full rounded bg-background-100 text-gray-900 items-center justify-center font-bold text-sm"
             >
               {fallbackInitial}
             </div>
@@ -146,18 +144,18 @@ export default function PlacementPostCard({ post }) {
           {/* Company & Role */}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-base text-on-surface group-hover:text-primary transition-colors truncate">
+              <h3 className="font-semibold text-sm text-gray-1000 group-hover:text-gray-900 transition-colors truncate">
                 {post.company?.name}
               </h3>
-              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-gray-600 bg-background-200 border border-gray-400 uppercase tracking-wider">
                 {getPostTypeLabel(post.postType)}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium mt-0.5 flex-wrap">
-              <span className="font-semibold text-on-surface">{post.role}</span>
+            <div className="flex items-center gap-1.5 text-xs text-gray-700 font-sans mt-0.5 flex-wrap">
+              <span className="font-medium text-gray-900">{post.role}</span>
               {post.location && (
-                <span className="flex items-center gap-0.5 text-[11px]">
-                  • <FiMapPin className="text-[10px]" /> {post.location}
+                <span className="flex items-center gap-0.5 text-[11px] text-gray-600">
+                  • <MapPin className="w-3 h-3 text-gray-500" /> {post.location}
                 </span>
               )}
             </div>
@@ -172,96 +170,98 @@ export default function PlacementPostCard({ post }) {
       </div>
 
       {/* Meta Pills (Salary, Rounds, Mode) */}
-      <div className="flex items-center gap-2 flex-wrap mb-3 text-xs">
+      <div className="flex items-center gap-1.5 flex-wrap mb-3 text-xs">
         {formatSalary(post.salary) && (
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 font-bold border border-emerald-500/20">
-            <FaRupeeSign className="text-[10px]" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono text-xs font-medium border border-emerald-500/20">
+            <IndianRupee className="w-3 h-3" />
             {formatSalary(post.salary)}
           </span>
         )}
 
         {post.numberOfRounds && (
-          <span className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-semibold border border-border-light">
+          <span className="px-2 py-0.5 rounded bg-background-200 border border-gray-400 text-gray-700 font-mono text-[11px]">
             {post.numberOfRounds} {post.numberOfRounds === 1 ? 'Round' : 'Rounds'}
           </span>
         )}
 
         {post.assessmentTypes?.length > 0 ? (
           post.assessmentTypes.slice(0, 2).map((t, idx) => (
-            <span key={`a-${idx}`} className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
+            <span key={`a-${idx}`} className="px-2 py-0.5 rounded bg-background-200 border border-gray-400 text-gray-700 font-sans text-[11px] capitalize">
               {t.replace(/_/g, ' ')}
             </span>
           ))
         ) : post.assessmentType ? (
-          <span className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
+          <span className="px-2 py-0.5 rounded bg-background-200 border border-gray-400 text-gray-700 font-sans text-[11px] capitalize">
             {post.assessmentType.replace(/_/g, ' ')}
           </span>
         ) : null}
 
         {post.interviewTypes?.length > 0 ? (
           post.interviewTypes.slice(0, 2).map((t, idx) => (
-            <span key={`i-${idx}`} className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
+            <span key={`i-${idx}`} className="px-2 py-0.5 rounded bg-background-200 border border-gray-400 text-gray-700 font-sans text-[11px] capitalize">
               {t.replace(/_/g, ' ')}
             </span>
           ))
         ) : post.interviewType ? (
-          <span className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
+          <span className="px-2 py-0.5 rounded bg-background-200 border border-gray-400 text-gray-700 font-sans text-[11px] capitalize">
             {post.interviewType.replace(/_/g, ' ')}
           </span>
         ) : null}
 
         {post.jobType && (
-          <span className="px-2.5 py-1 rounded-lg bg-surface-container-low text-on-surface-variant font-medium border border-border-light capitalize">
+          <span className="px-2 py-0.5 rounded bg-background-200 border border-gray-400 text-gray-700 font-sans text-[11px] capitalize">
             {post.jobType.replace('_', ' ')}
           </span>
         )}
       </div>
 
       {/* Post Title */}
-      <h2 className="text-base md:text-lg font-bold text-on-surface mb-2 leading-snug group-hover:text-primary transition-colors">
+      <h2 className="text-sm sm:text-base font-semibold text-gray-1000 mb-1.5 leading-snug group-hover:text-gray-900 transition-colors">
         {post.title}
       </h2>
 
       {/* Content Preview Snippet */}
-      <p className="text-sm text-on-surface-variant leading-relaxed mb-4 line-clamp-3">
+      <p className="text-xs sm:text-[13px] text-gray-700 font-sans leading-relaxed mb-3 line-clamp-2 sm:line-clamp-3">
         {getPlainTextSnippet(post.content)}
       </p>
 
       {/* Images Preview / Attachment Badge */}
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        {post.images && post.images.length > 0 && (
-          <div className="flex items-center gap-1.5">
-            {post.images.slice(0, 3).map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                alt="preview"
-                className="w-12 h-12 rounded-lg object-cover border border-border-light shadow-2xs"
-              />
-            ))}
-            {post.images.length > 3 && (
-              <span className="w-12 h-12 rounded-lg bg-surface-variant text-on-surface-variant font-bold text-xs flex items-center justify-center border border-border-light">
-                +{post.images.length - 3}
-              </span>
-            )}
-          </div>
-        )}
+      {(post.images?.length > 0 || post.attachmentUrl) && (
+        <div className="flex items-center gap-2.5 mb-3 flex-wrap">
+          {post.images && post.images.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              {post.images.slice(0, 3).map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt="preview"
+                  className="w-10 h-10 rounded-lg object-cover border border-gray-400 shadow-2xs"
+                />
+              ))}
+              {post.images.length > 3 && (
+                <span className="w-10 h-10 rounded-lg bg-background-200 border border-gray-400 text-gray-700 font-mono text-xs flex items-center justify-center">
+                  +{post.images.length - 3}
+                </span>
+              )}
+            </div>
+          )}
 
-        {post.attachmentUrl && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low border border-border-light text-xs font-semibold text-on-surface-variant">
-            <FiPaperclip className="text-primary text-sm" />
-            <span className="truncate max-w-[140px]">{post.attachmentName || 'Attachment'}</span>
-          </div>
-        )}
-      </div>
+          {post.attachmentUrl && (
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-background-200 border border-gray-400 text-[11px] font-mono text-gray-700">
+              <Paperclip className="w-3 h-3 text-gray-600" />
+              <span className="truncate max-w-[130px]">{post.attachmentName || 'Attachment'}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Tags */}
       {post.tags && post.tags.length > 0 && (
-        <div className="flex items-center gap-1.5 flex-wrap mb-4">
-          {post.tags.slice(0, 5).map((t, idx) => (
+        <div className="flex items-center gap-1.5 flex-wrap mb-3">
+          {post.tags.slice(0, 4).map((t, idx) => (
             <span
               key={idx}
-              className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-surface-variant/60 text-on-surface-variant hover:text-primary transition-colors"
+              className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-background-200 text-gray-700 border border-gray-400"
             >
               #{t}
             </span>
@@ -270,30 +270,30 @@ export default function PlacementPostCard({ post }) {
       )}
 
       {/* Author Bar */}
-      <div className="flex items-center justify-between gap-2 pb-3 mb-1 text-xs text-on-surface-variant">
+      <div className="flex items-center justify-between gap-2 pb-2.5 mb-1 text-xs text-gray-700">
         <Link
           to={post.author?._id ? `/profile` : '#'}
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-2 group/author hover:text-primary transition-colors"
+          className="flex items-center gap-2 group/author hover:text-gray-1000 transition-colors"
         >
-          <div className="w-6 h-6 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-[10px] shrink-0 overflow-hidden shadow-2xs">
+          <div className="w-5 h-5 rounded-full bg-background-200 border border-gray-400 text-gray-900 flex items-center justify-center font-bold text-[9px] shrink-0 overflow-hidden shadow-2xs">
             {authorAvatar ? (
               <img src={authorAvatar} alt={authorName} className="w-full h-full object-cover" />
             ) : (
               authorName.charAt(0).toUpperCase()
             )}
           </div>
-          <span className="font-bold text-on-surface group-hover/author:text-primary transition-colors">
+          <span className="font-medium text-gray-900 group-hover/author:underline">
             {authorName}
           </span>
           {(authorBranch || authorGrad) && (
-            <span className="text-[11px] text-on-surface-variant">
+            <span className="text-[11px] text-gray-600 font-sans">
               • {authorBranch} {authorGrad ? `'${authorGrad.slice(-2)}` : ''}
             </span>
           )}
         </Link>
 
-        <span className="text-[11px] text-on-surface-variant/70 font-mono">
+        <span className="text-[11px] text-gray-600 font-mono">
           {post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : ''}
         </span>
       </div>

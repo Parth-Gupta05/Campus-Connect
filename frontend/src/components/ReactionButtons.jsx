@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { FiThumbsUp, FiZap, FiAward, FiStar, FiBookmark, FiShare2, FiMessageSquare } from 'react-icons/fi';
+import { Award, Zap, Sparkles, ThumbsUp, Bookmark, Share2, MessageSquare } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
 export default function ReactionButtons({
@@ -25,30 +25,30 @@ export default function ReactionButtons({
     {
       id: 'helpful',
       label: 'Helpful',
-      icon: FiAward,
-      activeColor: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/30',
-      hoverColor: 'hover:text-emerald-600 hover:bg-emerald-500/5'
+      icon: Award,
+      accentText: 'text-emerald-600 dark:text-emerald-400',
+      activeBg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
     },
     {
       id: 'insightful',
       label: 'Insightful',
-      icon: FiZap,
-      activeColor: 'text-amber-600 bg-amber-500/10 border-amber-500/30',
-      hoverColor: 'hover:text-amber-600 hover:bg-amber-500/5'
+      icon: Zap,
+      accentText: 'text-amber-600 dark:text-amber-400',
+      activeBg: 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
     },
     {
       id: 'celebrate',
       label: 'Celebrate',
-      icon: FiStar,
-      activeColor: 'text-purple-600 bg-purple-500/10 border-purple-500/30',
-      hoverColor: 'hover:text-purple-600 hover:bg-purple-500/5'
+      icon: Sparkles,
+      accentText: 'text-purple-600 dark:text-purple-400',
+      activeBg: 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400'
     },
     {
       id: 'like',
       label: 'Like',
-      icon: FiThumbsUp,
-      activeColor: 'text-primary bg-primary/10 border-primary/30',
-      hoverColor: 'hover:text-primary hover:bg-primary/5'
+      icon: ThumbsUp,
+      accentText: 'text-blue-600 dark:text-blue-400',
+      activeBg: 'bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400'
     }
   ];
 
@@ -94,7 +94,7 @@ export default function ReactionButtons({
   if (compact) {
     // Compact View for Feed Cards
     return (
-      <div className="flex items-center justify-between pt-3 border-t border-border-light text-on-surface-variant text-xs">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-400 text-gray-700 text-xs">
         <div className="flex items-center gap-1.5 flex-wrap">
           {reactionConfig.map((r) => {
             const Icon = r.icon;
@@ -108,21 +108,21 @@ export default function ReactionButtons({
                   e.stopPropagation();
                   handleToggleReaction(r.id);
                 }}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                className={`h-7 px-2.5 rounded-md border text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
                   isActive
-                    ? r.activeColor
-                    : `border-transparent bg-surface-container-low text-on-surface-variant ${r.hoverColor}`
+                    ? `${r.activeBg} font-semibold`
+                    : 'border-gray-400 bg-background-100 text-gray-700 hover:text-gray-1000 hover:bg-gray-200'
                 }`}
                 title={r.label}
               >
-                <Icon className={`text-sm ${isActive ? 'scale-110' : ''}`} />
-                {count > 0 && <span>{count}</span>}
+                <Icon className={`w-3.5 h-3.5 ${isActive ? r.accentText : 'text-gray-500'}`} strokeWidth={1.5} />
+                {count > 0 && <span className="font-mono text-[11px]">{count}</span>}
               </button>
             );
           })}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {onCommentClick && (
             <button
               type="button"
@@ -130,10 +130,11 @@ export default function ReactionButtons({
                 e.stopPropagation();
                 onCommentClick();
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant font-medium transition-colors"
+              className="h-7 px-2 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-700 hover:text-gray-1000 hover:bg-gray-200 transition-colors shadow-2xs flex items-center gap-1 cursor-pointer"
+              title="Comments"
             >
-              <FiMessageSquare className="text-sm" />
-              <span>{commentCount}</span>
+              <MessageSquare className="w-3.5 h-3.5 text-gray-500" strokeWidth={1.5} />
+              <span className="font-mono text-[11px]">{commentCount}</span>
             </button>
           )}
 
@@ -143,14 +144,14 @@ export default function ReactionButtons({
               e.stopPropagation();
               handleToggleBookmark();
             }}
-            className={`p-1.5 rounded-lg transition-colors ${
+            className={`h-7 w-7 rounded-md border transition-all flex items-center justify-center cursor-pointer shadow-2xs ${
               isBookmarked
-                ? 'text-primary bg-primary/10 font-bold'
-                : 'hover:bg-surface-variant text-on-surface-variant hover:text-on-surface'
+                ? 'border-gray-1000 bg-gray-1000 text-background-100'
+                : 'border-gray-400 bg-background-100 text-gray-600 hover:text-gray-1000 hover:bg-gray-200'
             }`}
-            title={isBookmarked ? 'Saved' : 'Save post'}
+            title={isBookmarked ? 'Saved to bookmarks' : 'Save post'}
           >
-            <FiBookmark className={`text-sm ${isBookmarked ? 'fill-current' : ''}`} />
+            <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-current' : ''}`} strokeWidth={1.5} />
           </button>
 
           <button
@@ -159,10 +160,10 @@ export default function ReactionButtons({
               e.stopPropagation();
               handleShare();
             }}
-            className="p-1.5 rounded-lg hover:bg-surface-variant text-on-surface-variant hover:text-on-surface transition-colors"
-            title="Share"
+            className="h-7 w-7 rounded-md border border-gray-400 bg-background-100 text-gray-600 hover:text-gray-1000 hover:bg-gray-200 transition-colors shadow-2xs flex items-center justify-center cursor-pointer"
+            title="Copy share link"
           >
-            <FiShare2 className="text-sm" />
+            <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
           </button>
         </div>
       </div>
@@ -171,10 +172,10 @@ export default function ReactionButtons({
 
   // Expanded View for Post Detail
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-surface-container-low border border-border-light">
+    <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-background-200 border border-gray-400 text-gray-1000">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant mr-1">
-          React:
+        <span className="text-[10px] font-mono uppercase tracking-wider text-gray-600 mr-1">
+          Reactions:
         </span>
         {reactionConfig.map((r) => {
           const Icon = r.icon;
@@ -185,16 +186,18 @@ export default function ReactionButtons({
               key={r.id}
               type="button"
               onClick={() => handleToggleReaction(r.id)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-sm font-bold transition-all shadow-sm ${
+              className={`h-8 px-3 rounded-md border text-xs font-medium transition-all shadow-2xs flex items-center gap-2 cursor-pointer ${
                 isActive
-                  ? r.activeColor
-                  : `border-border-light bg-surface-container-lowest text-on-surface ${r.hoverColor}`
+                  ? `${r.activeBg} font-semibold`
+                  : 'border-gray-400 bg-background-100 text-gray-800 hover:text-gray-1000 hover:bg-gray-200'
               }`}
             >
-              <Icon className={`text-base ${isActive ? 'scale-110' : ''}`} />
+              <Icon className={`w-3.5 h-3.5 ${isActive ? r.accentText : 'text-gray-500'}`} strokeWidth={1.5} />
               <span>{r.label}</span>
               {count > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-surface-variant text-xs font-mono">
+                <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono border ${
+                  isActive ? 'bg-background-100/40 border-current' : 'bg-background-200 border-gray-400 text-gray-700'
+                }`}>
                   {count}
                 </span>
               )}
@@ -203,26 +206,26 @@ export default function ReactionButtons({
         })}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={handleToggleBookmark}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all shadow-sm ${
+          className={`h-8 px-3.5 rounded-md border text-xs font-medium transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer ${
             isBookmarked
-              ? 'bg-primary text-on-primary border-primary'
-              : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
+              ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold'
+              : 'border-gray-400 bg-background-100 text-gray-800 hover:text-gray-1000 hover:bg-gray-200'
           }`}
         >
-          <FiBookmark className={`text-base ${isBookmarked ? 'fill-current' : ''}`} />
+          <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-current' : ''}`} strokeWidth={1.5} />
           <span>{isBookmarked ? 'Saved' : 'Save'}</span>
         </button>
 
         <button
           type="button"
           onClick={handleShare}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border-light bg-surface-container-lowest text-on-surface hover:bg-surface-variant text-sm font-bold transition-all shadow-sm"
+          className="h-8 px-3.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
         >
-          <FiShare2 className="text-base" />
+          <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
           <span>Share</span>
         </button>
       </div>

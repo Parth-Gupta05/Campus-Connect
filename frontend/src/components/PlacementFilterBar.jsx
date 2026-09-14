@@ -1,26 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  FiSearch,
-  FiFilter,
-  FiX,
-  FiChevronDown,
-  FiTrendingUp,
-  FiClock,
-  FiMessageSquare,
-  FiBookmark,
-  FiUserCheck
-} from 'react-icons/fi';
-import { FaRupeeSign } from 'react-icons/fa';
+  Search,
+  X,
+  ChevronDown,
+  Clock,
+  TrendingUp,
+  MessageSquare,
+  IndianRupee,
+  RotateCcw,
+  SlidersHorizontal,
+  Check
+} from 'lucide-react';
 
 export default function PlacementFilterBar({
   filters,
   onChange,
   onReset,
   meta = {},
-  isLoggedIn = false
+  totalCount = 0
 }) {
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const dropdownRef = useRef(null);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
+  const filterRef = useRef(null);
+  const companyRef = useRef(null);
 
   // Local debounced search query state
   const [localSearch, setLocalSearch] = useState(filters.search || '');
@@ -40,11 +42,14 @@ export default function PlacementFilterBar({
     return () => clearTimeout(timer);
   }, [localSearch]);
 
-  // Close dropdown on click outside
+  // Close dropdowns on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setActiveDropdown(null);
+      if (filterRef.current && !filterRef.current.contains(e.target)) {
+        setIsFilterPopoverOpen(false);
+      }
+      if (companyRef.current && !companyRef.current.contains(e.target)) {
+        setIsCompanyDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -55,15 +60,19 @@ export default function PlacementFilterBar({
     onChange({ ...filters, [key]: value, page: 1 });
   };
 
-  const handleToggle = (key) => {
-    setActiveDropdown(activeDropdown === key ? null : key);
-  };
+  // Count active criteria (excluding sort, search, page, limit, bookmarkedOnly, myPostsOnly which are views)
+  const activeFilterKeys = [
+    'company',
+    'outcome',
+    'difficulty',
+    'postType',
+    'jobType',
+    'assessmentType',
+    'interviewType'
+  ];
 
-  // Count active filters (excluding default sort and page)
-  const activeCount = Object.keys(filters).filter((k) => {
-    if (k === 'sort' || k === 'page' || k === 'limit' || !filters[k]) return false;
-    return true;
-  }).length;
+  const activeFilters = activeFilterKeys.filter((k) => Boolean(filters[k]));
+  const activeCount = activeFilters.length;
 
   const postTypes = [
     { value: '', label: 'All Post Types' },
@@ -76,7 +85,6 @@ export default function PlacementFilterBar({
   ];
 
   const difficulties = [
-    { value: '', label: 'All Difficulties' },
     { value: 'easy', label: 'Easy' },
     { value: 'medium', label: 'Medium' },
     { value: 'hard', label: 'Hard' },
@@ -84,29 +92,19 @@ export default function PlacementFilterBar({
   ];
 
   const outcomes = [
-    { value: '', label: 'All Outcomes' },
-    { value: 'selected', label: 'Selected / Offer' },
+    { value: 'selected', label: 'Selected' },
     { value: 'rejected', label: 'Rejected' },
     { value: 'waitlisted', label: 'Waitlisted' },
     { value: 'in_process', label: 'In Process' }
   ];
 
   const jobTypes = [
-    { value: '', label: 'All Job Types' },
     { value: 'full_time', label: 'Full-Time' },
     { value: 'internship', label: 'Internship' },
     { value: 'contract', label: 'Contract' }
   ];
 
-  const workModes = [
-    { value: '', label: 'All Work Modes' },
-    { value: 'onsite', label: 'Onsite' },
-    { value: 'remote', label: 'Remote' },
-    { value: 'hybrid', label: 'Hybrid' }
-  ];
-
   const assessmentTypes = [
-    { value: '', label: 'All Assessment Types' },
     { value: 'coding_round', label: 'Coding Round' },
     { value: 'online_test', label: 'Online Test' },
     { value: 'mcq', label: 'MCQs' },
@@ -114,11 +112,10 @@ export default function PlacementFilterBar({
     { value: 'case_study', label: 'Case Study' },
     { value: 'group_discussion', label: 'Group Discussion' },
     { value: 'hackathon', label: 'Hackathon' },
-    { value: 'take_home_assignment', label: 'Take Home Assignment' }
+    { value: 'take_home_assignment', label: 'Assignment' }
   ];
 
   const interviewTypes = [
-    { value: '', label: 'All Interview Types' },
     { value: 'technical', label: 'Technical' },
     { value: 'system_design', label: 'System Design' },
     { value: 'hr', label: 'HR Round' },
@@ -127,19 +124,31 @@ export default function PlacementFilterBar({
     { value: 'panel', label: 'Panel Interview' }
   ];
 
+  const getFilterLabel = (key, val) => {
+    switch (key) {
+      case 'outcome': return outcomes.find((o) => o.value === val)?.label || val;
+      case 'difficulty': return difficulties.find((d) => d.value === val)?.label || val;
+      case 'postType': return postTypes.find((p) => p.value === val)?.label || val;
+      case 'jobType': return jobTypes.find((j) => j.value === val)?.label || val;
+      case 'assessmentType': return assessmentTypes.find((a) => a.value === val)?.label || val;
+      case 'interviewType': return interviewTypes.find((i) => i.value === val)?.label || val;
+      default: return val;
+    }
+  };
+
   return (
-    <div className="space-y-3 mb-6 select-none" ref={dropdownRef}>
-      {/* Top Row: Search + Quick Sort Segmented Control */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        {/* Search Input */}
-        <div className="relative flex-1">
-          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none" />
+    <div className="space-y-2.5 select-none font-sans">
+      {/* Main Single-Row Toolbar */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5">
+        {/* Search Input (Takes flexible remaining width) */}
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
           <input
             type="text"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search by company, role (e.g. SDE Intern), topics (DSA, React), or title..."
-            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-border-light bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium shadow-xs"
+            placeholder="Search company, role (e.g. SDE), topics (DSA, React)..."
+            className="w-full h-9 pl-9 pr-9 rounded-lg border border-gray-400 bg-background-100 text-gray-1000 placeholder:text-gray-500 focus:outline-none focus:border-gray-1000 focus:ring-1 focus:ring-gray-1000 transition-all text-xs font-medium shadow-2xs"
           />
           {localSearch && (
             <button
@@ -148,469 +157,366 @@ export default function PlacementFilterBar({
                 setLocalSearch('');
                 onChange({ ...filters, search: '', page: 1 });
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-1000 p-1 cursor-pointer"
             >
-              <FiX className="text-sm" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {/* Sort Options Segmented Control */}
-        <div className="flex items-center gap-1 p-1 bg-surface-container-low border border-border-light rounded-xl shadow-2xs overflow-x-auto shrink-0">
-          <button
-            type="button"
-            onClick={() => handleFilterChange('sort', 'recent')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              filters.sort === 'recent' || !filters.sort
-                ? 'bg-primary text-on-primary shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
-            }`}
-          >
-            <FiClock className="text-xs" /> Latest
-          </button>
-          <button
-            type="button"
-            onClick={() => handleFilterChange('sort', 'popular')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              filters.sort === 'popular'
-                ? 'bg-primary text-on-primary shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
-            }`}
-          >
-            <FiTrendingUp className="text-xs" /> Popular
-          </button>
-          <button
-            type="button"
-            onClick={() => handleFilterChange('sort', 'discussed')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              filters.sort === 'discussed'
-                ? 'bg-primary text-on-primary shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
-            }`}
-          >
-            <FiMessageSquare className="text-xs" /> Most Discussed
-          </button>
-          <button
-            type="button"
-            onClick={() => handleFilterChange('sort', 'salary_high')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              filters.sort === 'salary_high'
-                ? 'bg-primary text-on-primary shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
-            }`}
-          >
-            <FaRupeeSign className="text-[10px]" /> Top Package
-          </button>
-        </div>
-      </div>
-
-      {/* Filter Chips Row (Flex-wrap to eliminate overflow clipping) */}
-      <div className="flex flex-wrap items-center gap-2 text-xs relative z-40">
-        {/* Post Type Filter */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => handleToggle('postType')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-              filters.postType
-                ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
-                : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-            }`}
-          >
-            <span>{postTypes.find((p) => p.value === filters.postType)?.label || 'Post Type'}</span>
-            <FiChevronDown
-              className={`text-xs transition-transform duration-200 ${
-                activeDropdown === 'postType' ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {activeDropdown === 'postType' && (
-            <div className="absolute left-0 top-full mt-1.5 w-60 bg-surface-container-lowest border border-border-light rounded-xl shadow-xl z-50 p-1.5 divide-y divide-border-light/40 animate-in fade-in slide-in-from-top-1 duration-150">
-              {postTypes.map((pt) => (
-                <button
-                  key={pt.value}
-                  type="button"
-                  onClick={() => {
-                    handleFilterChange('postType', pt.value);
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                    filters.postType === pt.value
-                      ? 'bg-primary text-on-primary font-bold'
-                      : 'hover:bg-surface-variant text-on-surface'
-                  }`}
-                >
-                  {pt.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Company Filter */}
-        {meta.companies && meta.companies.length > 0 && (
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => handleToggle('company')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-                filters.company
-                  ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
-                  : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-              }`}
-            >
-              <span>{filters.company || 'Company'}</span>
-              <FiChevronDown
-                className={`text-xs transition-transform duration-200 ${
-                  activeDropdown === 'company' ? 'rotate-180' : ''
+        {/* Action Controls Cluster: Company Dropdown + Unified Filters + Sort */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          {/* Quick Company Filter Dropdown */}
+          {meta.companies && meta.companies.length > 0 && (
+            <div className="relative" ref={companyRef}>
+              <button
+                type="button"
+                onClick={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
+                className={`h-9 px-3.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+                  filters.company
+                    ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold'
+                    : 'border-gray-400 bg-background-100 text-gray-800 hover:text-gray-1000 hover:bg-gray-200'
                 }`}
-              />
-            </button>
-
-            {activeDropdown === 'company' && (
-              <div className="absolute left-0 top-full mt-1.5 w-56 max-h-60 overflow-y-auto custom-scrollbar bg-surface-container-lowest border border-border-light rounded-xl shadow-xl z-50 p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleFilterChange('company', '');
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                    !filters.company ? 'bg-primary text-on-primary font-bold' : 'hover:bg-surface-variant'
+              >
+                <span>{filters.company || 'Company'}</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-150 ${
+                    isCompanyDropdownOpen ? 'rotate-180' : ''
                   }`}
-                >
-                  All Companies
-                </button>
-                {meta.companies.map((c) => (
+                />
+              </button>
+
+              {isCompanyDropdownOpen && (
+                <div className="absolute right-0 sm:left-0 top-full mt-1.5 w-56 max-h-60 overflow-y-auto bg-background-100 border border-gray-400 rounded-xl shadow-2xl z-50 p-1 text-gray-1000 animate-in fade-in zoom-in-95 duration-100">
                   <button
-                    key={c}
                     type="button"
                     onClick={() => {
-                      handleFilterChange('company', c);
-                      setActiveDropdown(null);
+                      handleFilterChange('company', '');
+                      setIsCompanyDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                      filters.company === c ? 'bg-primary text-on-primary font-bold' : 'hover:bg-surface-variant'
-                    }`}
+                    className="w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200 text-gray-700 hover:text-gray-1000 cursor-pointer"
                   >
-                    {c}
+                    All Companies
                   </button>
-                ))}
+                  {meta.companies.map((comp) => (
+                    <button
+                      key={comp}
+                      type="button"
+                      onClick={() => {
+                        handleFilterChange('company', comp);
+                        setIsCompanyDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                        filters.company === comp
+                          ? 'bg-background-200 text-gray-1000 font-semibold'
+                          : 'hover:bg-gray-200 text-gray-800 hover:text-gray-1000'
+                      }`}
+                    >
+                      {comp}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Unified "Filters" Popover Button */}
+          <div className="relative" ref={filterRef}>
+            <button
+              type="button"
+              onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
+              className={`h-9 px-3.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+                activeCount > 0
+                  ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold'
+                  : 'border-gray-400 bg-background-100 text-gray-800 hover:text-gray-1000 hover:bg-gray-200'
+              }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Filters</span>
+              {activeCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-background-100 text-gray-1000 text-[10px] font-mono font-bold flex items-center justify-center">
+                  {activeCount}
+                </span>
+              )}
+            </button>
+
+            {/* High-End Multi-Section Filters Popover Panel */}
+            {isFilterPopoverOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-h-[80vh] overflow-y-auto bg-background-100 border border-gray-400 rounded-xl shadow-2xl z-50 p-4 space-y-4 text-gray-1000 animate-in fade-in zoom-in-95 duration-150 custom-scrollbar">
+                <div className="flex items-center justify-between pb-2 border-b border-gray-400">
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal className="w-4 h-4 text-gray-1000" />
+                    <span className="font-semibold text-xs text-gray-1000 tracking-tight">Filter Experiences</span>
+                  </div>
+                  {activeCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        activeFilterKeys.forEach((k) => handleFilterChange(k, ''));
+                      }}
+                      className="text-[11px] text-red-500 hover:underline cursor-pointer font-medium"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+
+                {/* Section 1: Outcome */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">
+                    Outcome
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {outcomes.map((o) => {
+                      const isSelected = filters.outcome === o.value;
+                      return (
+                        <button
+                          key={o.value}
+                          type="button"
+                          onClick={() => handleFilterChange('outcome', isSelected ? '' : o.value)}
+                          className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all text-left flex items-center justify-between cursor-pointer ${
+                            isSelected
+                              ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold'
+                              : 'border-gray-400 bg-background-200 text-gray-800 hover:text-gray-1000'
+                          }`}
+                        >
+                          <span>{o.label}</span>
+                          {isSelected && <Check className="w-3 h-3" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Section 2: Difficulty */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">
+                    Difficulty
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {difficulties.map((d) => {
+                      const isSelected = filters.difficulty === d.value;
+                      return (
+                        <button
+                          key={d.value}
+                          type="button"
+                          onClick={() => handleFilterChange('difficulty', isSelected ? '' : d.value)}
+                          className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all text-left flex items-center justify-between cursor-pointer ${
+                            isSelected
+                              ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold'
+                              : 'border-gray-400 bg-background-200 text-gray-800 hover:text-gray-1000'
+                          }`}
+                        >
+                          <span>{d.label}</span>
+                          {isSelected && <Check className="w-3 h-3" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Section 3: Post Type */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">
+                    Post Type
+                  </label>
+                  <select
+                    value={filters.postType || ''}
+                    onChange={(e) => handleFilterChange('postType', e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-lg border border-gray-400 bg-background-200 text-gray-1000 text-xs focus:outline-none focus:border-gray-1000 transition-colors"
+                  >
+                    {postTypes.map((pt) => (
+                      <option key={pt.value} value={pt.value}>
+                        {pt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Section 4: Job Type */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">
+                    Job Type
+                  </label>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {jobTypes.map((j) => {
+                      const isSelected = filters.jobType === j.value;
+                      return (
+                        <button
+                          key={j.value}
+                          type="button"
+                          onClick={() => handleFilterChange('jobType', isSelected ? '' : j.value)}
+                          className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold'
+                              : 'border-gray-400 bg-background-200 text-gray-800 hover:text-gray-1000'
+                          }`}
+                        >
+                          {j.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Section 5: Rounds & Evaluation */}
+                <div className="space-y-2 pt-2 border-t border-gray-400">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">
+                      Assessment Format
+                    </label>
+                    <select
+                      value={filters.assessmentType || ''}
+                      onChange={(e) => handleFilterChange('assessmentType', e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg border border-gray-400 bg-background-200 text-gray-1000 text-xs focus:outline-none focus:border-gray-1000 transition-colors"
+                    >
+                      <option value="">All Assessment Formats</option>
+                      {assessmentTypes.map((a) => (
+                        <option key={a.value} value={a.value}>
+                          {a.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600">
+                      Interview Round
+                    </label>
+                    <select
+                      value={filters.interviewType || ''}
+                      onChange={(e) => handleFilterChange('interviewType', e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg border border-gray-400 bg-background-200 text-gray-1000 text-xs focus:outline-none focus:border-gray-1000 transition-colors"
+                    >
+                      <option value="">All Interview Rounds</option>
+                      {interviewTypes.map((i) => (
+                        <option key={i.value} value={i.value}>
+                          {i.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Popover Footer */}
+                <div className="pt-2 border-t border-gray-400 flex items-center justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsFilterPopoverOpen(false)}
+                    className="px-4 py-1.5 bg-gray-1000 text-background-100 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    Done
+                  </button>
+                </div>
               </div>
             )}
           </div>
-        )}
 
-        {/* Difficulty Filter */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => handleToggle('difficulty')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-              filters.difficulty
-                ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
-                : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-            }`}
-          >
-            <span>{difficulties.find((d) => d.value === filters.difficulty)?.label || 'Difficulty'}</span>
-            <FiChevronDown
-              className={`text-xs transition-transform duration-200 ${
-                activeDropdown === 'difficulty' ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {activeDropdown === 'difficulty' && (
-            <div className="absolute left-0 top-full mt-1.5 w-44 bg-surface-container-lowest border border-border-light rounded-xl shadow-xl z-50 p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-              {difficulties.map((d) => (
-                <button
-                  key={d.value}
-                  type="button"
-                  onClick={() => {
-                    handleFilterChange('difficulty', d.value);
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                    filters.difficulty === d.value
-                      ? 'bg-primary text-on-primary font-bold'
-                      : 'hover:bg-surface-variant'
-                  }`}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Outcome Filter */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => handleToggle('outcome')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-              filters.outcome
-                ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
-                : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-            }`}
-          >
-            <span>{outcomes.find((o) => o.value === filters.outcome)?.label || 'Outcome'}</span>
-            <FiChevronDown
-              className={`text-xs transition-transform duration-200 ${
-                activeDropdown === 'outcome' ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {activeDropdown === 'outcome' && (
-            <div className="absolute left-0 top-full mt-1.5 w-48 bg-surface-container-lowest border border-border-light rounded-xl shadow-xl z-50 p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-              {outcomes.map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  onClick={() => {
-                    handleFilterChange('outcome', o.value);
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                    filters.outcome === o.value
-                      ? 'bg-primary text-on-primary font-bold'
-                      : 'hover:bg-surface-variant'
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Assessment Type Filter */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => handleToggle('assessmentType')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-              filters.assessmentType
-                ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
-                : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-            }`}
-          >
-            <span>{assessmentTypes.find((a) => a.value === filters.assessmentType)?.label || 'Assessment Type'}</span>
-            <FiChevronDown
-              className={`text-xs transition-transform duration-200 ${
-                activeDropdown === 'assessmentType' ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {activeDropdown === 'assessmentType' && (
-            <div className="absolute left-0 top-full mt-1.5 w-56 max-h-60 overflow-y-auto custom-scrollbar bg-surface-container-lowest border border-border-light rounded-xl shadow-xl z-50 p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-              {assessmentTypes.map((a) => (
-                <button
-                  key={a.value}
-                  type="button"
-                  onClick={() => {
-                    handleFilterChange('assessmentType', a.value);
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                    filters.assessmentType === a.value
-                      ? 'bg-primary text-on-primary font-bold'
-                      : 'hover:bg-surface-variant'
-                  }`}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Interview Type Filter */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => handleToggle('interviewType')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-              filters.interviewType
-                ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
-                : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-            }`}
-          >
-            <span>{interviewTypes.find((i) => i.value === filters.interviewType)?.label || 'Interview Type'}</span>
-            <FiChevronDown
-              className={`text-xs transition-transform duration-200 ${
-                activeDropdown === 'interviewType' ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {activeDropdown === 'interviewType' && (
-            <div className="absolute left-0 top-full mt-1.5 w-52 max-h-60 overflow-y-auto custom-scrollbar bg-surface-container-lowest border border-border-light rounded-xl shadow-xl z-50 p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-              {interviewTypes.map((i) => (
-                <button
-                  key={i.value}
-                  type="button"
-                  onClick={() => {
-                    handleFilterChange('interviewType', i.value);
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                    filters.interviewType === i.value
-                      ? 'bg-primary text-on-primary font-bold'
-                      : 'hover:bg-surface-variant'
-                  }`}
-                >
-                  {i.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Branch Filter */}
-        {meta.branches && meta.branches.length > 0 && (
-          <div className="relative">
+          {/* Segmented Sort Controls */}
+          <div className="h-9 flex items-center gap-0.5 p-0.5 bg-background-200 border border-gray-400 rounded-lg shadow-2xs shrink-0">
             <button
               type="button"
-              onClick={() => handleToggle('branch')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-                filters.branch
-                  ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
-                  : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
+              onClick={() => handleFilterChange('sort', 'recent')}
+              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                filters.sort === 'recent' || !filters.sort
+                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border border-gray-400'
+                  : 'text-gray-700 hover:text-gray-1000'
               }`}
+              title="Sort by latest"
             >
-              <span>{filters.branch || 'Branch'}</span>
-              <FiChevronDown
-                className={`text-xs transition-transform duration-200 ${
-                  activeDropdown === 'branch' ? 'rotate-180' : ''
-                }`}
-              />
+              <Clock className="w-3 h-3" />
+              <span className="hidden sm:inline">Latest</span>
             </button>
-
-            {activeDropdown === 'branch' && (
-              <div className="absolute left-0 top-full mt-1.5 w-44 max-h-60 overflow-y-auto custom-scrollbar bg-surface-container-lowest border border-border-light rounded-xl shadow-xl z-50 p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleFilterChange('branch', '');
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                    !filters.branch ? 'bg-primary text-on-primary font-bold' : 'hover:bg-surface-variant'
-                  }`}
-                >
-                  All Branches
-                </button>
-                {meta.branches.map((b) => (
-                  <button
-                    key={b}
-                    type="button"
-                    onClick={() => {
-                      handleFilterChange('branch', b);
-                      setActiveDropdown(null);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                      filters.branch === b ? 'bg-primary text-on-primary font-bold' : 'hover:bg-surface-variant'
-                    }`}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={() => handleFilterChange('sort', 'popular')}
+              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                filters.sort === 'popular'
+                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border border-gray-400'
+                  : 'text-gray-700 hover:text-gray-1000'
+              }`}
+              title="Sort by reactions"
+            >
+              <TrendingUp className="w-3 h-3" />
+              <span className="hidden sm:inline">Popular</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFilterChange('sort', 'discussed')}
+              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                filters.sort === 'discussed'
+                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border border-gray-400'
+                  : 'text-gray-700 hover:text-gray-1000'
+              }`}
+              title="Sort by comments"
+            >
+              <MessageSquare className="w-3 h-3" />
+              <span className="hidden sm:inline">Discussed</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFilterChange('sort', 'salary_high')}
+              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                filters.sort === 'salary_high'
+                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border border-gray-400'
+                  : 'text-gray-700 hover:text-gray-1000'
+              }`}
+              title="Sort by top package"
+            >
+              <IndianRupee className="w-3 h-3" />
+              <span className="hidden sm:inline">Top Package</span>
+            </button>
           </div>
-        )}
-
-        {/* Job Type & Work Mode */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => handleToggle('jobType')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-              filters.jobType
-                ? 'bg-primary/10 border-primary/40 text-primary font-bold shadow-xs'
-                : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-            }`}
-          >
-            <span>{jobTypes.find((j) => j.value === filters.jobType)?.label || 'Job Type'}</span>
-            <FiChevronDown
-              className={`text-xs transition-transform duration-200 ${
-                activeDropdown === 'jobType' ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {activeDropdown === 'jobType' && (
-            <div className="absolute left-0 top-full mt-1.5 w-44 bg-surface-container-lowest border border-border-light rounded-xl shadow-xl z-50 p-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-              {jobTypes.map((j) => (
-                <button
-                  key={j.value}
-                  type="button"
-                  onClick={() => {
-                    handleFilterChange('jobType', j.value);
-                    setActiveDropdown(null);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium cursor-pointer ${
-                    filters.jobType === j.value
-                      ? 'bg-primary text-on-primary font-bold'
-                      : 'hover:bg-surface-variant'
-                  }`}
-                >
-                  {j.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
-
-        {/* User-specific quick toggles */}
-        {isLoggedIn && (
-          <>
-            <button
-              type="button"
-              onClick={() => handleFilterChange('bookmarkedOnly', filters.bookmarkedOnly ? '' : 'true')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-                filters.bookmarkedOnly
-                  ? 'bg-primary text-on-primary border-primary shadow-xs font-bold'
-                  : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-              }`}
-              title="Filter by posts you bookmarked"
-            >
-              <FiBookmark className="text-xs" />
-              <span>Saved</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleFilterChange('myPostsOnly', filters.myPostsOnly ? '' : 'true')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border font-semibold transition-all cursor-pointer ${
-                filters.myPostsOnly
-                  ? 'bg-primary text-on-primary border-primary shadow-xs font-bold'
-                  : 'bg-surface-container-lowest border-border-light text-on-surface hover:bg-surface-variant'
-              }`}
-              title="Filter only your posted experiences"
-            >
-              <FiUserCheck className="text-xs" />
-              <span>My Posts</span>
-            </button>
-          </>
-        )}
-
-        {/* Reset Filters */}
-        {activeCount > 0 && (
-          <button
-            type="button"
-            onClick={onReset}
-            className="flex items-center gap-1 px-3 py-2 rounded-xl text-error bg-error/10 hover:bg-error/20 font-bold transition-colors cursor-pointer"
-          >
-            <FiX className="text-xs" />
-            <span>Reset ({activeCount})</span>
-          </button>
-        )}
       </div>
+
+      {/* Active Filter Chips Strip (Conditional: Only visible if active filters exist) */}
+      {activeCount > 0 && (
+        <div className="flex items-center justify-between gap-2 pt-1 flex-wrap text-xs animate-in fade-in duration-150">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-gray-600 mr-1">
+              Active:
+            </span>
+
+            {activeFilters.map((key) => {
+              const val = filters[key];
+              const label = getFilterLabel(key, val);
+
+              return (
+                <span
+                  key={key}
+                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-background-200 border border-gray-400 text-gray-1000 text-xs font-medium"
+                >
+                  <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                  <span className="font-semibold">{label}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleFilterChange(key, '')}
+                    className="p-0.5 hover:text-red-500 rounded-full cursor-pointer ml-0.5"
+                    title={`Remove ${key} filter`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={() => {
+                activeFilterKeys.forEach((k) => handleFilterChange(k, ''));
+              }}
+              className="text-xs text-red-600 dark:text-red-400 hover:underline font-medium cursor-pointer ml-1"
+            >
+              Clear all
+            </button>
+          </div>
+
+          <div className="text-xs text-gray-600 font-mono">
+            {totalCount} matching {totalCount === 1 ? 'experience' : 'experiences'}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

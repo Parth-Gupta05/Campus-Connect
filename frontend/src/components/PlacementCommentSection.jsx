@@ -3,7 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import PlacementCommentItem from './PlacementCommentItem';
-import { FiMessageSquare, FiSend } from 'react-icons/fi';
+import { MessageSquare, Send } from 'lucide-react';
 
 export default function PlacementCommentSection({ postId, postAuthorId, commentCount = 0 }) {
   const { user } = useContext(AuthContext);
@@ -56,18 +56,18 @@ export default function PlacementCommentSection({ postId, postAuthorId, commentC
   };
 
   return (
-    <div className="mt-8 pt-8 border-t border-border-light">
+    <div className="mt-8 pt-8 border-t border-gray-400">
       <div className="flex items-center gap-2 mb-6">
-        <FiMessageSquare className="text-xl text-primary" />
-        <h3 className="text-lg font-bold text-on-surface">
-          Discussion &amp; Queries ({count})
+        <MessageSquare className="w-5 h-5 text-gray-1000" />
+        <h3 className="text-base font-semibold text-gray-1000 tracking-tight">
+          Discussion &amp; Queries <span className="text-xs font-mono text-gray-600">({count})</span>
         </h3>
       </div>
 
       {/* Main Comment Input Form */}
       {user ? (
         <form onSubmit={handleAddComment} className="flex items-start gap-3 mb-8">
-          <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm shrink-0 shadow-sm overflow-hidden">
+          <div className="w-9 h-9 rounded-full bg-background-200 border border-gray-400 text-gray-1000 flex items-center justify-center font-semibold text-xs shrink-0 shadow-2xs overflow-hidden">
             {user.avatarUrl ? (
               <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
             ) : (
@@ -80,19 +80,19 @@ export default function PlacementCommentSection({ postId, postAuthorId, commentC
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Ask a question about the rounds, difficulty, or congratulate the student..."
-              className="w-full p-3.5 text-sm rounded-2xl border border-border-light bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-xs resize-none"
+              className="w-full p-3 text-xs sm:text-sm rounded-lg border border-gray-400 bg-background-100 text-gray-1000 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-1000 focus:border-gray-1000 transition-all shadow-2xs resize-none"
             />
             <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={submitting || !content.trim()}
-                className="px-5 py-2.5 bg-primary text-on-primary rounded-xl text-xs font-bold hover:bg-primary-container transition-all disabled:opacity-50 flex items-center gap-1.5 shadow-sm cursor-pointer"
+                className="px-4 py-2 bg-gray-1000 text-background-100 rounded-lg text-xs font-medium hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
                 {submitting ? (
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-3.5 h-3.5 border-2 border-background-100 border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <FiSend className="text-sm" /> Post Comment
+                    <Send className="w-3.5 h-3.5" /> Post Comment
                   </>
                 )}
               </button>
@@ -100,27 +100,27 @@ export default function PlacementCommentSection({ postId, postAuthorId, commentC
           </div>
         </form>
       ) : (
-        <div className="p-4 rounded-xl bg-surface-container-low text-center text-sm text-on-surface-variant mb-6">
+        <div className="p-4 rounded-lg bg-background-200 border border-gray-400 text-center text-xs text-gray-700 mb-6">
           Please sign in to join the discussion and ask questions.
         </div>
       )}
 
       {/* Comments List */}
       {loading ? (
-        <div className="py-8 text-center text-sm text-on-surface-variant flex items-center justify-center gap-2">
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="py-8 text-center text-xs text-gray-700 flex items-center justify-center gap-2 font-mono">
+          <div className="w-4 h-4 border-2 border-gray-1000 border-t-transparent rounded-full animate-spin"></div>
           Loading discussion...
         </div>
       ) : comments.length === 0 ? (
-        <div className="py-10 text-center text-on-surface-variant/70 border border-dashed border-border-light rounded-2xl">
-          <FiMessageSquare className="text-3xl mx-auto mb-2 opacity-40" />
-          <p className="text-sm font-semibold">No queries or comments yet</p>
-          <p className="text-xs text-on-surface-variant/60 mt-0.5">
+        <div className="py-10 text-center text-gray-600 border border-dashed border-gray-400 rounded-xl bg-background-100/40">
+          <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40 text-gray-600" />
+          <p className="text-xs sm:text-sm font-semibold text-gray-1000">No queries or comments yet</p>
+          <p className="text-xs text-gray-600 mt-0.5">
             Be the first to ask about the interview process!
           </p>
         </div>
       ) : (
-        <div className="space-y-4 divide-y divide-border-light/40">
+        <div className="space-y-4 divide-y divide-gray-300 dark:divide-gray-800">
           {comments.map((comment) => (
             <PlacementCommentItem
               key={comment._id}

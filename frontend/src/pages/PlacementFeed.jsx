@@ -4,17 +4,18 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import PageHeader from '../components/ui/PageHeader';
 import PlacementFilterBar from '../components/PlacementFilterBar';
 import PlacementPostCard from '../components/PlacementPostCard';
-
 import {
-  FiPlus,
-  FiBriefcase,
-  FiTrendingUp,
-  FiAward,
-  FiFilter,
-  FiRefreshCw
-} from 'react-icons/fi';
+  Briefcase,
+  RotateCw,
+  Plus,
+  Loader2,
+  Sparkles,
+  Bookmark,
+  UserCheck
+} from 'lucide-react';
 
 export default function PlacementFeed() {
   const { user } = useContext(AuthContext);
@@ -44,18 +45,27 @@ export default function PlacementFeed() {
     limit: 10
   });
 
-  // Fetch filter metadata (distinct companies, branches, etc.)
+  const [tabCounts, setTabCounts] = useState({ all: 0, saved: 0, my_posts: 0 });
+
+  // Fetch filter metadata (distinct companies, branches, and tab counts)
   useEffect(() => {
     const fetchMeta = async () => {
       try {
         const res = await axios.get('/placements/filters/meta');
         setMeta(res.data || {});
+        if (res.data?.counts) {
+          setTabCounts({
+            all: res.data.counts.all || 0,
+            saved: res.data.counts.saved || 0,
+            my_posts: res.data.counts.myPosts || 0
+          });
+        }
       } catch (err) {
         console.error('Error fetching filter meta:', err);
       }
     };
     fetchMeta();
-  }, []);
+  }, [user]);
 
   // Fetch feed posts
   const fetchFeed = async (isLoadMore = false) => {
@@ -77,7 +87,15 @@ export default function PlacementFeed() {
       } else {
         setPosts(res.data.posts || []);
       }
-      setTotalCount(res.data.totalCount || 0);
+      const count = res.data.totalCount || 0;
+      setTotalCount(count);
+
+      // Keep active tab count in sync
+      setTabCounts((prev) => {
+        if (filters.bookmarkedOnly) return { ...prev, saved: count };
+        if (filters.myPostsOnly) return { ...prev, my_posts: count };
+        return { ...prev, all: count };
+      });
     } catch (err) {
       console.error('Error fetching placement feed:', err);
     } finally {
@@ -113,115 +131,129 @@ export default function PlacementFeed() {
     setFilters((prev) => ({ ...prev, page: prev.page + 1 }));
   };
 
+  const currentTab = filters.bookmarkedOnly ? 'saved' : (filters.myPostsOnly ? 'my_posts' : 'all');
+
+  const handleTabChange = (tabId) => {
+    if (tabId === 'saved') {
+      setFilters((prev) => ({ ...prev, bookmarkedOnly: 'true', myPostsOnly: '', page: 1 }));
+    } else if (tabId === 'my_posts') {
+      setFilters((prev) => ({ ...prev, bookmarkedOnly: '', myPostsOnly: 'true', page: 1 }));
+    } else {
+      setFilters((prev) => ({ ...prev, bookmarkedOnly: '', myPostsOnly: '', page: 1 }));
+    }
+  };
+
+  const tabs = [
+    { id: 'all', label: 'All Experiences', count: tabCounts.all, icon: Briefcase },
+    ...(user
+      ? [
+          { id: 'saved', label: 'Saved', count: tabCounts.saved, icon: Bookmark },
+          { id: 'my_posts', label: 'My Experiences', count: tabCounts.my_posts, icon: UserCheck }
+        ]
+      : [])
+  ];
+
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => fetchFeed(false)}
+        className="h-9 px-3 rounded-lg border border-gray-400 bg-background-100 text-xs font-medium text-gray-700 hover:text-gray-1000 hover:bg-gray-200 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+        title="Refresh feed"
+      >
+        <RotateCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+        <span className="hidden sm:inline">Refresh</span>
+      </button>
+
+      <Link
+        to="/placements/create"
+        className="h-9 px-4 rounded-lg bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-2xs cursor-pointer whitespace-nowrap"
+      >
+        <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+        <span>Share Experience</span>
+      </Link>
+    </div>
+  );
+
   return (
-    <div className="flex min-h-screen bg-background text-on-surface font-body-lg">
+    <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
       <Sidebar />
 
-      <main className="flex-1 overflow-y-auto bg-surface-container-lowest">
+      <main className="flex-1 min-w-0 bg-background-100">
         <Topbar />
 
-        <div className="max-w-6xl mx-auto p-4 sm:p-8 space-y-8">
-          {/* Top Header */}
-          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2 border-b border-border-light">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-2xs">
-                <span className="material-symbols-outlined text-2xl">military_tech</span>
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-on-surface">
-                  Placement &amp; Interview Experiences
-                </h1>
-                <p className="text-sm text-on-surface-variant mt-0.5">
-                  Real interview questions, coding round breakdowns, HR insights, and packages shared by seniors and peers.
-                </p>
-              </div>
-            </div>
+        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
+          {/* Standardized Level 1 & 2 Page Header with Scope Tabs */}
+          <PageHeader
+            category="Placements"
+            title="Placement & Interview Experiences"
+            description="Interview questions, online assessment breakdowns, and package offers shared by students and alumni."
+            actions={headerActions}
+            tabs={tabs}
+            activeTab={currentTab}
+            onTabChange={handleTabChange}
+          />
 
-            <Link
-              to="/placements/create"
-              className="whitespace-nowrap shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-semibold hover:bg-on-primary-fixed transition-colors shadow-sm cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-lg">add</span>
-              <span>Share Experience</span>
-            </Link>
-          </header>
-
-          {/* Filter Bar */}
+          {/* Level 3 Unified Single-Row Search & Filter Toolbar */}
           <PlacementFilterBar
             filters={filters}
             onChange={setFilters}
             onReset={handleResetFilters}
             meta={meta}
-            isLoggedIn={Boolean(user)}
+            totalCount={totalCount}
           />
-
-          {/* Results Summary & Refresh */}
-          <div className="flex items-center justify-between text-xs font-semibold text-on-surface-variant px-1 select-none">
-            <div>
-              Showing <span className="font-bold text-on-surface">{posts.length}</span> of{' '}
-              <span className="font-bold text-on-surface">{totalCount}</span> experiences
-            </div>
-
-            <button
-              type="button"
-              onClick={() => fetchFeed(false)}
-              className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-            >
-              <FiRefreshCw className={`text-xs ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh Feed</span>
-            </button>
-          </div>
 
           {/* Post Feed List */}
           {loading ? (
-            <div className="space-y-4 py-8">
+            <div className="space-y-4 py-4">
               {[1, 2, 3].map((n) => (
                 <div
                   key={n}
-                  className="bg-surface-container-lowest border border-border-light rounded-2xl p-6 animate-pulse space-y-4"
+                  className="bg-background-100 border border-gray-400 rounded-xl p-5 animate-pulse space-y-4 shadow-2xs"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-surface-variant"></div>
+                    <div className="w-10 h-10 rounded-lg bg-background-200 border border-gray-400"></div>
                     <div className="space-y-2 flex-1">
-                      <div className="w-1/3 h-4 bg-surface-variant rounded"></div>
-                      <div className="w-1/4 h-3 bg-surface-variant rounded"></div>
+                      <div className="w-1/3 h-3.5 bg-background-200 rounded"></div>
+                      <div className="w-1/4 h-2.5 bg-background-200 rounded"></div>
                     </div>
                   </div>
-                  <div className="w-3/4 h-5 bg-surface-variant rounded"></div>
-                  <div className="w-full h-12 bg-surface-variant rounded"></div>
+                  <div className="w-3/4 h-4 bg-background-200 rounded"></div>
+                  <div className="w-full h-10 bg-background-200 rounded"></div>
                 </div>
               ))}
             </div>
           ) : posts.length === 0 ? (
             /* Empty State */
-            <div className="bg-surface-container-lowest border border-dashed border-border-light rounded-3xl p-12 text-center space-y-4 shadow-xs">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center text-3xl">
-                <FiBriefcase />
+            <div className="bg-background-100 border border-dashed border-gray-400 rounded-2xl p-12 text-center space-y-4 shadow-2xs max-w-lg mx-auto">
+              <div className="w-12 h-12 rounded-xl bg-background-200 border border-gray-400 text-gray-700 mx-auto flex items-center justify-center shadow-2xs">
+                <Briefcase className="w-5 h-5" strokeWidth={1.5} />
               </div>
-              <div className="space-y-1 max-w-sm mx-auto">
-                <h3 className="text-lg font-bold text-on-surface">No experiences found</h3>
-                <p className="text-sm text-on-surface-variant">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-gray-1000">No experiences found</h3>
+                <p className="text-xs text-gray-700 font-sans">
                   Try adjusting your filters or be the first to share an interview experience for this company!
                 </p>
               </div>
-              <div className="flex items-center justify-center gap-3 pt-2">
+              <div className="flex items-center justify-center gap-2.5 pt-1">
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="px-4 py-2.5 rounded-xl border border-border-light hover:bg-surface-variant text-xs font-bold transition-colors"
+                  className="h-8 px-3.5 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-200 text-gray-800 text-xs font-medium transition-colors cursor-pointer shadow-2xs"
                 >
                   Reset Filters
                 </button>
                 <Link
                   to="/placements/create"
-                  className="px-5 py-2.5 rounded-xl bg-primary text-on-primary hover:bg-primary-container text-xs font-bold transition-colors shadow-xs"
+                  className="h-8 px-4 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity shadow-xs flex items-center gap-1.5"
                 >
-                  Share an Experience
+                  <Plus className="w-3 h-3" />
+                  <span>Share Experience</span>
                 </Link>
               </div>
             </div>
           ) : (
-            /* Feed Cards Grid / Stream */
+            /* Feed Cards Stream */
             <div className="space-y-4">
               {posts.map((post) => (
                 <PlacementPostCard key={post._id} post={post} />
@@ -229,16 +261,16 @@ export default function PlacementFeed() {
 
               {/* Load More Button */}
               {posts.length < totalCount && (
-                <div className="pt-6 text-center">
+                <div className="pt-4 text-center">
                   <button
                     type="button"
                     onClick={handleLoadMore}
                     disabled={loadingMore}
-                    className="px-8 py-3 rounded-2xl bg-surface-container-lowest border border-border-light hover:border-primary text-on-surface hover:text-primary text-sm font-bold shadow-xs hover:shadow-md transition-all disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
+                    className="h-9 px-6 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-200 text-gray-900 text-xs font-medium shadow-2xs transition-colors disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
                   >
                     {loadingMore ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         <span>Loading more experiences...</span>
                       </>
                     ) : (
