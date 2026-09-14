@@ -17,6 +17,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const placementRoutes = require('./routes/placementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const aicteRoutes = require('./routes/aicteRoutes');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -49,6 +50,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/placements', placementRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/aicte', aicteRoutes);
 
 app.get('/', (req, res) => {
   res.send('Backend is running!');
