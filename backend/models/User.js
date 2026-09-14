@@ -100,7 +100,28 @@ const UserSchema = new mongoose.Schema({
   resumes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Resume'
-  }]
+  }],
+  resumeDetails: {
+    portfolioUrl: { type: String, default: '' },
+    skills: [{ type: String }],
+    education: [mongoose.Schema.Types.Mixed],
+    experience: [mongoose.Schema.Types.Mixed],
+    projects: [mongoose.Schema.Types.Mixed],
+    certificates: [{
+      title: { type: String, default: '' },
+      issuer: { type: String, default: '' },
+      issueDate: { type: String, default: '' },
+      credentialUrl: { type: String, default: '' },
+      fileUrl: { type: String, default: '' },
+      isComplete: { type: Boolean, default: false },
+      isVerified: { type: Boolean, default: false },
+      issuedByClub: { type: Boolean, default: false },
+      clubId: { type: mongoose.Schema.Types.ObjectId, ref: 'Club' },
+      eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event' },
+      issuedAt: { type: Date, default: Date.now }
+    }],
+    achievements: [mongoose.Schema.Types.Mixed]
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

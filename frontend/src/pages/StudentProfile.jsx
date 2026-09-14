@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import ImageCropperModal from '../components/ImageCropperModal';
@@ -8,8 +9,40 @@ import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
-import { FiLoader, FiGithub, FiLinkedin, FiX, FiMessageSquare } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import {
+  Camera,
+  Edit3,
+  ExternalLink,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  Copy,
+  Check,
+  Loader2,
+  Sparkles,
+  Plus,
+  Trash2,
+  Briefcase,
+  GraduationCap,
+  Award,
+  FolderGit2,
+  Calendar,
+  MapPin,
+  Building2,
+  MessageSquare,
+  Share2,
+  Globe,
+  ShieldCheck,
+  Layers,
+  LayoutDashboard,
+  User,
+  X,
+  ChevronRight,
+  Upload,
+  AlertTriangle,
+  Code2,
+  CheckCheck
+} from 'lucide-react';
 
 const formatExternalUrl = (url) => {
   if (!url) return '#';
@@ -17,10 +50,13 @@ const formatExternalUrl = (url) => {
   return `https://${url}`;
 };
 
+// =============================================================================
+// 1. ONBOARDING SETUP OVERLAY (Geist Material Modal)
+// =============================================================================
 function ProfileSetupOverlay({ onComplete, user }) {
   const { showToast } = useToast();
   const isMissingCredential = !user.email || !user.uid;
-  const missingLabel = !user.email ? 'College Email' : 'UID (e.g. 23-COMPA10-27)';
+  const missingLabel = !user.email ? 'University Email' : 'UID (e.g. 23-COMPA10-27)';
   const missingField = !user.email ? 'email' : 'uid';
 
   const [formData, setFormData] = useState({
@@ -66,52 +102,125 @@ function ProfileSetupOverlay({ onComplete, user }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-      <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-ambient max-w-lg w-full border border-border-light max-h-[90vh] overflow-y-auto">
-        <h2 className="text-headline-md font-bold text-on-surface mb-2">Complete Your Profile</h2>
-        <p className="text-body-md text-on-surface-variant mb-6">
-          {isMissingCredential 
-            ? `Please link your ${!user.email ? 'Email' : 'UID'} and provide a few details to automatically fetch your coding metrics and set up your portfolio.`
-            : `We need a few details to automatically fetch your coding metrics and set up your portfolio.`}
-        </p>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in duration-150">
+      <div className="bg-background-100 rounded-xl shadow-2xl max-w-lg w-full border border-gray-400 max-h-[90vh] flex flex-col overflow-hidden text-gray-1000">
+        
+        {/* Header Strip */}
+        <div className="px-6 py-5 bg-background-200 border-b border-gray-400 flex items-start gap-3.5 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-background-100 border border-gray-400 flex items-center justify-center shrink-0 shadow-2xs text-gray-1000">
+            <ShieldCheck className="w-5 h-5" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-gray-1000 tracking-tight">Complete Profile Setup</h2>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                Required
+              </span>
+            </div>
+            <p className="text-xs text-gray-700 font-sans mt-0.5 leading-relaxed">
+              {isMissingCredential 
+                ? `Link your university ${!user.email ? 'email' : 'UID'} to synchronize verified coding telemetry and activate campus portfolio access.`
+                : `Enter your student details to automatically link repository contributions and algorithmic profiles.`}
+            </p>
+          </div>
+        </div>
 
-        {error && <div className="p-3 mb-4 bg-error-container text-on-error-container rounded-lg text-sm">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isMissingCredential && (
-            <div>
-              <label className="block text-label-lg font-medium text-on-surface mb-1">{missingLabel}</label>
-              <input required type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder={!user.email ? "student@university.edu" : "23-COMPA10-27"} value={formData[missingField]} onChange={e => setFormData({...formData, [missingField]: e.target.value})} />
+        {/* Scrollable Form Body */}
+        <div className="p-6 overflow-y-auto space-y-4">
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 rounded-lg text-xs font-mono flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
             </div>
           )}
-          <div>
-            <label className="block text-label-lg font-medium text-on-surface mb-1">Full Name</label>
-            <input required type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder="John Doe" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-          </div>
-          <div>
-            <label className="block text-label-lg font-medium text-on-surface mb-1">GitHub Username</label>
-            <input required type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder="johndoe" value={formData.githubUsername} onChange={e => setFormData({...formData, githubUsername: e.target.value})} />
-          </div>
-          <div>
-            <label className="block text-label-lg font-medium text-on-surface mb-1">LeetCode Username</label>
-            <input required type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder="johndoe" value={formData.leetcodeUsername} onChange={e => setFormData({...formData, leetcodeUsername: e.target.value})} />
-          </div>
-          <div>
-            <label className="block text-label-lg font-medium text-on-surface mb-1">LinkedIn URL</label>
-            <input type="url" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder="https://linkedin.com/in/johndoe" value={formData.linkedInUrl} onChange={e => setFormData({...formData, linkedInUrl: e.target.value})} />
-          </div>
 
-          <button disabled={loading} type="submit" className="w-full mt-6 bg-primary text-on-primary py-3 rounded-lg font-button-text hover:bg-primary-container transition-colors disabled:opacity-70 flex justify-center items-center gap-2">
-            {loading ? <FiLoader className="animate-spin text-[24px]" /> : 'Complete Setup'}
+          <form id="profile-setup-form" onSubmit={handleSubmit} className="space-y-4 text-xs font-sans">
+            {isMissingCredential && (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="font-medium text-gray-900">{missingLabel}</label>
+                  {missingField === 'uid' && (
+                    <span className="text-[10px] font-mono text-gray-600">Format: 23-COMPA10-27</span>
+                  )}
+                </div>
+                <input 
+                  required 
+                  type="text" 
+                  className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                  placeholder={!user.email ? "student@university.edu" : "23-COMPA10-27"} 
+                  value={formData[missingField]} 
+                  onChange={e => setFormData({...formData, [missingField]: e.target.value})} 
+                />
+              </div>
+            )}
+            <div>
+              <label className="block font-medium text-gray-900 mb-1.5">Full Name</label>
+              <input 
+                required 
+                type="text" 
+                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors" 
+                placeholder="e.g. John Doe" 
+                value={formData.name} 
+                onChange={e => setFormData({...formData, name: e.target.value})} 
+              />
+            </div>
+            <div>
+              <label className="block font-medium text-gray-900 mb-1.5">GitHub Username</label>
+              <input 
+                required 
+                type="text" 
+                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                placeholder="octocat" 
+                value={formData.githubUsername} 
+                onChange={e => setFormData({...formData, githubUsername: e.target.value})} 
+              />
+            </div>
+            <div>
+              <label className="block font-medium text-gray-900 mb-1.5">LeetCode Username</label>
+              <input 
+                required 
+                type="text" 
+                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                placeholder="johndoe" 
+                value={formData.leetcodeUsername} 
+                onChange={e => setFormData({...formData, leetcodeUsername: e.target.value})} 
+              />
+            </div>
+            <div>
+              <label className="block font-medium text-gray-900 mb-1.5">LinkedIn Profile URL</label>
+              <input 
+                type="url" 
+                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                placeholder="https://linkedin.com/in/johndoe" 
+                value={formData.linkedInUrl} 
+                onChange={e => setFormData({...formData, linkedInUrl: e.target.value})} 
+              />
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 bg-background-200 border-t border-gray-400 flex justify-end shrink-0">
+          <button 
+            form="profile-setup-form"
+            disabled={loading} 
+            type="submit" 
+            className="w-full sm:w-auto px-6 py-2.5 bg-gray-1000 text-background-100 rounded-md text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex justify-center items-center gap-2 cursor-pointer shadow-xs"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Complete Setup & Synchronize'}
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );
 }
 
+// =============================================================================
+// 2. RESUME & PORTFOLIO EDITOR MODAL (Geist Workspace Modal)
+// =============================================================================
 function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
   const { showToast } = useToast();
+  const [activeTab, setActiveTab] = useState('all');
   const [skillsStr, setSkillsStr] = useState(profile?.resumeDetails?.skills?.join(', ') || '');
   const [portfolioUrl, setPortfolioUrl] = useState(profile?.resumeDetails?.portfolioUrl || '');
   const [githubUsername, setGithubUsername] = useState(profile?.githubUsername || '');
@@ -145,7 +254,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
         if (parsedData.experience) setExperience(parsedData.experience);
         if (parsedData.projects) setProjects(parsedData.projects);
       }
-      showToast('Resume parsed successfully! Review the auto-filled fields before saving.', 'success');
+      showToast('Resume parsed successfully with Gemini! Review the auto-filled fields before saving.', 'success');
     } catch (err) {
       console.error('Error parsing resume', err);
       showToast(err.response?.data?.message || 'Failed to parse resume', 'error');
@@ -186,9 +295,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
       const res = await axios.put('/user/portfolio', payload);
       onComplete(res.data.user);
       onClose();
-      showToast('Resume saved successfully', 'success');
+      showToast('Portfolio details saved successfully', 'success');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to save resume details', 'error');
+      showToast(err.response?.data?.message || 'Failed to save portfolio details', 'error');
     } finally {
       setLoading(false);
       setShowConfirmModal(false);
@@ -226,193 +335,619 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
   const removeProj = (index) => setProjects(projects.filter((_, i) => i !== index));
   const removeAchieve = (index) => setAchievements(achievements.filter((_, i) => i !== index));
 
+  const tabs = [
+    { id: 'all', label: 'All Sections' },
+    { id: 'handles', label: 'Profiles & Handles' },
+    { id: 'skills', label: 'Skills' },
+    { id: 'education', label: `Education (${education.length})` },
+    { id: 'experience', label: `Experience (${experience.length})` },
+    { id: 'projects', label: `Projects (${projects.length})` },
+    { id: 'achievements', label: `Honors (${achievements.length})` }
+  ];
+
   return (
-    <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-      <div className="bg-surface-container-lowest rounded-2xl shadow-ambient max-w-3xl w-full border border-border-light max-h-[90vh] flex flex-col relative">
-        {/* Fixed Header */}
-        <div className="px-6 md:px-8 py-4 bg-surface-container-lowest border-b border-border-light flex justify-between items-center shrink-0 rounded-t-2xl">
-          <div>
-            <h2 className="text-headline-md font-bold text-on-surface mb-1">Update Resume</h2>
-            <p className="text-body-md text-on-surface-variant text-sm">
-              Manually enter your portfolio details or upload a PDF resume.
-            </p>
-          </div>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[110] flex items-center justify-center p-4 animate-in fade-in duration-150">
+      <div className="bg-background-100 rounded-xl shadow-2xl max-w-4xl w-full border border-gray-400 max-h-[90vh] flex flex-col relative text-gray-1000 overflow-hidden">
+        
+        {/* Modal Header */}
+        <div className="px-6 py-4 bg-background-200 border-b border-gray-400 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-3">
-            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-surface-variant text-on-surface-variant rounded-full hover:bg-outline-variant transition-colors">
-              <span className="material-symbols-outlined text-[20px]">close</span>
+            <div className="w-9 h-9 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center shrink-0 shadow-2xs text-gray-1000">
+              <Edit3 className="w-4 h-4" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-gray-1000 tracking-tight">Update Portfolio &amp; Resume</h2>
+              <p className="text-xs text-gray-700 font-sans mt-0.5">
+                Edit your verified handles, educational degrees, work history, and achievements.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              type="button"
+              onClick={onClose} 
+              className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-md text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" strokeWidth={1.5} />
             </button>
             <button 
+              type="button"
               onClick={handleSave} 
               disabled={loading} 
-              className="bg-primary text-on-primary px-6 py-2 rounded-lg font-button-text hover:bg-primary-container hover:text-on-primary-container transition-colors disabled:opacity-70 flex justify-center items-center gap-2 shadow-sm"
+              className="bg-gray-1000 text-background-100 px-4 py-1.5 rounded-md text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
-              {loading ? <FiLoader className="animate-spin text-[20px]" /> : 'Save'}
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Changes'}
             </button>
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="p-6 md:p-8 overflow-y-auto">
-          {/* AI Resume Parser Area */}
-          <section className="mb-8 p-6 rounded-xl border border-primary/20 bg-primary/5 flex flex-col items-center text-center">
-          <span className="material-symbols-outlined text-[32px] text-primary mb-2">document_scanner</span>
-          <h3 className="font-bold text-label-lg text-on-surface mb-1">Auto-Fill with AI</h3>
-          <p className="text-sm text-on-surface-variant mb-4">Upload your PDF resume and let our AI extract your details.</p>
-          
-          <label className={`cursor-pointer bg-primary text-on-primary px-6 py-2 rounded-lg font-button-text flex items-center gap-2 transition-colors ${parsing ? 'opacity-70 pointer-events-none' : 'hover:bg-on-primary-fixed'}`}>
-            {parsing ? <FiLoader className="animate-spin text-[20px]" /> : <span className="material-symbols-outlined">upload</span>}
-            {parsing ? 'Parsing Resume...' : 'Upload PDF'}
-            <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} disabled={parsing} />
-          </label>
-          {profile?.resumeUrl && (
-             <button type="button" onClick={onPreviewPdf} className="mt-4 text-sm text-primary hover:underline flex items-center gap-1">
-               <span className="material-symbols-outlined text-[16px]">visibility</span> View Current PDF
-             </button>
-          )}
-        </section>
-
-        <form onSubmit={handleSave} className="space-y-8">
-          {/* Portfolio Link Section */}
-          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
-            <h3 className="font-bold text-label-lg text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary">link</span> Online Profiles</h3>
-            
-            <div>
-              <label className="block text-sm font-medium text-on-surface mb-1">Personal Portfolio</label>
-              <input type="url" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="https://yourportfolio.com" value={portfolioUrl} onChange={(e) => setPortfolioUrl(e.target.value)} />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-on-surface mb-1">GitHub Username</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"><FiGithub /></span>
-                  <input type="text" className="w-full pl-9 p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="octocat" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-on-surface mb-1">LeetCode Username</label>
-                <div className="relative">
-                  <input type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="johndoe" value={leetcodeUsername} onChange={(e) => setLeetcodeUsername(e.target.value)} />
-                </div>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-on-surface mb-1">LinkedIn Profile URL</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"><FiLinkedin /></span>
-                  <input type="url" className="w-full pl-9 p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="https://linkedin.com/in/..." value={linkedInUrl} onChange={(e) => setLinkedInUrl(e.target.value)} />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Skills Section */}
-          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light">
-            <h3 className="font-bold text-label-lg text-on-surface mb-3 flex items-center gap-2"><span className="material-symbols-outlined text-primary">psychology</span> Skills</h3>
-            <input type="text" className="w-full p-3 bg-surface border border-outline-variant rounded-lg text-on-surface focus:outline-none focus:border-primary" placeholder="React, Node.js, Python, SQL" value={skillsStr} onChange={(e) => setSkillsStr(e.target.value)} />
-            <p className="text-xs text-on-surface-variant mt-2">Comma separated list of your technical skills.</p>
-          </section>
-
-          {/* Education Section */}
-          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-label-lg text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">school</span> Education</h3>
-              <button type="button" onClick={addEdu} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span> Add</button>
-            </div>
-            {education.map((edu, idx) => {
-              const getYearOfStudy = (start, end) => {
-                if (!start || !end) return '';
-                const currentYear = new Date().getFullYear();
-                const currentMonth = new Date().getMonth();
-                const startY = parseInt(start, 10);
-                const endY = parseInt(end, 10);
-                if (isNaN(startY) || isNaN(endY)) return '';
-                if (currentYear > endY || (currentYear === endY && currentMonth >= 5)) return 'Alumni';
-                if (currentYear < startY) return 'Incoming';
-                let yearsPassed = currentYear - startY;
-                if (currentMonth >= 7) yearsPassed++;
-                if (yearsPassed === 1) return '1st Year';
-                if (yearsPassed === 2) return '2nd Year';
-                if (yearsPassed === 3) return '3rd Year';
-                if (yearsPassed === 4) return '4th Year';
-                if (yearsPassed === 5) return '5th Year';
-                return `Year ${yearsPassed}`;
-              };
-              const yearText = getYearOfStudy(edu.startYear, edu.endYear);
-
-              return (
-                <div key={idx} className="bg-surface p-4 rounded-lg border border-border-light relative gap-4 grid grid-cols-1 md:grid-cols-2">
-                  <button type="button" onClick={() => removeEdu(idx)} className="absolute top-2 right-2 text-error"><span className="material-symbols-outlined text-[20px]">delete</span></button>
-                  <div><label className="text-xs font-bold text-on-surface-variant">Institution</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={edu.institution} onChange={e => updateEdu(idx, 'institution', e.target.value)} /></div>
-                  <div><label className="text-xs font-bold text-on-surface-variant flex items-center gap-2">Degree {yearText && <span className="text-primary font-medium px-1.5 py-0.5 bg-primary/10 rounded text-[10px]">{yearText}</span>}</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={edu.degree} onChange={e => updateEdu(idx, 'degree', e.target.value)} /></div>
-                  <div><label className="text-xs font-bold text-on-surface-variant">Start Year</label><input className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={edu.startYear} onChange={e => updateEdu(idx, 'startYear', e.target.value)} /></div>
-                  <div><label className="text-xs font-bold text-on-surface-variant">End Year</label><input className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={edu.endYear} onChange={e => updateEdu(idx, 'endYear', e.target.value)} /></div>
-                </div>
-              );
-            })}
-          </section>
-
-          {/* Experience Section */}
-          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-label-lg text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">work</span> Experience</h3>
-              <button type="button" onClick={addExp} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span> Add</button>
-            </div>
-            {experience.map((exp, idx) => (
-              <div key={idx} className="bg-surface p-4 rounded-lg border border-border-light relative gap-4 grid grid-cols-1 md:grid-cols-2">
-                <button type="button" onClick={() => removeExp(idx)} className="absolute top-2 right-2 text-error"><span className="material-symbols-outlined text-[20px]">delete</span></button>
-                <div><label className="text-xs font-bold text-on-surface-variant">Company</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.company} onChange={e => updateExp(idx, 'company', e.target.value)} /></div>
-                <div><label className="text-xs font-bold text-on-surface-variant">Role</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.role} onChange={e => updateExp(idx, 'role', e.target.value)} /></div>
-                <div><label className="text-xs font-bold text-on-surface-variant">Start Date</label><input className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.startDate} onChange={e => updateExp(idx, 'startDate', e.target.value)} /></div>
-                <div><label className="text-xs font-bold text-on-surface-variant">End Date</label><input className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.endDate} onChange={e => updateExp(idx, 'endDate', e.target.value)} /></div>
-                <div className="md:col-span-2"><label className="text-xs font-bold text-on-surface-variant">Description</label><textarea rows="2" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={exp.description} onChange={e => updateExp(idx, 'description', e.target.value)} /></div>
-              </div>
+        {/* Section Navigation Tabs */}
+        <div className="px-6 py-2.5 bg-background-100 border-b border-gray-400 shrink-0 overflow-x-auto">
+          <div className="flex items-center gap-1 p-1 bg-background-200 border border-gray-400 rounded-lg w-max">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-1 text-xs rounded-md transition-all whitespace-nowrap cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-background-100 text-gray-1000 font-medium shadow-2xs border border-gray-400'
+                    : 'text-gray-700 hover:text-gray-1000'
+                }`}
+              >
+                {tab.label}
+              </button>
             ))}
-          </section>
-
-          {/* Projects Section */}
-          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-label-lg text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">rocket_launch</span> Projects</h3>
-              <button type="button" onClick={addProj} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span> Add</button>
-            </div>
-            {projects.map((proj, idx) => (
-              <div key={idx} className="bg-surface p-4 rounded-lg border border-border-light relative gap-4 grid grid-cols-1 md:grid-cols-2">
-                <button type="button" onClick={() => removeProj(idx)} className="absolute top-2 right-2 text-error"><span className="material-symbols-outlined text-[20px]">delete</span></button>
-                <div><label className="text-xs font-bold text-on-surface-variant">Title</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={proj.title} onChange={e => updateProj(idx, 'title', e.target.value)} /></div>
-                <div><label className="text-xs font-bold text-on-surface-variant">Link</label><input type="url" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" placeholder="https://" value={proj.link} onChange={e => updateProj(idx, 'link', e.target.value)} /></div>
-                <div className="md:col-span-2"><label className="text-xs font-bold text-on-surface-variant">Description</label><textarea rows="2" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={proj.description} onChange={e => updateProj(idx, 'description', e.target.value)} /></div>
-              </div>
-            ))}
-          </section>
-
-          {/* Achievements Section */}
-          <section className="bg-surface-container-low p-4 rounded-xl border border-border-light space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-label-lg text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">award_star</span> Achievements</h3>
-              <button type="button" onClick={addAchieve} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-[16px]">add</span> Add</button>
-            </div>
-            {achievements.map((ach, idx) => (
-              <div key={idx} className="bg-surface p-4 rounded-lg border border-border-light relative gap-4 grid grid-cols-1 md:grid-cols-2">
-                <button type="button" onClick={() => removeAchieve(idx)} className="absolute top-2 right-2 text-error"><span className="material-symbols-outlined text-[20px]">delete</span></button>
-                <div><label className="text-xs font-bold text-on-surface-variant">Title</label><input required className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={ach.title} onChange={e => updateAchieve(idx, 'title', e.target.value)} /></div>
-                <div><label className="text-xs font-bold text-on-surface-variant">Date</label><input type="date" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={ach.date?.split('T')[0] || ''} onChange={e => updateAchieve(idx, 'date', e.target.value)} /></div>
-                <div className="md:col-span-2"><label className="text-xs font-bold text-on-surface-variant">Image URL (Optional)</label><input type="url" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" placeholder="https://" value={ach.imageUrl} onChange={e => updateAchieve(idx, 'imageUrl', e.target.value)} /></div>
-                <div className="md:col-span-2"><label className="text-xs font-bold text-on-surface-variant">Description</label><textarea rows="2" className="w-full p-2 border border-border-light rounded mt-1 bg-surface" value={ach.description} onChange={e => updateAchieve(idx, 'description', e.target.value)} /></div>
-              </div>
-            ))}
-          </section>
-        </form>
+          </div>
         </div>
+
+        {/* Modal Scrollable Body */}
+        <div className="p-6 overflow-y-auto space-y-6">
+          
+          {/* AI Resume Parser Strip */}
+          <div className="p-4 rounded-xl border border-teal-500/30 bg-teal-500/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center shrink-0 text-teal-600 dark:text-teal-400">
+                <Sparkles className="w-4 h-4" strokeWidth={1.5} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-semibold text-gray-1000">Auto-Fill with Gemini AI Parser</h3>
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-teal-500/15 text-teal-700 dark:text-teal-300 font-medium">AI Powered</span>
+                </div>
+                <p className="text-[11px] text-gray-700 font-sans mt-0.5">
+                  Upload your PDF resume to parse skills, degrees, and work history in seconds.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <label className={`cursor-pointer h-8 px-3.5 rounded-md bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-xs ${parsing ? 'opacity-70 pointer-events-none' : ''}`}>
+                {parsing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                <span>{parsing ? 'Parsing PDF...' : 'Upload PDF'}</span>
+                <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} disabled={parsing} />
+              </label>
+              {profile?.resumeUrl && (
+                <button
+                  type="button"
+                  onClick={onPreviewPdf}
+                  className="h-8 px-3 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-gray-600" strokeWidth={1.5} />
+                  <span>Current PDF</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Form Sections */}
+          <form id="resume-editor-form" onSubmit={handleSave} className="space-y-6 text-xs font-sans">
+            
+            {/* Online Profiles */}
+            {(activeTab === 'all' || activeTab === 'handles') && (
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+                <div className="flex items-center gap-2 border-b border-gray-400/70 pb-3">
+                  <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
+                    <Globe className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-xs font-semibold text-gray-1000">Connected Profiles &amp; Handles</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div className="md:col-span-2">
+                    <label className="block text-gray-900 font-medium mb-1.5">Personal Portfolio Website</label>
+                    <input 
+                      type="url" 
+                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                      placeholder="https://yourportfolio.dev" 
+                      value={portfolioUrl} 
+                      onChange={(e) => setPortfolioUrl(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-900 font-medium mb-1.5">GitHub Username</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                      placeholder="octocat" 
+                      value={githubUsername} 
+                      onChange={(e) => setGithubUsername(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-900 font-medium mb-1.5">LeetCode Username</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                      placeholder="johndoe" 
+                      value={leetcodeUsername} 
+                      onChange={(e) => setLeetcodeUsername(e.target.value)} 
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-gray-900 font-medium mb-1.5">LinkedIn Profile URL</label>
+                    <input 
+                      type="url" 
+                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                      placeholder="https://linkedin.com/in/johndoe" 
+                      value={linkedInUrl} 
+                      onChange={(e) => setLinkedInUrl(e.target.value)} 
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Technical Skills */}
+            {(activeTab === 'all' || activeTab === 'skills') && (
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-3">
+                <div className="flex items-center gap-2 border-b border-gray-400/70 pb-3">
+                  <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
+                    <Code2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-xs font-semibold text-gray-1000">Technical Skills &amp; Stack</h3>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-gray-900 font-medium">Core Frameworks &amp; Languages</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors" 
+                    placeholder="React, TypeScript, Node.js, Go, Python, PostgreSQL, Docker, TailwindCSS" 
+                    value={skillsStr} 
+                    onChange={(e) => setSkillsStr(e.target.value)} 
+                  />
+                  <p className="text-[11px] text-gray-600 font-mono">Comma-separated list of programming languages, libraries, and developer tooling.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Education History */}
+            {(activeTab === 'all' || activeTab === 'education') && (
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-400/70 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
+                      <GraduationCap className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-xs font-semibold text-gray-1000">Education History ({education.length})</h3>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={addEdu} 
+                    className="px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-900 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Degree
+                  </button>
+                </div>
+
+                {education.length === 0 ? (
+                  <div className="text-center py-6 border border-dashed border-gray-400 rounded-lg bg-background-100/50">
+                    <GraduationCap className="w-6 h-6 text-gray-500 mx-auto mb-1.5" strokeWidth={1.5} />
+                    <p className="text-xs text-gray-700 font-sans">No education records added yet.</p>
+                    <button type="button" onClick={addEdu} className="mt-1.5 text-xs font-medium text-gray-900 hover:text-gray-1000 underline cursor-pointer">+ Add First Degree</button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {education.map((edu, idx) => (
+                      <div key={idx} className="bg-background-100 p-4 rounded-lg border border-gray-400 space-y-3 relative shadow-2xs">
+                        <div className="flex items-center justify-between border-b border-gray-400/50 pb-2">
+                          <span className="text-[11px] font-mono font-medium text-gray-600 uppercase tracking-wider">Degree #{idx + 1}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => removeEdu(idx)} 
+                            className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors cursor-pointer"
+                            title="Remove degree"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Institution</label>
+                            <input 
+                              required 
+                              placeholder="e.g. Stanford University"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
+                              value={edu.institution} 
+                              onChange={e => updateEdu(idx, 'institution', e.target.value)} 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Degree / Major</label>
+                            <input 
+                              required 
+                              placeholder="e.g. B.Tech Computer Science"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
+                              value={edu.degree} 
+                              onChange={e => updateEdu(idx, 'degree', e.target.value)} 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Start Year</label>
+                            <input 
+                              placeholder="2021"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
+                              value={edu.startYear} 
+                              onChange={e => updateEdu(idx, 'startYear', e.target.value)} 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">End Year</label>
+                            <input 
+                              placeholder="2025"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
+                              value={edu.endYear} 
+                              onChange={e => updateEdu(idx, 'endYear', e.target.value)} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Experience History */}
+            {(activeTab === 'all' || activeTab === 'experience') && (
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-400/70 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
+                      <Briefcase className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-xs font-semibold text-gray-1000">Work Experience ({experience.length})</h3>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={addExp} 
+                    className="px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-900 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Experience
+                  </button>
+                </div>
+
+                {experience.length === 0 ? (
+                  <div className="text-center py-6 border border-dashed border-gray-400 rounded-lg bg-background-100/50">
+                    <Briefcase className="w-6 h-6 text-gray-500 mx-auto mb-1.5" strokeWidth={1.5} />
+                    <p className="text-xs text-gray-700 font-sans">No work experience entries added yet.</p>
+                    <button type="button" onClick={addExp} className="mt-1.5 text-xs font-medium text-gray-900 hover:text-gray-1000 underline cursor-pointer">+ Add Experience</button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {experience.map((exp, idx) => (
+                      <div key={idx} className="bg-background-100 p-4 rounded-lg border border-gray-400 space-y-3 relative shadow-2xs">
+                        <div className="flex items-center justify-between border-b border-gray-400/50 pb-2">
+                          <span className="text-[11px] font-mono font-medium text-gray-600 uppercase tracking-wider">Role #{idx + 1}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => removeExp(idx)} 
+                            className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors cursor-pointer"
+                            title="Remove role"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Company / Organization</label>
+                            <input 
+                              required 
+                              placeholder="e.g. Acme Corp"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
+                              value={exp.company} 
+                              onChange={e => updateExp(idx, 'company', e.target.value)} 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Role / Title</label>
+                            <input 
+                              required 
+                              placeholder="e.g. Software Engineer Intern"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
+                              value={exp.role} 
+                              onChange={e => updateExp(idx, 'role', e.target.value)} 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Start Date</label>
+                            <input 
+                              placeholder="Jun 2024"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
+                              value={exp.startDate} 
+                              onChange={e => updateExp(idx, 'startDate', e.target.value)} 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">End Date</label>
+                            <input 
+                              placeholder="Present"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
+                              value={exp.endDate} 
+                              onChange={e => updateExp(idx, 'endDate', e.target.value)} 
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-[11px] font-medium text-gray-800">Key Contributions &amp; Impact</label>
+                            <textarea 
+                              rows="2" 
+                              placeholder="Designed and deployed microservices reducing API latency by 40%..."
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed" 
+                              value={exp.description} 
+                              onChange={e => updateExp(idx, 'description', e.target.value)} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Featured Projects */}
+            {(activeTab === 'all' || activeTab === 'projects') && (
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-400/70 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
+                      <FolderGit2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-xs font-semibold text-gray-1000">Featured Projects ({projects.length})</h3>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={addProj} 
+                    className="px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-900 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Project
+                  </button>
+                </div>
+
+                {projects.length === 0 ? (
+                  <div className="text-center py-6 border border-dashed border-gray-400 rounded-lg bg-background-100/50">
+                    <FolderGit2 className="w-6 h-6 text-gray-500 mx-auto mb-1.5" strokeWidth={1.5} />
+                    <p className="text-xs text-gray-700 font-sans">No portfolio projects listed yet.</p>
+                    <button type="button" onClick={addProj} className="mt-1.5 text-xs font-medium text-gray-900 hover:text-gray-1000 underline cursor-pointer">+ Add Project</button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {projects.map((proj, idx) => (
+                      <div key={idx} className="bg-background-100 p-4 rounded-lg border border-gray-400 space-y-3 relative shadow-2xs">
+                        <div className="flex items-center justify-between border-b border-gray-400/50 pb-2">
+                          <span className="text-[11px] font-mono font-medium text-gray-600 uppercase tracking-wider">Project #{idx + 1}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => removeProj(idx)} 
+                            className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors cursor-pointer"
+                            title="Remove project"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Project Title</label>
+                            <input 
+                              required 
+                              placeholder="e.g. Distributed Task Queue"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
+                              value={proj.title} 
+                              onChange={e => updateProj(idx, 'title', e.target.value)} 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Live URL / Repository</label>
+                            <input 
+                              type="url" 
+                              placeholder="https://github.com/..."
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
+                              value={proj.link} 
+                              onChange={e => updateProj(idx, 'link', e.target.value)} 
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-[11px] font-medium text-gray-800">Description</label>
+                            <textarea 
+                              rows="2" 
+                              placeholder="High-throughput distributed asynchronous job processing library in Go..."
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed" 
+                              value={proj.description} 
+                              onChange={e => updateProj(idx, 'description', e.target.value)} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Honors & Achievements */}
+            {(activeTab === 'all' || activeTab === 'achievements') && (
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-400/70 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
+                      <Award className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-xs font-semibold text-gray-1000">Honors &amp; Achievements ({achievements.length})</h3>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={addAchieve} 
+                    className="px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-900 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Achievement
+                  </button>
+                </div>
+
+                {achievements.length === 0 ? (
+                  <div className="text-center py-6 border border-dashed border-gray-400 rounded-lg bg-background-100/50">
+                    <Award className="w-6 h-6 text-gray-500 mx-auto mb-1.5" strokeWidth={1.5} />
+                    <p className="text-xs text-gray-700 font-sans">No honors or certificates recorded yet.</p>
+                    <button type="button" onClick={addAchieve} className="mt-1.5 text-xs font-medium text-gray-900 hover:text-gray-1000 underline cursor-pointer">+ Add Achievement</button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {achievements.map((ach, idx) => (
+                      <div key={idx} className="bg-background-100 p-4 rounded-lg border border-gray-400 space-y-3 relative shadow-2xs">
+                        <div className="flex items-center justify-between border-b border-gray-400/50 pb-2">
+                          <span className="text-[11px] font-mono font-medium text-gray-600 uppercase tracking-wider">Achievement #{idx + 1}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => removeAchieve(idx)} 
+                            className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors cursor-pointer"
+                            title="Remove achievement"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Title</label>
+                            <input 
+                              required 
+                              placeholder="e.g. 1st Place - University Hackathon"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
+                              value={ach.title} 
+                              onChange={e => updateAchieve(idx, 'title', e.target.value)} 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Date Received</label>
+                            <input 
+                              type="date" 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
+                              value={ach.date?.split('T')[0] || ''} 
+                              onChange={e => updateAchieve(idx, 'date', e.target.value)} 
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-[11px] font-medium text-gray-800">Certificate / Badge Image URL (Optional)</label>
+                            <input 
+                              type="url" 
+                              placeholder="https://..."
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
+                              value={ach.imageUrl} 
+                              onChange={e => updateAchieve(idx, 'imageUrl', e.target.value)} 
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="text-[11px] font-medium text-gray-800">Description</label>
+                            <textarea 
+                              rows="2" 
+                              placeholder="Awarded for creating an autonomous agent system..."
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed" 
+                              value={ach.description} 
+                              onChange={e => updateAchieve(idx, 'description', e.target.value)} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+          </form>
+        </div>
+
+        {/* Modal Sticky Bottom Footer */}
+        <div className="px-6 py-3.5 bg-background-200 border-t border-gray-400 flex items-center justify-between shrink-0">
+          <span className="text-[11px] font-mono text-gray-600 hidden sm:inline-block">
+            All updates sync with your campus portfolio
+          </span>
+          <div className="flex items-center gap-2.5 ml-auto">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={loading}
+              className="px-5 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-xs"
+            >
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Portfolio & Sync'}
+            </button>
+          </div>
+        </div>
+
+        {/* Handles Change Warning Confirmation Modal */}
+        {showConfirmModal && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-30 flex items-center justify-center p-6 rounded-xl animate-in fade-in duration-150">
+            <div className="max-w-md w-full p-6 border border-amber-500/30 bg-background-100 shadow-2xl rounded-xl text-center space-y-4 text-gray-1000 animate-in zoom-in-95 duration-150">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-2xs">
+                <AlertTriangle className="w-6 h-6" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-1000">Confirm Handle Modification</h4>
+                <p className="text-xs text-gray-700 font-sans mt-1.5 leading-relaxed">
+                  Updating your GitHub, LeetCode, or LinkedIn handles will re-sync your platform identity. Handles can only be updated once every 24 hours.
+                </p>
+              </div>
+              <div className="flex gap-2.5 justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)}
+                  className="px-4 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={executeSave}
+                  disabled={loading}
+                  className="px-4 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1.5 shadow-xs"
+                >
+                  {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Confirm &amp; Update</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
 }
 
+// =============================================================================
+// 3. MAIN STUDENT PROFILE PAGE
+// =============================================================================
 export default function StudentProfile() {
   const { user } = useContext(AuthContext);
   const { showToast } = useToast();
+  const navigate = useNavigate();
+
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -424,6 +959,8 @@ export default function StudentProfile() {
   const [verifyingLoad, setVerifyingLoad] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [userPlacementPosts, setUserPlacementPosts] = useState([]);
+  const [activeTab, setActiveTab] = useState('portfolio');
+  const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -464,6 +1001,7 @@ export default function StudentProfile() {
       const res = await axios.post('/user/verify-platform', { platform });
       setProfile(res.data.user);
       setVerificationSuccess(true);
+      showToast(`${platform === 'github' ? 'GitHub' : 'LeetCode'} verified successfully!`, 'success');
     } catch (err) {
       showToast(err.response?.data?.message || 'Verification failed', 'error');
     } finally {
@@ -474,7 +1012,9 @@ export default function StudentProfile() {
   const handleCopyCode = async () => {
     try {
       await navigator.clipboard.writeText(profile.verificationCode);
+      setCopiedCode(true);
       showToast('Verification code copied to clipboard!', 'success');
+      setTimeout(() => setCopiedCode(false), 2000);
     } catch (err) {
       showToast('Failed to copy code. Please copy it manually.', 'error');
     }
@@ -486,7 +1026,7 @@ export default function StudentProfile() {
     const reader = new FileReader();
     reader.addEventListener('load', () => setAvatarCropSrc(reader.result?.toString() || ''));
     reader.readAsDataURL(file);
-    e.target.value = ''; // Reset input
+    e.target.value = '';
   };
 
   const handleAvatarCropComplete = async (croppedBlob) => {
@@ -509,26 +1049,38 @@ export default function StudentProfile() {
     }
   };
 
+  const isProfileModalOpen = Boolean(
+    showEditor ||
+    showPdf ||
+    selectedAchievement ||
+    verifyingPlatform ||
+    avatarCropSrc ||
+    (profile && (!profile.isProfileComplete || !profile.email || !profile.uid))
+  );
+
+  useEffect(() => {
+    if (isProfileModalOpen) {
+      const originalBody = document.body.style.overflow;
+      const originalHtml = document.documentElement.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalBody;
+        document.documentElement.style.overflow = originalHtml;
+      };
+    }
+  }, [isProfileModalOpen]);
+
   if (loading) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
+      <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans">
         <Sidebar />
-        <main className="flex-1 relative overflow-y-auto">
-          <Topbar />
-          <div className="pt-8 pb-16 px-gutter max-w-container-max mx-auto w-full space-y-8">
-            <section className="flex flex-col md:flex-row gap-6">
-              <div className="flex-1 h-48 skeleton-box delay-200"></div>
-              <div className="w-full lg:w-80 h-48 skeleton-box delay-300 shrink-0"></div>
-            </section>
-            
-            <div className="w-full h-96 skeleton-box delay-400"></div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="h-24 skeleton-box delay-500"></div>
-              <div className="h-24 skeleton-box delay-500"></div>
-              <div className="h-24 skeleton-box delay-500"></div>
-              <div className="h-24 skeleton-box delay-500"></div>
-            </div>
+        <main className="flex-1 relative">
+          <div className="hidden md:flex bg-background-100 border-b border-gray-400 h-14 w-full" />
+          <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
+            <div className="h-8 w-48 bg-gray-200 animate-pulse rounded-md" />
+            <div className="h-36 w-full bg-gray-200 animate-pulse rounded-xl" />
+            <div className="h-64 w-full bg-gray-200 animate-pulse rounded-xl" />
           </div>
         </main>
       </div>
@@ -537,15 +1089,16 @@ export default function StudentProfile() {
 
   if (!profile) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
+      <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans">
         <Sidebar />
-        <main className="flex-1 relative overflow-y-auto flex justify-center items-center">
-          Error loading profile.
+        <main className="flex-1 flex justify-center items-center p-8 text-xs font-mono text-gray-600">
+          Profile not found or error loading data.
         </main>
       </div>
     );
   }
 
+  // Calculate metrics and missing sections
   const skills = profile.resumeDetails?.skills || [];
   const experience = profile.resumeDetails?.experience || [];
   const education = profile.resumeDetails?.education || [];
@@ -572,7 +1125,7 @@ export default function StudentProfile() {
   if (!portfolioUrl) missingSections.push('Portfolio');
   if (!hasCertificates || hasIncompleteCerts) missingSections.push('Certificates');
 
-  let profileStrength = 10; // base
+  let profileStrength = 10;
   if (skills.length > 0) profileStrength += 15;
   if (experience.length > 0) profileStrength += 15;
   if (education.length > 0) profileStrength += 15;
@@ -582,10 +1135,15 @@ export default function StudentProfile() {
   if (hasCertificates && !hasIncompleteCerts) profileStrength += 10;
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-background text-on-surface font-body-lg">
+    <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
       <Sidebar />
-      {(!profile.isProfileComplete || !profile.email || !profile.uid) && <ProfileSetupOverlay onComplete={setProfile} user={profile} />}
       
+      {/* Onboarding Overlay if profile incomplete */}
+      {(!profile.isProfileComplete || !profile.email || !profile.uid) && (
+        <ProfileSetupOverlay onComplete={setProfile} user={profile} />
+      )}
+
+      {/* Resume Editor Modal */}
       {showEditor && (
         <ResumeEditorModal 
           profile={profile} 
@@ -595,33 +1153,79 @@ export default function StudentProfile() {
         />
       )}
 
+      {/* PDF Viewer Modal */}
       {showPdf && profile.resumeUrl && (
         <PdfViewerModal url={profile.resumeUrl} onClose={() => setShowPdf(false)} />
       )}
-      
+
+      {/* Achievement Details Modal */}
       {selectedAchievement && (
-        <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl shadow-ambient max-w-2xl w-full border border-border-light max-h-[90vh] flex flex-col overflow-hidden relative">
-            <div className="flex justify-between items-center p-4 md:p-6 border-b border-border-light bg-surface-container-lowest shrink-0">
-              <h2 className="text-headline-sm font-bold text-on-surface">Achievement Details</h2>
-              <button onClick={() => setSelectedAchievement(null)} className="w-10 h-10 flex items-center justify-center hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors">
-                <span className="material-symbols-outlined text-[20px]">close</span>
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setSelectedAchievement(null)}
+        >
+          <div 
+            className="bg-background-100 rounded-xl shadow-2xl max-w-xl w-full border border-gray-400 max-h-[90vh] flex flex-col overflow-hidden text-gray-1000"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-400 bg-background-200 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-2xs">
+                  <Award className="w-4 h-4" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Achievement Details</h2>
+                  <span className="text-[10px] font-mono text-gray-600">Verified Credential Showcase</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedAchievement(null)} 
+                className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-md text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" strokeWidth={1.5} />
               </button>
             </div>
-            <div className="p-4 md:p-6 overflow-y-auto">
+            <div className="p-6 overflow-y-auto space-y-4">
               {selectedAchievement.imageUrl && (
-                <img src={selectedAchievement.imageUrl} alt={selectedAchievement.title} className="w-full h-64 object-contain bg-surface-container rounded-xl mb-6 shadow-sm border border-border-light" />
+                <div className="rounded-xl border border-gray-400 p-2.5 bg-background-200 flex items-center justify-center overflow-hidden shadow-2xs">
+                  <img 
+                    src={selectedAchievement.imageUrl} 
+                    alt={selectedAchievement.title} 
+                    className="w-full max-h-64 object-contain rounded-lg" 
+                  />
+                </div>
               )}
-              <h3 className="font-headline-md font-bold text-on-surface mb-2">{selectedAchievement.title}</h3>
-              <span className="inline-block px-3 py-1 bg-surface-variant text-on-surface-variant text-xs font-bold rounded-md mb-6 uppercase tracking-wide">
-                {selectedAchievement.date ? new Date(selectedAchievement.date).toLocaleDateString() : 'N/A'}
-              </span>
-              <p className="text-body-lg text-on-surface-variant whitespace-pre-line leading-relaxed">{selectedAchievement.description}</p>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <h3 className="text-base font-semibold text-gray-1000 tracking-tight">{selectedAchievement.title}</h3>
+                  {selectedAchievement.date && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-background-200 border border-gray-400 text-[10px] font-mono text-gray-700 uppercase tracking-wider">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(selectedAchievement.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="p-4 rounded-lg bg-background-200 border border-gray-400">
+                <p className="text-xs text-gray-1000 font-sans whitespace-pre-line leading-relaxed">
+                  {selectedAchievement.description || 'No detailed description provided.'}
+                </p>
+              </div>
+            </div>
+            <div className="px-6 py-3.5 bg-background-200 border-t border-gray-400 flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedAchievement(null)}
+                className="px-4 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Image Cropper Modal */}
       {avatarCropSrc && (
         <ImageCropperModal
           imageSrc={avatarCropSrc}
@@ -630,456 +1234,836 @@ export default function StudentProfile() {
           onCancel={() => setAvatarCropSrc(null)}
         />
       )}
-      
+
+      {/* Platform Verification Modal */}
       {verifyingPlatform && (
-        <div className="fixed inset-0 bg-surface/90 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl shadow-ambient max-w-lg w-full border border-border-light p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-headline-sm font-bold">Verify {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'}</h2>
-              <button onClick={() => setVerifyingPlatform(null)} className="text-on-surface-variant hover:bg-surface-variant rounded-full p-1 flex items-center justify-center"><span className="material-symbols-outlined text-[20px]">close</span></button>
-            </div>
-            
-            {verificationSuccess ? (
-              <div className="text-center py-6 flex flex-col items-center">
-                <div className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mb-4">
-                  <span className="material-symbols-outlined text-success text-[40px]">check_circle</span>
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setVerifyingPlatform(null)}
+        >
+          <div 
+            className="bg-background-100 rounded-xl shadow-2xl max-w-md w-full border border-gray-400 overflow-hidden text-gray-1000 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center px-6 py-4 bg-background-200 border-b border-gray-400">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center shadow-2xs">
+                  {verifyingPlatform === 'github' ? <FaGithub className="w-4 h-4 text-gray-1000" /> : <SiLeetcode className="w-4 h-4 text-[#ffa116]" />}
                 </div>
-                <h3 className="text-title-lg font-bold text-on-surface mb-2">Verification Successful!</h3>
-                <p className="text-body-md text-on-surface-variant mb-6">
-                  Your {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'} account has been verified. You can now safely remove the code from your profile.
-                </p>
-                <button onClick={() => setVerifyingPlatform(null)} className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm">
+                <div>
+                  <h2 className="text-sm font-semibold tracking-tight">Verify {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'}</h2>
+                  <span className="text-[10px] font-mono text-gray-600">Cryptographic Identity Verification</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setVerifyingPlatform(null)} 
+                className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-md text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {verificationSuccess ? (
+              <div className="p-6 text-center space-y-4">
+                <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto shadow-2xs">
+                  <CheckCircle2 className="w-6 h-6" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-1000">Verification Successful!</h3>
+                  <p className="text-xs text-gray-700 font-sans mt-1 leading-relaxed">
+                    Your {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'} identity is now cryptographically verified. You can safely remove the verification tag from your profile.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setVerifyingPlatform(null)} 
+                  className="w-full bg-gray-1000 text-background-100 py-2.5 rounded-md text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                >
                   Done
                 </button>
               </div>
             ) : (
-              <>
-                <p className="text-body-md text-on-surface-variant mb-6 leading-relaxed">
-                  To verify your account, please temporarily add the following code to your <strong>{verifyingPlatform === 'github' ? 'bio' : 'readme'}</strong> section on {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'}.
-                </p>
-                <div className="bg-surface p-4 rounded-lg font-mono text-xl font-bold border border-border-light mb-6 text-primary flex items-center justify-between">
-                  <span className="select-all">{profile.verificationCode}</span>
-                  <button onClick={handleCopyCode} className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-md hover:bg-surface-variant flex items-center justify-center" title="Copy to clipboard">
-                    <span className="material-symbols-outlined text-[20px]">content_copy</span>
-                  </button>
+              <div className="p-6 space-y-4 text-xs font-sans">
+                <div className="space-y-2">
+                  <p className="text-gray-700 leading-relaxed">
+                    To verify ownership of <strong>{verifyingPlatform === 'github' ? profile.githubUsername : profile.leetcodeUsername}</strong>, copy the one-time token below and paste it temporarily into your <strong>{verifyingPlatform === 'github' ? 'GitHub Bio' : 'LeetCode About/Readme'}</strong>:
+                  </p>
+
+                  <div className="bg-background-200 p-3.5 rounded-lg border border-gray-400 flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-mono text-gray-600 block uppercase tracking-wider mb-0.5">Verification Token</span>
+                      <span className="font-mono text-xs font-bold text-gray-1000 select-all tracking-wider break-all">{profile.verificationCode}</span>
+                    </div>
+                    <button 
+                      onClick={handleCopyCode} 
+                      className="h-8 px-2.5 rounded-md bg-background-100 border border-gray-400 hover:bg-gray-200 text-gray-700 hover:text-gray-1000 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer text-xs font-mono" 
+                      title="Copy code"
+                    >
+                      {copiedCode ? (
+                        <>
+                          <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-600 font-medium">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
+
+                <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg text-[11px] text-amber-700 dark:text-amber-400 space-y-1">
+                  <span className="font-semibold block">3-Step Verification:</span>
+                  <p className="text-gray-700 font-sans">1. Copy token &rarr; 2. Add to your account bio &rarr; 3. Click "Verify Account Now".</p>
+                </div>
+
                 <button 
                   onClick={() => handleVerify(verifyingPlatform)} 
                   disabled={verifyingLoad}
-                  className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm disabled:opacity-70 flex justify-center items-center gap-2"
+                  className="w-full bg-gray-1000 text-background-100 py-2.5 rounded-md text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex justify-center items-center gap-2 cursor-pointer shadow-xs"
                 >
-                  {verifyingLoad ? <FiLoader className="animate-spin text-[20px]" /> : 'Verify Now'}
+                  {verifyingLoad ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Verify Account Now'}
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>
       )}
-      
-      <main className="flex-1 relative bg-surface">
+
+      {/* Main Container */}
+      <main className="flex-1 min-w-0">
         <Topbar />
-        
-        {profile.isProfileComplete && (
-          <div className="pt-8 pb-16 px-gutter max-w-container-max mx-auto w-full space-y-8">
-            {/* Header Section */}
-            <section className="flex flex-col md:flex-row items-center md:items-start gap-6 bg-surface-container-lowest p-6 rounded-2xl border border-border-light shadow-sm">
-              <div className="relative group w-32 h-32 rounded-full bg-primary-container flex items-center justify-center shadow-ambient shrink-0 border-4 border-surface-container-lowest overflow-hidden">
-                {profile.avatarUrl ? (
-                  <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="material-symbols-outlined text-[64px] text-on-primary-container">person</span>
-                )}
-                {uploadingAvatar && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <FiLoader className="animate-spin text-white text-[32px]" />
+
+        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8">
+          
+          {/* ===================================================================
+              PROFILE HEADER & IDENTITY OVERVIEW
+              =================================================================== */}
+          <section className="rounded-xl border border-gray-400 bg-background-200 p-6 shadow-2xs space-y-6">
+            <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+              
+              {/* Avatar & Core Metadata */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+                
+                {/* Avatar with Camera Trigger */}
+                <div className="relative group w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-800 border-2 border-gray-400 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                  {profile.avatarUrl ? (
+                    <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-semibold text-gray-700 text-xl font-mono">
+                      {profile.name?.slice(0, 2).toUpperCase() || 'ST'}
+                    </span>
+                  )}
+                  {uploadingAvatar && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    </div>
+                  )}
+                  {!uploadingAvatar && (
+                    <label className="absolute inset-0 bg-black/60 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity z-10">
+                      <Camera className="w-5 h-5" strokeWidth={1.5} />
+                      <span className="text-[10px] font-mono mt-0.5">Upload</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                    </label>
+                  )}
+                </div>
+
+                {/* Name, Email, Institution */}
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <h1 className="text-xl font-semibold text-gray-1000 tracking-tight">{profile.name}</h1>
+                    {profile.uid && (
+                      <span className="px-2 py-0.5 rounded-full bg-background-100 border border-gray-400 text-[10px] font-mono text-gray-700">
+                        {profile.uid}
+                      </span>
+                    )}
                   </div>
-                )}
-                {!uploadingAvatar && (
-                  <label className="absolute inset-0 bg-black/50 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity z-10">
-                    <span className="material-symbols-outlined text-[24px]">photo_camera</span>
-                    <span className="text-[10px] font-medium mt-1">Upload</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-                  </label>
-                )}
+                  <p className="text-xs text-gray-700 font-mono">{profile.email}</p>
+                  <p className="text-xs text-gray-600 font-sans pt-0.5">
+                    {education.length > 0 ? `${education[0].degree} · ${education[0].institution}` : 'Campus Connect Student'}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 text-center md:text-left pt-2">
-                <h1 className="font-display-hero text-headline-lg text-on-surface">{profile.name}</h1>
-                <p className="font-body-md text-body-lg text-on-surface-variant mb-4">{profile.email}</p>
-                <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                  {profile.resumeDetails?.portfolioUrl && (
-                    <a href={profile.resumeDetails.portfolioUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">language</span> Portfolio
-                    </a>
-                  )}
-                  {profile.githubUsername && (
-                    <div className="relative group" title={!profile.githubVerified ? "Please verify your GitHub account" : "Verified GitHub account"}>
-                      {profile.githubVerified ? (
-                        <a 
-                          href={`https://github.com/${profile.githubUsername}`} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-green-50 border-green-200 hover:bg-green-100 text-green-800"
-                        >
-                          <FaGithub className="text-[18px]" /> GitHub
-                          <span className="material-symbols-outlined text-green-600 text-[16px]">verified</span>
-                        </a>
-                      ) : (
-                        <button 
-                          onClick={() => handleGenerateCodeAndVerify('github')}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-red-50 border-red-200 hover:bg-red-100 text-red-800"
-                        >
-                          <FaGithub className="text-[18px]" /> GitHub
-                        </button>
-                      )}
-                      {!profile.githubVerified && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm pointer-events-none animate-pulse" />
-                      )}
-                    </div>
-                  )}
-                  {profile.leetcodeUsername && (
-                    <div className="relative group" title={!profile.leetcodeVerified ? "Please verify your LeetCode account" : "Verified LeetCode account"}>
-                      {profile.leetcodeVerified ? (
-                        <a 
-                          href={`https://leetcode.com/u/${profile.leetcodeUsername}`} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-green-50 border-green-200 hover:bg-green-100 text-green-800"
-                        >
-                          <SiLeetcode className="text-[18px]" /> LeetCode
-                          <span className="material-symbols-outlined text-green-600 text-[16px]">verified</span>
-                        </a>
-                      ) : (
-                        <button 
-                          onClick={() => handleGenerateCodeAndVerify('leetcode')}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border bg-red-50 border-red-200 hover:bg-red-100 text-red-800"
-                        >
-                          <SiLeetcode className="text-[18px]" /> LeetCode
-                        </button>
-                      )}
-                      {!profile.leetcodeVerified && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm pointer-events-none animate-pulse" />
-                      )}
-                    </div>
-                  )}
-                  {profile.linkedInUrl && (
-                    <a href={profile.linkedInUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors">
-                      <FaLinkedin className="text-[18px]" /> LinkedIn
-                    </a>
-                  )}
-                  {profile.resumeUrl && (
-                    <button 
-                      onClick={() => setShowPdf(true)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-bg-subtle border border-border-light rounded-md text-sm hover:bg-surface-variant transition-colors"
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowEditor(true)}
+                  className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Edit3 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <span>Edit Resume</span>
+                </button>
+                {profile.resumeUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPdf(true)}
+                    className="h-8 px-3 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-200 text-xs font-medium text-gray-900 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    <span>View PDF</span>
+                  </button>
+                )}
+                <Link
+                  to="/placements/create"
+                  className="h-8 px-3 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-200 text-xs font-medium text-gray-900 transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <span>Share Experience</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Connected Identities Pills Strip */}
+            <div className="pt-4 border-t border-gray-400 flex flex-wrap items-center gap-2.5">
+              {profile.githubUsername && (
+                <div className="inline-flex items-center gap-1.5 text-xs font-mono">
+                  {profile.githubVerified ? (
+                    <a
+                      href={`https://github.com/${profile.githubUsername}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                      title="Verified GitHub profile"
                     >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span> Resume
+                      <FaGithub className="w-3.5 h-3.5" />
+                      <span>{profile.githubUsername}</span>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleGenerateCodeAndVerify('github')}
+                      className="px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                      title="Click to verify GitHub"
+                    >
+                      <FaGithub className="w-3.5 h-3.5" />
+                      <span>{profile.githubUsername}</span>
+                      <span className="text-[10px] font-sans font-medium px-1 rounded bg-amber-500/20">Verify</span>
                     </button>
                   )}
                 </div>
+              )}
+
+              {profile.leetcodeUsername && (
+                <div className="inline-flex items-center gap-1.5 text-xs font-mono">
+                  {profile.leetcodeVerified ? (
+                    <a
+                      href={`https://leetcode.com/u/${profile.leetcodeUsername}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                      title="Verified LeetCode profile"
+                    >
+                      <SiLeetcode className="w-3.5 h-3.5 text-[#ffa116]" />
+                      <span>{profile.leetcodeUsername}</span>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleGenerateCodeAndVerify('leetcode')}
+                      className="px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                      title="Click to verify LeetCode"
+                    >
+                      <SiLeetcode className="w-3.5 h-3.5 text-[#ffa116]" />
+                      <span>{profile.leetcodeUsername}</span>
+                      <span className="text-[10px] font-sans font-medium px-1 rounded bg-amber-500/20">Verify</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {profile.linkedInUrl && (
+                <a
+                  href={profile.linkedInUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-800 flex items-center gap-1.5 text-xs font-mono hover:text-gray-1000 transition-colors"
+                >
+                  <FaLinkedin className="w-3.5 h-3.5 text-[#0A66C2]" />
+                  <span>LinkedIn</span>
+                  <ExternalLink className="w-3 h-3 text-gray-500" />
+                </a>
+              )}
+
+              {profile.resumeDetails?.portfolioUrl && (
+                <a
+                  href={formatExternalUrl(profile.resumeDetails.portfolioUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-800 flex items-center gap-1.5 text-xs font-mono hover:text-gray-1000 transition-colors"
+                >
+                  <Globe className="w-3.5 h-3.5 text-gray-600" />
+                  <span>Portfolio</span>
+                  <ExternalLink className="w-3 h-3 text-gray-500" />
+                </a>
+              )}
+            </div>
+
+            {/* Profile Strength Progress Strip */}
+            <div className="pt-4 border-t border-gray-400 space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-gray-700 font-medium">Portfolio Completion</span>
+                <span className="text-gray-1000 font-bold">{profileStrength}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-gray-300 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-teal-700 rounded-full transition-all duration-700" 
+                  style={{ width: `${profileStrength}%` }} 
+                />
+              </div>
+              {profileStrength < 100 && missingSections.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap text-[11px] font-mono pt-1">
+                  <span className="text-gray-700 font-medium">Incomplete:</span>
+                  {missingSections.map(sec => (
+                    <span 
+                      key={sec} 
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-[10px] font-mono font-medium transition-colors"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                      <span>{sec}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* ===================================================================
+              CANONICAL VERCEL UNDERLINE TAB BAR
+              =================================================================== */}
+          <div className="flex items-center gap-6 border-b border-gray-400 text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => setActiveTab('portfolio')}
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'portfolio'
+                  ? 'border-gray-1000 text-gray-1000 font-semibold'
+                  : 'border-transparent text-gray-700 hover:text-gray-1000'
+              }`}
+            >
+              <Briefcase className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <span>Portfolio &amp; Career</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('honors')}
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'honors'
+                  ? 'border-gray-1000 text-gray-1000 font-semibold'
+                  : 'border-transparent text-gray-700 hover:text-gray-1000'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <span>Honors &amp; Credentials</span>
+              {achievements.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-background-200 border border-gray-400 text-[10px] font-mono">
+                  {achievements.length}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('placements')}
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'placements'
+                  ? 'border-gray-1000 text-gray-1000 font-semibold'
+                  : 'border-transparent text-gray-700 hover:text-gray-1000'
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <span>Placement Stories</span>
+              {userPlacementPosts.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-background-200 border border-gray-400 text-[10px] font-mono">
+                  {userPlacementPosts.length}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('identities')}
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'identities'
+                  ? 'border-gray-1000 text-gray-1000 font-semibold'
+                  : 'border-transparent text-gray-700 hover:text-gray-1000'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <span>Verification</span>
+            </button>
+          </div>
+
+          {/* ===================================================================
+              TAB 1: PORTFOLIO & CAREER (CLEAN, NO CLUTTER)
+              =================================================================== */}
+          {activeTab === 'portfolio' && (
+            <div className="space-y-8 animate-in fade-in duration-150">
+              
+              {/* 4-Column Quick Metric Strip */}
+              <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-gray-400 bg-background-200 divide-y md:divide-y-0 md:divide-x divide-gray-400 overflow-hidden shadow-2xs">
+                <div className="p-4 flex flex-col justify-center">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-gray-600">Technical Skills</span>
+                  <span className="text-xl font-bold font-sans text-gray-1000 mt-1">{skills.length}</span>
+                </div>
+                <div className="p-4 flex flex-col justify-center">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-gray-600">Work Experience</span>
+                  <span className="text-xl font-bold font-sans text-gray-1000 mt-1">{experience.length}</span>
+                </div>
+                <div className="p-4 flex flex-col justify-center">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-gray-600">Projects</span>
+                  <span className="text-xl font-bold font-sans text-gray-1000 mt-1">{projects.length}</span>
+                </div>
+                <div className="p-4 flex flex-col justify-center">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-gray-600">Degrees</span>
+                  <span className="text-xl font-bold font-sans text-gray-1000 mt-1">{education.length}</span>
+                </div>
               </div>
 
-              {/* Profile Strength Widget */}
-              <div className="bg-white border border-border-light rounded-xl p-6 shadow-md w-full lg:w-80 shrink-0 relative overflow-hidden mt-6 md:mt-0">
-                <div className="absolute -right-8 -top-8 w-32 h-32 bg-ai-gradient-start rounded-full blur-2xl"></div>
-                <h3 className="font-label-caps text-label-caps uppercase text-on-surface-variant mb-4">Profile Strength</h3>
-                <div className="flex items-end justify-between mb-2">
-                  <span className="font-headline-lg text-headline-lg text-primary">{profileStrength}%</span>
+              {/* Skills Tags Cloud */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                    <Code2 className="w-3.5 h-3.5" strokeWidth={1.5} /> Verified Technical Skills
+                  </h3>
+                  <button
+                    onClick={() => setShowEditor(true)}
+                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
+                  >
+                    Manage Skills &rarr;
+                  </button>
                 </div>
-                <div className="w-full bg-surface-container-low h-2 rounded-full overflow-hidden mb-4">
-                  <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${profileStrength}%` }}></div>
-                </div>
-                {profileStrength < 100 && missingSections.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {missingSections.map(section => (
-                      <span key={section} className="text-[10px] font-bold bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded border border-border-light">
-                        {section}
+
+                {skills.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {skills.map((skill, idx) => (
+                      <span 
+                        key={idx} 
+                        className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-xs font-mono text-gray-900 font-medium hover:border-gray-500 transition-colors"
+                      >
+                        {skill}
                       </span>
                     ))}
                   </div>
+                ) : (
+                  <p className="text-xs text-gray-600 font-mono py-4">No skills registered. Click Update Resume to add skills.</p>
                 )}
-                
-                <div className="mt-6 flex flex-col gap-3">
-                  <button 
+              </div>
+
+              {/* Work Experience Timeline */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                    <Briefcase className="w-3.5 h-3.5" strokeWidth={1.5} /> Work Experience
+                  </h3>
+                  <button
                     onClick={() => setShowEditor(true)}
-                    className="w-full bg-primary text-on-primary py-2 rounded-lg font-button-text hover:bg-on-primary-fixed transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
+                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[18px]">edit_document</span> Update Resume
+                    + Add Role
                   </button>
                 </div>
-              </div>
-            </section>
 
-            {/* LinkedIn Network Profile */}
-            {profile.scrapedData?.linkedin && (
-              <section className="bg-surface-container-lowest rounded-2xl p-6 border border-border-light shadow-sm">
-                <div className="flex items-center gap-3 border-b border-surface-variant pb-4 mb-4">
-                  <FaLinkedin className="text-[#0A66C2] text-[28px]" />
-                  <h2 className="font-headline-md text-headline-sm text-on-surface">LinkedIn Overview</h2>
-                </div>
-                
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="flex-1">
-                    <h3 className="font-headline-sm font-bold text-on-surface mb-2">
-                      {profile.scrapedData.linkedin.firstName} {profile.scrapedData.linkedin.lastName}
-                    </h3>
-                    <p className="text-body-md text-on-surface-variant mb-4">{profile.scrapedData.linkedin.headline}</p>
-                    {profile.scrapedData.linkedin.about && (
-                      <div className="bg-surface-container-low p-4 rounded-xl border border-border-light">
-                        <h4 className="font-label-caps text-label-caps uppercase text-on-surface-variant mb-2">About</h4>
-                        <p className="text-sm text-text-slate whitespace-pre-line">
-                          {profile.scrapedData.linkedin.about.slice(0, 300)}
-                          {profile.scrapedData.linkedin.about.length > 300 ? '...' : ''}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {profile.scrapedData.linkedin.certifications?.length > 0 && (
-                    <div className="flex-1 flex flex-col">
-                      <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-label-caps text-label-caps uppercase text-on-surface-variant">Top Certifications</h4>
-                        <Link to="/certificates" className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
-                          Show More <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                        </Link>
-                      </div>
-                      <div className="space-y-3">
-                        {profile.scrapedData.linkedin.certifications.slice(0, 3).map((cert, i) => (
-                          <div key={i} className="bg-surface-container-low p-3 rounded-xl border border-border-light flex flex-col">
-                            <span className="font-bold text-on-surface text-sm truncate">{cert.title}</span>
-                            <span className="text-xs text-on-surface-variant">{cert.issuedBy}</span>
-                            {cert.link && (
-                              <a href={formatExternalUrl(cert.link)} target="_blank" rel="noreferrer" className="text-[10px] text-primary mt-1 hover:underline truncate">
-                                View Credential
-                              </a>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* Quick Stats Grid */}
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <span className="material-symbols-outlined text-primary mb-2">psychology</span>
-                <div>
-                  <div className="font-headline-md text-headline-md text-on-surface">{skills.length}</div>
-                  <div className="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Skills</div>
-                </div>
-              </div>
-              <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <span className="material-symbols-outlined text-secondary-container mb-2">work</span>
-                <div>
-                  <div className="font-headline-md text-headline-md text-on-surface">{experience.length}</div>
-                  <div className="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Experiences</div>
-                </div>
-              </div>
-              <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <span className="material-symbols-outlined text-tertiary-container mb-2">rocket_launch</span>
-                <div>
-                  <div className="font-headline-md text-headline-md text-on-surface">{projects.length}</div>
-                  <div className="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Projects</div>
-                </div>
-              </div>
-              <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <span className="material-symbols-outlined text-surface-tint mb-2">school</span>
-                <div>
-                  <div className="font-headline-md text-headline-md text-on-surface">{education.length}</div>
-                  <div className="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Degrees</div>
-                </div>
-              </div>
-            </section>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1 flex flex-col gap-8">
-                <section className="bg-white border border-border-light rounded-xl p-6 shadow-md relative overflow-hidden h-full">
-                  <div className="absolute inset-0 bg-gradient-to-br from-surface-container-low to-transparent opacity-50 pointer-events-none"></div>
-                  <div className="flex justify-between items-center mb-6 relative z-10">
-                    <h2 className="font-headline-md text-headline-md text-on-surface">Your Skills</h2>
-                  </div>
-                  <div className="flex flex-wrap gap-2 relative z-10">
-                    {skills.length > 0 ? skills.map((skill, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-surface-container text-primary rounded-full text-sm font-medium border border-border-light">{skill}</span>
-                    )) : (
-                      <p className="text-on-surface-variant text-sm">No skills added yet. Update your resume!</p>
-                    )}
-                  </div>
-                </section>
-              </div>
-
-              <div className="lg:col-span-2 flex flex-col gap-8">
-                <section>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="font-headline-md text-headline-md text-on-surface">Experience History</h2>
-                  </div>
-                  {experience.length > 0 ? (
-                    <div className="relative border-l-2 border-border-light ml-3 space-y-8">
-                      {experience.map((exp, idx) => (
-                        <div key={idx} className="relative pl-6">
-                          <div className="absolute w-4 h-4 bg-primary rounded-full -left-[9px] top-1 ring-4 ring-white shadow-sm"></div>
-                          <h3 className="font-body-lg text-body-lg font-bold text-on-surface">{exp.role}</h3>
-                          <p className="text-on-surface-variant font-medium text-sm mb-2">{exp.company} • {exp.startDate} - {exp.endDate || 'Present'}</p>
-                          <p className="text-text-slate text-sm leading-relaxed">{exp.description}</p>
+                {experience.length > 0 ? (
+                  <div className="relative border-l border-gray-400 ml-3 space-y-6 pt-2 pb-1">
+                    {experience.map((exp, idx) => (
+                      <div key={idx} className="relative pl-6 space-y-1">
+                        <div className="absolute w-2.5 h-2.5 bg-gray-1000 rounded-full -left-[5px] top-1.5 ring-4 ring-background-200" />
+                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                          <h4 className="text-sm font-semibold text-gray-1000">{exp.role}</h4>
+                          <span className="text-[11px] font-mono text-gray-600">
+                            {exp.startDate} – {exp.endDate || 'Present'}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-surface-container-low border border-border-light border-dashed rounded-xl p-8 text-center text-on-surface-variant">
-                      No experience history. Update your resume to populate this section.
-                    </div>
-                  )}
-                </section>
-              </div>
-            </div>
-
-            <div className="mt-8 space-y-8">
-              <section>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="font-headline-md text-headline-md text-on-surface">Projects</h2>
+                        <p className="text-xs text-gray-700 font-mono">{exp.company}</p>
+                        {exp.description && (
+                          <p className="text-xs text-gray-700 font-sans leading-relaxed pt-1 whitespace-pre-line">
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  {projects.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {projects.map((proj, idx) => (
-                        <div key={idx} className="bg-surface-container-low border border-border-light rounded-xl p-5 hover:shadow-md transition-shadow flex flex-col h-full">
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-bold text-on-surface">{proj.title}</h3>
+                ) : (
+                  <p className="text-xs text-gray-600 font-mono py-4">No work experience added yet.</p>
+                )}
+              </div>
+
+              {/* Education Background */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                    <GraduationCap className="w-3.5 h-3.5" strokeWidth={1.5} /> Academic Background
+                  </h3>
+                  <button
+                    onClick={() => setShowEditor(true)}
+                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
+                  >
+                    + Add Degree
+                  </button>
+                </div>
+
+                {education.length > 0 ? (
+                  <div className="divide-y divide-gray-400">
+                    {education.map((edu, idx) => (
+                      <div key={idx} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="text-xs font-semibold text-gray-1000">{edu.degree}</div>
+                          <div className="text-xs text-gray-700 font-sans mt-0.5">{edu.institution}</div>
+                        </div>
+                        <span className="text-[11px] font-mono text-gray-600 shrink-0">
+                          {edu.startYear} – {edu.endYear || 'Present'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-600 font-mono py-4">No educational history registered.</p>
+                )}
+              </div>
+
+              {/* Featured Projects Grid */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                    <FolderGit2 className="w-3.5 h-3.5" strokeWidth={1.5} /> Featured Projects
+                  </h3>
+                  <button
+                    onClick={() => setShowEditor(true)}
+                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
+                  >
+                    + Add Project
+                  </button>
+                </div>
+
+                {projects.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {projects.map((proj, idx) => (
+                      <div 
+                        key={idx} 
+                        className="p-4 rounded-lg border border-gray-400 bg-background-100 flex flex-col justify-between space-y-3 hover:border-gray-500 transition-colors"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="text-xs font-semibold text-gray-1000 truncate">{proj.title}</h4>
                             {proj.link && (
-                              <a href={formatExternalUrl(proj.link)} target="_blank" rel="noreferrer" className="text-primary hover:bg-primary-container p-1 rounded transition-colors" title="View Project">
-                                <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                              <a 
+                                href={formatExternalUrl(proj.link)} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="text-gray-600 hover:text-gray-1000 transition-colors p-1"
+                                title="Open project link"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.5} />
                               </a>
                             )}
                           </div>
-                          <p className="text-sm text-text-slate line-clamp-3">{proj.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-surface-container-low border border-border-light border-dashed rounded-xl p-8 text-center text-on-surface-variant">
-                      No projects added. Update your resume to populate this section.
-                    </div>
-                  )}
-                </section>
-
-                <section className="mt-8">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2"><span className="material-symbols-outlined text-primary">award_star</span> Achievements</h2>
-                  </div>
-                  {(profile.resumeDetails?.achievements && profile.resumeDetails.achievements.length > 0) ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {profile.resumeDetails.achievements.map((ach, idx) => (
-                        <div key={idx} onClick={() => setSelectedAchievement(ach)} className="bg-surface border border-border-light rounded-xl overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full cursor-pointer">
-                          {ach.imageUrl && (
-                            <img src={ach.imageUrl} alt={ach.title} className="w-full h-40 object-contain bg-surface-container" />
+                          {proj.description && (
+                            <p className="text-xs text-gray-700 font-sans line-clamp-3 leading-relaxed">
+                              {proj.description}
+                            </p>
                           )}
-                          <div className="p-5 flex flex-col flex-1">
-                            <h3 className="font-bold text-on-surface mb-1">{ach.title}</h3>
-                            <span className="text-[10px] text-text-slate mb-3 uppercase tracking-wider">{ach.date ? new Date(ach.date).toLocaleDateString() : 'N/A'}</span>
-                            <p className="text-sm text-on-surface-variant line-clamp-3 mt-auto">{ach.description}</p>
-                          </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-surface-container-low border border-border-light border-dashed rounded-xl p-8 text-center text-on-surface-variant">
-                      No achievements yet.
-                    </div>
-                  )}
-                </section>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-600 font-mono py-4">No projects listed. Update your resume to showcase projects.</p>
+                )}
+              </div>
 
-                {/* Placed Students Posts Section */}
-                <section className="mt-10 pt-8 border-t border-border-light">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary">military_tech</span>
-                        {profile.name ? `${profile.name}'s Posts` : "Placement Experiences"}
-                      </h2>
-                      <p className="text-xs text-on-surface-variant mt-0.5">
-                        Interview rounds, online assessments, and placement guides shared with the community.
-                      </p>
-                    </div>
+            </div>
+          )}
 
-                    <Link
-                      to="/placements/create"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-on-primary hover:bg-primary-container text-xs font-bold transition-all shadow-xs"
-                    >
-                      <span className="material-symbols-outlined text-sm">add</span> Share Experience
+          {/* ===================================================================
+              TAB 2: HONORS & CREDENTIALS
+              =================================================================== */}
+          {activeTab === 'honors' && (
+            <div className="space-y-8 animate-in fade-in duration-150">
+              
+              {/* Achievements Grid */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                    <Award className="w-3.5 h-3.5" strokeWidth={1.5} /> Verified Achievements &amp; Awards
+                  </h3>
+                  <button
+                    onClick={() => setShowEditor(true)}
+                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
+                  >
+                    + Add Achievement
+                  </button>
+                </div>
+
+                {achievements.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {achievements.map((ach, idx) => (
+                      <div 
+                        key={idx} 
+                        onClick={() => setSelectedAchievement(ach)} 
+                        className="p-4 rounded-lg border border-gray-400 bg-background-100 hover:border-gray-500 cursor-pointer transition-colors flex flex-col justify-between space-y-3"
+                      >
+                        {ach.imageUrl && (
+                          <img 
+                            src={ach.imageUrl} 
+                            alt={ach.title} 
+                            className="w-full h-36 object-contain bg-background-200 rounded-md border border-gray-400" 
+                          />
+                        )}
+                        <div className="space-y-1">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <h4 className="text-xs font-semibold text-gray-1000 truncate">{ach.title}</h4>
+                            <span className="text-[10px] font-mono text-gray-600 shrink-0">
+                              {ach.date ? new Date(ach.date).toLocaleDateString() : ''}
+                            </span>
+                          </div>
+                          {ach.description && (
+                            <p className="text-xs text-gray-700 font-sans line-clamp-2 leading-relaxed">
+                              {ach.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-600 font-mono py-6 text-center">No achievements added yet.</p>
+                )}
+              </div>
+
+              {/* LinkedIn Certifications Summary */}
+              {profile.scrapedData?.linkedin?.certifications?.length > 0 && (
+                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                    <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                      <FaLinkedin className="text-[#0A66C2]" /> LinkedIn Certifications
+                    </h3>
+                    <Link to="/certificates" className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline">
+                      Manage All ({profile.scrapedData.linkedin.certifications.length}) &rarr;
                     </Link>
                   </div>
 
-                  {userPlacementPosts.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {userPlacementPosts.map((post) => (
-                        <div
-                          key={post._id}
-                          className="bg-surface-container-lowest border border-border-light hover:border-primary/40 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-                        >
-                          <div>
-                            <div className="flex items-start justify-between gap-3 mb-2">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 rounded-xl bg-surface-container-low border border-border-light p-1 flex items-center justify-center shrink-0">
-                                  {post.company?.logoUrl ? (
-                                    <img src={post.company.logoUrl} alt={post.company.name} className="w-full h-full object-contain" />
-                                  ) : (
-                                    <span className="font-bold text-xs text-primary">{(post.company?.name || 'C').charAt(0)}</span>
-                                  )}
-                                </div>
-                                <div>
-                                  <h3 className="font-bold text-sm text-on-surface">{post.company?.name}</h3>
-                                  <span className="text-xs text-on-surface-variant font-medium">{post.role}</span>
-                                </div>
-                              </div>
-
-                              {post.outcome === 'selected' && (
-                                <span className="px-2 py-0.5 rounded-md bg-green-500/10 text-green-700 font-bold text-[10px]">
-                                  Selected
-                                </span>
-                              )}
-                            </div>
-
-                            <Link to={`/placements/${post._id}`} className="block group">
-                              <h4 className="font-bold text-sm text-on-surface group-hover:text-primary transition-colors line-clamp-2 mt-2">
-                                {post.title}
-                              </h4>
-                            </Link>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-3 mt-4 border-t border-border-light/60 text-xs text-on-surface-variant">
-                            <span className="font-mono text-[11px]">
-                              {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}
-                            </span>
-
-                            <div className="flex items-center gap-3">
-                              <span className="flex items-center gap-1.5 font-mono text-[11px] text-on-surface-variant">
-                                <FiMessageSquare className="text-[12px] text-on-surface-variant" />
-                                <span>{post.commentCount || 0}</span>
-                              </span>
-                              <Link
-                                to={`/placements/${post._id}`}
-                                className="text-primary font-bold hover:underline"
-                              >
-                                View →
-                              </Link>
-                            </div>
-                          </div>
+                  <div className="divide-y divide-gray-400">
+                    {profile.scrapedData.linkedin.certifications.map((cert, i) => (
+                      <div key={i} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="text-xs font-medium text-gray-1000">{cert.title}</div>
+                          <div className="text-[11px] text-gray-600 font-sans mt-0.5">{cert.issuedBy}</div>
                         </div>
-                      ))}
+                        {cert.link && (
+                          <a 
+                            href={formatExternalUrl(cert.link)} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="text-[11px] font-mono text-gray-700 hover:text-gray-1000 hover:underline shrink-0 flex items-center gap-1"
+                          >
+                            <span>View Credential</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* ===================================================================
+              TAB 3: PLACEMENT STORIES
+              =================================================================== */}
+          {activeTab === 'placements' && (
+            <div className="space-y-6 animate-in fade-in duration-150">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Interview Guides &amp; Placement Experiences</h2>
+                  <p className="text-xs text-gray-700 font-mono mt-0.5">
+                    Interview rounds, assessment questions, and hiring tips shared by {profile.name}
+                  </p>
+                </div>
+                <Link
+                  to="/placements/create"
+                  className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity flex items-center gap-1.5 self-start sm:self-auto cursor-pointer shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <span>Write Placement Review</span>
+                </Link>
+              </div>
+
+              {userPlacementPosts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {userPlacementPosts.map((post) => (
+                    <div
+                      key={post._id}
+                      className="rounded-xl border border-gray-400 bg-background-200 p-5 shadow-2xs hover:border-gray-500 transition-colors flex flex-col justify-between space-y-4"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center font-bold text-xs text-gray-1000 shrink-0">
+                              {post.company?.name?.charAt(0) || 'C'}
+                            </div>
+                            <div className="truncate">
+                              <h3 className="text-xs font-semibold text-gray-1000 truncate">{post.company?.name}</h3>
+                              <span className="text-[11px] text-gray-600 font-mono">{post.role}</span>
+                            </div>
+                          </div>
+
+                          {post.outcome === 'selected' && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-medium shrink-0">
+                              Selected
+                            </span>
+                          )}
+                        </div>
+
+                        <Link to={`/placements/${post._id}`} className="block group">
+                          <h4 className="text-xs font-medium text-gray-1000 group-hover:underline line-clamp-2 leading-relaxed">
+                            {post.title}
+                          </h4>
+                        </Link>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-400 text-[11px] font-mono text-gray-600">
+                        <span>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center gap-1">
+                            <MessageSquare className="w-3 h-3" />
+                            <span>{post.commentCount || 0}</span>
+                          </span>
+                          <Link to={`/placements/${post._id}`} className="text-gray-900 font-medium hover:underline">
+                            Read &rarr;
+                          </Link>
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="bg-surface-container-low border border-border-light border-dashed rounded-2xl p-8 text-center text-on-surface-variant space-y-2">
-                      <p className="text-sm font-semibold">No placement experiences shared yet.</p>
-                      <p className="text-xs text-on-surface-variant/70">
-                        Help fellow students by sharing your selection process and interview insights!
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-gray-400 bg-background-200 p-8 text-center space-y-3">
+                  <p className="text-xs text-gray-700 font-mono">No placement experiences published yet.</p>
+                  <Link
+                    to="/placements/create"
+                    className="inline-flex items-center gap-1 text-xs text-gray-1000 font-semibold underline"
+                  >
+                    Share your first interview round with the campus community &rarr;
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===================================================================
+              TAB 4: CONNECTED IDENTITIES & VERIFICATION
+              =================================================================== */}
+          {activeTab === 'identities' && (
+            <div className="space-y-6 animate-in fade-in duration-150">
+              
+              {/* GitHub Card */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-400 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center">
+                      <FaGithub className="w-4 h-4 text-gray-1000" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-1000">GitHub Identity Verification</h3>
+                      <p className="text-[11px] text-gray-600 font-mono">
+                        {profile.githubUsername ? `@${profile.githubUsername}` : 'Not connected'}
                       </p>
                     </div>
+                  </div>
+
+                  <div>
+                    {profile.githubVerified ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Verified Account</span>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateCodeAndVerify('github')}
+                        className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity cursor-pointer shadow-xs"
+                      >
+                        Verify Ownership
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-700 font-sans leading-relaxed">
+                  Verifying your GitHub identity certifies your public repositories, contributions heatmap, and starred works on the Campus Connect recruiter leaderboard.
+                </p>
+              </div>
+
+              {/* LeetCode Card */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-400 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#ffa116]/10 border border-[#ffa116]/30 flex items-center justify-center">
+                      <SiLeetcode className="w-4 h-4 text-[#ffa116]" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-1000">LeetCode Identity Verification</h3>
+                      <p className="text-[11px] text-gray-600 font-mono">
+                        {profile.leetcodeUsername ? `@${profile.leetcodeUsername}` : 'Not connected'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    {profile.leetcodeVerified ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Verified Account</span>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateCodeAndVerify('leetcode')}
+                        className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity cursor-pointer shadow-xs"
+                      >
+                        Verify Ownership
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-700 font-sans leading-relaxed">
+                  Verifying your LeetCode identity confirms your contest rating, global ranking, and difficulty breakdown statistics for student analytics and recruiter discovery.
+                </p>
+              </div>
+
+              {/* LinkedIn Overview Card */}
+              {profile.scrapedData?.linkedin && (
+                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                  <div className="flex items-center gap-3 border-b border-gray-400 pb-4">
+                    <div className="w-8 h-8 rounded-lg bg-[#0A66C2]/10 border border-[#0A66C2]/30 flex items-center justify-center">
+                      <FaLinkedin className="w-4 h-4 text-[#0A66C2]" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-1000">
+                        {profile.scrapedData.linkedin.firstName} {profile.scrapedData.linkedin.lastName}
+                      </h3>
+                      <p className="text-[11px] text-gray-600 font-sans">{profile.scrapedData.linkedin.headline}</p>
+                    </div>
+                  </div>
+
+                  {profile.scrapedData.linkedin.about && (
+                    <p className="text-xs text-gray-700 font-sans leading-relaxed whitespace-pre-line">
+                      {profile.scrapedData.linkedin.about}
+                    </p>
                   )}
-                </section>
+                </div>
+              )}
+
             </div>
-            
-          </div>
-        )}
+          )}
+
+        </div>
       </main>
     </div>
   );

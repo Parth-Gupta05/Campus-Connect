@@ -3,14 +3,17 @@ const router = express.Router();
 const Club = require('../models/Club');
 const User = require('../models/User');
 const Announcement = require('../models/Announcement');
+const Event = require('../models/Event');
+const crypto = require('crypto');
+const { calculateAictePoints, resolveMemberTier } = require('../utils/aicteCalculator');
 const { authMiddleware, clubMiddleware } = require('../middleware/authMiddleware');
 const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
-const { broadcastNotification } = require('../utils/notificationService');
+const { broadcastNotification, createNotification } = require('../utils/notificationService');
 
 // Get Club Profile (For the logged-in club)
 router.get('/profile', authMiddleware, clubMiddleware, async (req, res) => {
   try {
-    const club = await Club.findById(req.user.id).populate('assignedStudents.studentId', 'name uid branch currentSem');
+    const club = await Club.findById(req.user.id).populate('assignedStudents.studentId', 'name uid email avatarUrl branch currentSem');
     if (!club) return res.status(404).json({ message: 'Club not found' });
     res.json(club);
   } catch (error) {
@@ -78,7 +81,7 @@ router.get('/search-students', authMiddleware, clubMiddleware, async (req, res) 
 // Add member by UID
 router.post('/members', authMiddleware, clubMiddleware, async (req, res) => {
   try {
-    const { uid, role } = req.body;
+    const { uid, role, tier } = req.body;
     if (!uid) return res.status(400).json({ message: 'UID is required' });
 
     const student = await User.findOne({ uid: uid.toUpperCase() });
@@ -91,10 +94,38 @@ router.post('/members', authMiddleware, clubMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Student is already a member of this club' });
     }
 
-    club.assignedStudents.push({ studentId: student._id, role: role || 'Member' });
+    const { resolveMemberTier } = require('../utils/aicteCalculator');
+    const resolvedTier = resolveMemberTier(club.name, role, tier);
+
+    club.assignedStudents.push({ 
+      studentId: student._id, 
+      role: role || 'Member',
+      tier: resolvedTier
+    });
     await club.save();
+
+    // Notify the assigned student
+    const isElevated = resolvedTier === 'Core' || resolvedTier === 'Working Committee';
+    const appointedRole = role || 'Member';
+    const notificationTitle = isElevated 
+      ? `Appointed to ${resolvedTier}: ${club.name}` 
+      : `Joined ${club.name}`;
+    const notificationMessage = isElevated 
+      ? `Congratulations! You have been appointed as "${appointedRole}" (${resolvedTier}) in ${club.name}. You are eligible for 2x AICTE activity points and automatic event attendance tracking.` 
+      : `You have been added as "${appointedRole}" in ${club.name}. Welcome to the team!`;
+
+    await createNotification({
+      recipient: student._id,
+      recipientModel: 'User',
+      type: 'committee_assignment',
+      title: notificationTitle,
+      message: notificationMessage,
+      link: '/clubs',
+      sender: club._id,
+      senderModel: 'Club'
+    });
     
-    const updatedClub = await Club.findById(req.user.id).populate('assignedStudents.studentId', 'name uid branch currentSem');
+    const updatedClub = await Club.findById(req.user.id).populate('assignedStudents.studentId', 'name uid email avatarUrl branch currentSem');
     res.json({ message: 'Member added successfully', assignedStudents: updatedClub.assignedStudents });
   } catch (error) {
     console.error(error);
@@ -118,8 +149,80 @@ router.delete('/members/:studentId', authMiddleware, clubMiddleware, async (req,
 // Public Route: Get all clubs
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const clubs = await Club.find().select('name description profilePhoto bannerPhoto');
+    const clubs = await Club.find()
+      .select('name description profilePhoto bannerPhoto assignedStudents socials createdAt')
+      .sort({ name: 1 });
     res.json(clubs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Club Route: Create event directly via /clubs/events
+router.post('/events', authMiddleware, clubMiddleware, async (req, res) => {
+  try {
+    const { 
+      title, 
+      description, 
+      posterImage, 
+      contactPerson, 
+      date, 
+      time, 
+      venue,
+      durationHours,
+      aicteCategory,
+      activitySummary
+    } = req.body;
+    
+    if (!title || !date || !time) {
+      return res.status(400).json({ message: 'Title, date, and time are required' });
+    }
+
+    const duration = Math.max(0.5, Number(durationHours) || 2);
+    const category = Math.min(15, Math.max(1, Number(aicteCategory) || 5));
+
+    // Find club to auto-credit Core members (no QR required)
+    const club = await Club.findById(req.user.id);
+    const coreRegistrations = [];
+
+    if (club && Array.isArray(club.assignedStudents)) {
+      const coreCalc = calculateAictePoints(duration, 'Core');
+      club.assignedStudents.forEach(m => {
+        if (m.studentId) {
+          const tier = resolveMemberTier(club.name, m.role, m.tier);
+          if (tier === 'Core') {
+            coreRegistrations.push({
+              studentId: m.studentId,
+              attendanceStatus: 'present',
+              designation: m.role || 'Core Member',
+              tier: 'Core',
+              aicteHours: coreCalc.recordedHours,
+              aictePoints: coreCalc.points,
+              qrCode: `AUTO_CORE_${crypto.randomUUID()}`
+            });
+          }
+        }
+      });
+    }
+
+    const event = new Event({
+      clubId: req.user.id,
+      title,
+      description,
+      posterImage,
+      contactPerson,
+      date,
+      time,
+      venue,
+      durationHours: duration,
+      aicteCategory: category,
+      activitySummary: activitySummary || '',
+      registeredStudents: coreRegistrations
+    });
+
+    await event.save();
+    res.status(201).json({ message: 'Event created successfully', event });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -187,7 +290,10 @@ router.get('/announcements', authMiddleware, clubMiddleware, async (req, res) =>
 // Public Route: Get club by ID
 router.get('/:clubId', authMiddleware, async (req, res) => {
   try {
-    const club = await Club.findById(req.params.clubId).populate('assignedStudents.studentId', 'name role');
+    const club = await Club.findById(req.params.clubId).populate(
+      'assignedStudents.studentId',
+      'name role avatarUrl uid branch currentSem'
+    );
     if (!club) return res.status(404).json({ message: 'Club not found' });
     res.json(club);
   } catch (error) {

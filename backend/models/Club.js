@@ -30,6 +30,10 @@ const ClubSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  category: {
+    type: String,
+    default: 'Technical'
+  },
   socials: {
     instagram: { type: String, default: '' },
     facebook: { type: String, default: '' },
@@ -42,6 +46,11 @@ const ClubSchema = new mongoose.Schema({
     },
     role: {
       type: String,
+      default: 'Member'
+    },
+    tier: {
+      type: String,
+      enum: ['Core', 'WC', 'Member'],
       default: 'Member'
     }
   }]
