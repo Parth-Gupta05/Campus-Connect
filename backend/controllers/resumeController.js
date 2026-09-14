@@ -11,10 +11,235 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+const MAX_RESUMES_PER_USER = 5;
+const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+
+/**
+ * @desc Get all resumes in student's vault
+ * @route GET /api/user/resumes
+ */
+const getUserResumes = async (req, res) => {
+  try {
+    const resumes = await Resume.find({ userId: req.user.id })
+      .sort({ isPrimary: -1, createdAt: -1 });
+
+    // Sync User.resumes array with active documents
+    const user = await User.findById(req.user.id);
+    if (user) {
+      user.resumes = resumes.map(r => r._id);
+      await user.save();
+    }
+
+    res.json({ success: true, resumes });
+  } catch (error) {
+    console.error('Error fetching user resumes:', error);
+    res.status(500).json({ message: 'Server error fetching resumes' });
+  }
+};
+
+/**
+ * @desc Upload a new resume to student's vault (Max 5 resumes, Max 2MB)
+ * @route POST /api/user/resumes
+ */
+const uploadResumeToVault = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No resume file provided' });
+    }
+
+    // 2MB Size limit check
+    if (req.file.size > MAX_FILE_SIZE_BYTES) {
+      return res.status(400).json({
+        message: 'Resume file size cannot exceed 2MB. Please upload a smaller file.'
+      });
+    }
+
+    // 5 Resumes Cap check
+    const currentCount = await Resume.countDocuments({ userId: req.user.id });
+    if (currentCount >= MAX_RESUMES_PER_USER) {
+      return res.status(400).json({
+        message: `Resume vault limit reached (maximum ${MAX_RESUMES_PER_USER} resumes per profile). Please delete an existing resume to upload a new one.`
+      });
+    }
+
+    // Validate PDF format
+    const isPdf = req.file.mimetype === 'application/pdf' || req.file.originalname?.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      return res.status(400).json({ message: 'Only PDF documents are supported' });
+    }
+
+    // Upload to Cloudinary
+    let resumeUrl = '';
+    try {
+      const uploadStream = new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'applicant_resumes', resource_type: 'auto' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+      resumeUrl = await uploadStream;
+    } catch (uploadErr) {
+      console.error('Cloudinary resume upload error:', uploadErr);
+      return res.status(500).json({ message: 'Failed to store resume in Cloudinary' });
+    }
+
+    const isPrimaryReq = req.body.isPrimary === 'true' || req.body.isPrimary === true;
+    const shouldBePrimary = currentCount === 0 || isPrimaryReq;
+
+    if (shouldBePrimary) {
+      await Resume.updateMany({ userId: req.user.id }, { isPrimary: false });
+    }
+
+    const displayName = req.body.fileName?.trim() || req.file.originalname || 'Resume.pdf';
+
+    const newResume = new Resume({
+      userId: req.user.id,
+      fileUrl: resumeUrl,
+      fileName: displayName,
+      fileSize: req.file.size || 0,
+      isPrimary: shouldBePrimary
+    });
+    await newResume.save();
+
+    const user = await User.findById(req.user.id);
+    if (user) {
+      if (!user.resumes) user.resumes = [];
+      user.resumes.push(newResume._id);
+      await user.save();
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Resume added to vault successfully',
+      resume: newResume
+    });
+  } catch (error) {
+    console.error('Error uploading resume to vault:', error);
+    res.status(500).json({ message: 'Server error uploading resume' });
+  }
+};
+
+/**
+ * @desc Delete a resume from student's vault
+ * @route DELETE /api/user/resumes/:id
+ */
+const deleteResumeFromVault = async (req, res) => {
+  try {
+    const resumeId = req.params.id;
+    const resume = await Resume.findOne({ _id: resumeId, userId: req.user.id });
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found in your vault' });
+    }
+
+    const wasPrimary = resume.isPrimary;
+
+    // Delete Cloudinary asset
+    if (resume.fileUrl) {
+      try {
+        await deleteCloudinaryAsset(resume.fileUrl);
+      } catch (err) {
+        console.warn('Could not delete Cloudinary asset:', err.message);
+      }
+    }
+
+    await Resume.findByIdAndDelete(resumeId);
+
+    // Remove from User.resumes
+    await User.findByIdAndUpdate(req.user.id, { $pull: { resumes: resumeId } });
+
+    // If deleted resume was primary, promote newest remaining resume to primary
+    if (wasPrimary) {
+      const remaining = await Resume.findOne({ userId: req.user.id }).sort({ createdAt: -1 });
+      if (remaining) {
+        remaining.isPrimary = true;
+        await remaining.save();
+      }
+    }
+
+    res.json({ success: true, message: 'Resume deleted from vault successfully' });
+  } catch (error) {
+    console.error('Error deleting resume:', error);
+    res.status(500).json({ message: 'Server error deleting resume' });
+  }
+};
+
+/**
+ * @desc Set a resume as primary application document
+ * @route PUT /api/user/resumes/:id/primary
+ */
+const setPrimaryResume = async (req, res) => {
+  try {
+    const resumeId = req.params.id;
+    const resume = await Resume.findOne({ _id: resumeId, userId: req.user.id });
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found in your vault' });
+    }
+
+    await Resume.updateMany({ userId: req.user.id }, { isPrimary: false });
+    resume.isPrimary = true;
+    await resume.save();
+
+    res.json({ success: true, message: 'Primary resume updated successfully', resumeId });
+  } catch (error) {
+    console.error('Error updating primary resume:', error);
+    res.status(500).json({ message: 'Server error updating primary resume' });
+  }
+};
+
+/**
+ * @desc Rename a resume in the vault
+ * @route PUT /api/user/resumes/:id
+ */
+const renameResumeInVault = async (req, res) => {
+  try {
+    const resumeId = req.params.id;
+    const { fileName } = req.body;
+    if (!fileName || !fileName.trim()) {
+      return res.status(400).json({ message: 'File name cannot be empty' });
+    }
+
+    const resume = await Resume.findOne({ _id: resumeId, userId: req.user.id });
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found in your vault' });
+    }
+
+    resume.fileName = fileName.trim();
+    await resume.save();
+
+    res.json({ success: true, message: 'Resume name updated successfully', resume });
+  } catch (error) {
+    console.error('Error renaming resume:', error);
+    res.status(500).json({ message: 'Server error renaming resume' });
+  }
+};
+
+/**
+ * @desc Upload and parse resume with Gemini AI (enforces 2MB & 5-resume cap)
+ * @route POST /api/user/parse-resume
+ */
 const uploadAndParseResume = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No resume file provided' });
+    }
+
+    // 2MB Size limit check
+    if (req.file.size > MAX_FILE_SIZE_BYTES) {
+      return res.status(400).json({
+        message: 'Resume file size cannot exceed 2MB. Please upload a smaller file.'
+      });
+    }
+
+    // 5 Resumes Cap check
+    const currentCount = await Resume.countDocuments({ userId: req.user.id });
+    if (currentCount >= MAX_RESUMES_PER_USER) {
+      return res.status(400).json({
+        message: `Resume vault limit reached (maximum ${MAX_RESUMES_PER_USER} resumes per profile). Please delete an existing resume before uploading a new one.`
+      });
     }
 
     if (!process.env.GEMINI_API_KEY) {
@@ -22,7 +247,6 @@ const uploadAndParseResume = async (req, res) => {
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    // Using gemini-3.1-flash-lite as it is highly responsive and avoids the 503 issues of 3.5-flash
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     
     // Extract text from the PDF buffer
@@ -50,12 +274,9 @@ const uploadAndParseResume = async (req, res) => {
     ${resumeText}
     `;
 
-    // Call the API directly without retries to eliminate long waiting times
     const result = await model.generateContent([prompt]);
     
     let responseText = result.response.text();
-    
-    // Clean up any potential markdown formatting the AI might inject
     responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
 
     let parsedData = {};
@@ -66,7 +287,7 @@ const uploadAndParseResume = async (req, res) => {
       return res.status(500).json({ message: 'Failed to parse resume into structured format' });
     }
 
-    // 3. Upload to Cloudinary
+    // Upload to Cloudinary
     let resumeUrl = '';
     try {
       const uploadStream = new Promise((resolve, reject) => {
@@ -82,18 +303,23 @@ const uploadAndParseResume = async (req, res) => {
       resumeUrl = await uploadStream;
     } catch (uploadErr) {
       console.error('Cloudinary upload error:', uploadErr);
-      // We don't fail the parsing if upload fails, we just don't save the URL.
     }
 
-    // 4. Save Resume document and link to User
+    // Save Resume document and link to User
     let newResume = null;
     if (resumeUrl) {
+      const isFirst = currentCount === 0;
+      if (isFirst) {
+        await Resume.updateMany({ userId: req.user.id }, { isPrimary: false });
+      }
+
       newResume = new Resume({
         userId: req.user.id,
         fileUrl: resumeUrl,
         fileName: req.file.originalname || 'Resume',
+        fileSize: req.file.size || 0,
         parsedData: parsedData,
-        isPrimary: true // Default as primary for now
+        isPrimary: isFirst
       });
       await newResume.save();
 
@@ -101,9 +327,6 @@ const uploadAndParseResume = async (req, res) => {
       if (user) {
         if (!user.resumes) user.resumes = [];
         user.resumes.push(newResume._id);
-        
-        // Ensure no old resumeUrl lingers, though schema removed it.
-        // If other resumes exist, maybe clear isPrimary, but we'll leave that logic to frontend API if needed.
         await user.save();
       }
     }
@@ -116,5 +339,10 @@ const uploadAndParseResume = async (req, res) => {
 };
 
 module.exports = {
+  getUserResumes,
+  uploadResumeToVault,
+  deleteResumeFromVault,
+  setPrimaryResume,
+  renameResumeInVault,
   uploadAndParseResume
 };

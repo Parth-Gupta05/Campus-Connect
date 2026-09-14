@@ -42,9 +42,18 @@ import {
   Target,
   Trophy,
   Percent,
-  Lock
+  Lock,
+  Upload,
+  Trash2,
+  Download,
+  Eye,
+  Plus,
+  Edit3,
+  FileUp,
+  Check
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import PdfViewerModal from '../components/PdfViewerModal';
 
 const CountUp = ({ end }) => {
   const [mounted, setMounted] = useState(false);
@@ -175,10 +184,28 @@ export default function StudentDashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'coding' | 'campus'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'coding' | 'campus' | 'vault'
   const [activeHeatmap, setActiveHeatmap] = useState('github');
   const [selectedRepo, setSelectedRepo] = useState(null);
   const [animMounted, setAnimMounted] = useState(false);
+
+  // Resume Vault state (Max 5 resumes, Max 2MB each)
+  const [resumes, setResumes] = useState([]);
+  const [resumesLoading, setResumesLoading] = useState(false);
+  const [selectedPdfUrl, setSelectedPdfUrl] = useState(null);
+  const [selectedPdfTitle, setSelectedPdfTitle] = useState('Resume PDF');
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [deleteModalResume, setDeleteModalResume] = useState(null);
+  const [deletingResume, setDeletingResume] = useState(false);
+  const [editingResumeId, setEditingResumeId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
+  const [settingPrimaryId, setSettingPrimaryId] = useState(null);
+
+  // Upload Form state
+  const [uploadFile, setUploadFile] = useState(null);
+  const [customFileName, setCustomFileName] = useState('');
+  const [uploadAsPrimary, setUploadAsPrimary] = useState(false);
 
   const speedometerRef = useRef(null);
 
@@ -222,11 +249,13 @@ export default function StudentDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, eventsRes] = await Promise.all([
+        const [profileRes, eventsRes, resumesRes] = await Promise.all([
           axios.get('/user/profile'),
-          axios.get('/events/student/registered')
+          axios.get('/events/student/registered'),
+          axios.get('/user/resumes').catch(() => ({ data: { resumes: [] } }))
         ]);
         setProfile(profileRes.data);
+        setResumes(resumesRes.data?.resumes || profileRes.data?.resumes || []);
         
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -293,6 +322,134 @@ export default function StudentDashboard() {
     }
   };
 
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes === 0) return '—';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const fetchResumes = async () => {
+    try {
+      setResumesLoading(true);
+      const res = await axios.get('/user/resumes');
+      setResumes(res.data?.resumes || []);
+    } catch (err) {
+      console.error('Failed to fetch resumes:', err);
+    } finally {
+      setResumesLoading(false);
+    }
+  };
+
+  const handleFileSelection = (file) => {
+    if (!file) return;
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      showToast('Only PDF files are supported for resumes', 'error');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+      showToast(`Resume file size (${sizeMb} MB) exceeds the 2MB limit`, 'error');
+      return;
+    }
+    setUploadFile(file);
+    if (!customFileName) {
+      const cleanName = file.name.replace(/\.pdf$/i, '');
+      setCustomFileName(cleanName);
+    }
+  };
+
+  const handleUploadResume = async (e) => {
+    if (e) e.preventDefault();
+    if (!uploadFile) {
+      showToast('Please select a PDF resume file to upload', 'error');
+      return;
+    }
+    if (uploadFile.size > 2 * 1024 * 1024) {
+      showToast('Resume file size cannot exceed 2MB', 'error');
+      return;
+    }
+    if (resumes.length >= 5) {
+      showToast('Resume vault limit reached (max 5 resumes). Delete an existing resume to continue.', 'error');
+      return;
+    }
+
+    setUploadingResume(true);
+    try {
+      const formData = new FormData();
+      formData.append('resume', uploadFile);
+      if (customFileName.trim()) {
+        const finalName = customFileName.trim().toLowerCase().endsWith('.pdf')
+          ? customFileName.trim()
+          : `${customFileName.trim()}.pdf`;
+        formData.append('fileName', finalName);
+      }
+      formData.append('isPrimary', uploadAsPrimary || resumes.length === 0);
+
+      const res = await axios.post('/user/resumes', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      showToast(res.data?.message || 'Resume stored in vault!', 'success');
+      setUploadModalOpen(false);
+      setUploadFile(null);
+      setCustomFileName('');
+      setUploadAsPrimary(false);
+      await fetchResumes();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to upload resume to vault', 'error');
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
+  const handleSetPrimaryResume = async (resumeId) => {
+    setSettingPrimaryId(resumeId);
+    try {
+      await axios.put(`/user/resumes/${resumeId}/primary`);
+      showToast('Primary application resume updated', 'success');
+      await fetchResumes();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to update primary resume', 'error');
+    } finally {
+      setSettingPrimaryId(null);
+    }
+  };
+
+  const handleDeleteResume = async () => {
+    if (!deleteModalResume) return;
+    setDeletingResume(true);
+    try {
+      await axios.delete(`/user/resumes/${deleteModalResume._id}`);
+      showToast('Resume permanently removed from vault', 'success');
+      setDeleteModalResume(null);
+      await fetchResumes();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to delete resume', 'error');
+    } finally {
+      setDeletingResume(false);
+    }
+  };
+
+  const handleSaveRename = async (resumeId) => {
+    if (!editingTitle.trim()) {
+      showToast('File name cannot be empty', 'error');
+      return;
+    }
+    const finalName = editingTitle.trim().toLowerCase().endsWith('.pdf')
+      ? editingTitle.trim()
+      : `${editingTitle.trim()}.pdf`;
+    try {
+      await axios.put(`/user/resumes/${resumeId}`, { fileName: finalName });
+      showToast('Resume renamed successfully', 'success');
+      setEditingResumeId(null);
+      await fetchResumes();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to rename resume', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans">
@@ -315,6 +472,8 @@ export default function StudentDashboard() {
 
   const rawCgpa = profile?.cgpa || profile?.resumeDetails?.cgpa || education.find(e => e && (e.grade || e.cgpa || e.score))?.grade || education.find(e => e && (e.grade || e.cgpa || e.score))?.cgpa || null;
   const studentCgpa = rawCgpa ? String(rawCgpa).trim() : null;
+
+  const primaryResume = resumes.find(r => r.isPrimary) || resumes[0] || null;
 
   // Profile strength
   const skills = profile?.resumeDetails?.skills || [];
@@ -499,11 +658,11 @@ export default function StudentDashboard() {
             </div>
 
             {/* Canonical Vercel Underline Tab Bar */}
-            <div className="flex items-center gap-6 border-b border-gray-400 text-xs font-medium">
+            <div className="flex items-center gap-6 border-b border-gray-400 text-xs font-medium overflow-x-auto no-scrollbar">
               <button
                 type="button"
                 onClick={() => setActiveTab('overview')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
+                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   activeTab === 'overview'
                     ? 'border-gray-1000 text-gray-1000 font-semibold'
                     : 'border-transparent text-gray-700 hover:text-gray-1000'
@@ -515,7 +674,7 @@ export default function StudentDashboard() {
               <button
                 type="button"
                 onClick={() => setActiveTab('coding')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
+                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   activeTab === 'coding'
                     ? 'border-gray-1000 text-gray-1000 font-semibold'
                     : 'border-transparent text-gray-700 hover:text-gray-1000'
@@ -527,7 +686,7 @@ export default function StudentDashboard() {
               <button
                 type="button"
                 onClick={() => setActiveTab('campus')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
+                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   activeTab === 'campus'
                     ? 'border-gray-1000 text-gray-1000 font-semibold'
                     : 'border-transparent text-gray-700 hover:text-gray-1000'
@@ -538,6 +697,25 @@ export default function StudentDashboard() {
                 {upcomingEvents.length > 0 && (
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
                 )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('vault')}
+                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'vault'
+                    ? 'border-gray-1000 text-gray-1000 font-semibold'
+                    : 'border-transparent text-gray-700 hover:text-gray-1000'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <span>Resume Vault</span>
+                <span className={`px-1.5 py-0.2 rounded-full font-mono text-[10px] ${
+                  resumes.length >= 5 
+                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' 
+                    : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                }`}>
+                  {resumes.length}/5
+                </span>
               </button>
             </div>
           </section>
@@ -743,6 +921,107 @@ export default function StudentDashboard() {
                     )}
                   </div>
                 </div>
+              </div>
+
+              {/* Quick Access Resume Vault Card */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-400 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-sm text-gray-1000">Resume Vault</h3>
+                        <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-semibold border ${
+                          resumes.length >= 5 
+                            ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' 
+                            : 'bg-blue-500/10 text-blue-600 border-blue-500/30'
+                        }`}>
+                          {resumes.length} / 5 Slots Used
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-gray-600 font-mono mt-0.5">
+                        Max 2MB per resume · Capped at 5 resumes per profile
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {resumes.length < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUploadFile(null);
+                          setCustomFileName('');
+                          setUploadAsPrimary(resumes.length === 0);
+                          setUploadModalOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-100 text-xs font-medium text-gray-900 transition-colors cursor-pointer shadow-2xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Upload Resume</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('vault')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity cursor-pointer shadow-xs"
+                    >
+                      <span>Manage Vault</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Primary resume preview or empty state */}
+                {primaryResume ? (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-background-100 border border-gray-400">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-md bg-red-500/10 border border-red-500/20 text-red-600 flex items-center justify-center shrink-0">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-1000 truncate">{primaryResume.fileName}</span>
+                          <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono text-[9px] uppercase font-bold">
+                            Primary
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-600 font-mono mt-0.5">
+                          {formatBytes(primaryResume.fileSize)} · Uploaded {primaryResume.createdAt ? format(new Date(primaryResume.createdAt), 'MMM d, yyyy') : 'Recently'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPdfUrl(primaryResume.fileUrl);
+                          setSelectedPdfTitle(primaryResume.fileName);
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-gray-400 bg-background-200 hover:bg-gray-100 text-xs font-medium text-gray-900 cursor-pointer"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>Preview</span>
+                      </button>
+                      <a
+                        href={primaryResume.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        download
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-gray-400 bg-background-200 hover:bg-gray-100 text-xs font-medium text-gray-900 cursor-pointer"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Download</span>
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-6 text-center text-xs text-gray-600 font-mono border border-dashed border-gray-400 rounded-lg">
+                    No resumes in your vault yet. Upload up to 5 resumes to apply to campus opportunities.
+                  </div>
+                )}
               </div>
 
               {/* 2-Column Overview Highlights */}
@@ -1369,6 +1648,296 @@ export default function StudentDashboard() {
             </div>
           )}
 
+          {/* ===================================================================
+              TAB 4: RESUME VAULT
+              =================================================================== */}
+          {activeTab === 'vault' && (
+            <div className="space-y-8 animate-in fade-in duration-150">
+              
+              {/* Header Card */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-bold text-gray-1000 tracking-tight">Resume Vault</h2>
+                        <p className="text-xs text-gray-600 font-mono mt-0.5">
+                          Manage multiple tailored resumes for jobs, internships, and events
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={resumes.length >= 5}
+                      onClick={() => {
+                        setUploadFile(null);
+                        setCustomFileName('');
+                        setUploadAsPrimary(resumes.length === 0);
+                        setUploadModalOpen(true);
+                      }}
+                      className={`h-9 px-3.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all shadow-xs ${
+                        resumes.length >= 5
+                          ? 'bg-gray-300 dark:bg-gray-800 text-gray-500 cursor-not-allowed'
+                          : 'bg-gray-1000 text-background-100 hover:opacity-90 cursor-pointer'
+                      }`}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{resumes.length >= 5 ? 'Vault Full (5/5)' : 'Upload New Resume'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Storage & Limit Metrics Strip */}
+                <div className="pt-3 border-t border-gray-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-gray-700 font-medium">Vault Capacity:</span>
+                    {/* Visual 5-slot meter */}
+                    <div className="flex items-center gap-1">
+                      {[0, 1, 2, 3, 4].map((slotIdx) => {
+                        const isFilled = slotIdx < resumes.length;
+                        return (
+                          <div
+                            key={slotIdx}
+                            className={`w-6 h-2 rounded-full transition-all ${
+                              isFilled
+                                ? 'bg-blue-600 dark:bg-blue-500 shadow-2xs'
+                                : 'bg-gray-300 dark:bg-gray-800 border border-gray-400'
+                            }`}
+                            title={isFilled ? `Slot ${slotIdx + 1} Used` : `Slot ${slotIdx + 1} Empty`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <span className="font-mono font-bold text-gray-1000">
+                      {resumes.length} / 5 Used
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-gray-600 font-mono text-[11px]">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Max 2MB per file
+                    </span>
+                    <span>·</span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      PDF Format Only
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Primary Resume Notice */}
+              {primaryResume && (
+                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                    <span>
+                      <strong className="font-semibold">{primaryResume.fileName}</strong> is designated as your <strong>Primary Resume</strong> for instant 1-click opportunity applications.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedPdfUrl(primaryResume.fileUrl);
+                      setSelectedPdfTitle(primaryResume.fileName);
+                    }}
+                    className="inline-flex items-center gap-1 font-semibold hover:underline shrink-0 text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Quick Preview &rarr;</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Resumes Grid */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-700">
+                    Stored Documents ({resumes.length})
+                  </h3>
+                  {resumesLoading && (
+                    <span className="text-xs font-mono text-gray-600 flex items-center gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Refreshing...
+                    </span>
+                  )}
+                </div>
+
+                {resumes.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {resumes.map((resume, idx) => {
+                      const isEditing = editingResumeId === resume._id;
+                      const isPrimary = resume.isPrimary;
+                      return (
+                        <div
+                          key={resume._id || idx}
+                          className={`rounded-xl border p-5 flex flex-col justify-between transition-all duration-150 ${
+                            isPrimary
+                              ? 'border-emerald-500/50 bg-background-200 shadow-xs'
+                              : 'border-gray-400 bg-background-200 hover:border-gray-500 shadow-2xs'
+                          }`}
+                        >
+                          <div>
+                            {/* Card Top Strip */}
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 flex items-center justify-center shrink-0">
+                                  <FileText className="w-5 h-5" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  {isEditing ? (
+                                    <div className="flex items-center gap-1.5">
+                                      <input
+                                        type="text"
+                                        value={editingTitle}
+                                        onChange={(e) => setEditingTitle(e.target.value)}
+                                        className="px-2 py-1 text-xs border border-gray-400 rounded bg-background-100 text-gray-1000 w-full focus:outline-none focus:border-gray-900 font-medium"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') handleSaveRename(resume._id);
+                                          if (e.key === 'Escape') setEditingResumeId(null);
+                                        }}
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSaveRename(resume._id)}
+                                        className="p-1 rounded hover:bg-gray-200 text-emerald-600 cursor-pointer"
+                                        title="Save"
+                                      >
+                                        <Check className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setEditingResumeId(null)}
+                                        className="p-1 rounded hover:bg-gray-200 text-gray-500 cursor-pointer"
+                                        title="Cancel"
+                                      >
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-1.5 group">
+                                      <h4 className="font-bold text-xs sm:text-sm text-gray-1000 truncate">
+                                        {resume.fileName || `Resume #${idx + 1}.pdf`}
+                                      </h4>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setEditingResumeId(resume._id);
+                                          setEditingTitle(resume.fileName || '');
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-900 transition-opacity p-0.5 cursor-pointer"
+                                        title="Rename"
+                                      >
+                                        <Edit3 className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-center gap-2 text-[11px] text-gray-600 font-mono mt-1">
+                                    <span>{formatBytes(resume.fileSize)}</span>
+                                    <span>·</span>
+                                    <span>{resume.createdAt ? format(new Date(resume.createdAt), 'MMM d, yyyy') : 'Archived'}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {isPrimary ? (
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 font-mono text-[9px] uppercase font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                    <CheckCircle2 className="w-2.5 h-2.5" /> Primary
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    disabled={settingPrimaryId === resume._id}
+                                    onClick={() => handleSetPrimaryResume(resume._id)}
+                                    className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-400 hover:border-gray-500 font-mono text-[9px] uppercase font-semibold text-gray-700 hover:text-gray-1000 cursor-pointer transition-colors"
+                                  >
+                                    {settingPrimaryId === resume._id ? 'Updating...' : 'Set Primary'}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card Actions Footer */}
+                          <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-300 dark:border-gray-800">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPdfUrl(resume.fileUrl);
+                                  setSelectedPdfTitle(resume.fileName);
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-200 text-xs font-medium text-gray-1000 transition-colors cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Preview</span>
+                              </button>
+                              
+                              <a
+                                href={resume.fileUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                download
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-200 text-xs font-medium text-gray-1000 transition-colors cursor-pointer"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                <span>Download</span>
+                              </a>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setDeleteModalResume(resume)}
+                              className="p-1.5 rounded-md border border-transparent hover:border-red-500/30 hover:bg-red-500/10 text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
+                              title="Delete Resume"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="py-16 text-center flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-400 bg-background-200 p-8 space-y-4">
+                    <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                      <FileText className="w-6 h-6" />
+                    </div>
+                    <div className="max-w-md space-y-1">
+                      <h4 className="text-sm font-bold text-gray-1000">Your Resume Vault is Empty</h4>
+                      <p className="text-xs text-gray-600 font-sans leading-relaxed">
+                        Store up to 5 customized resumes (max 2MB, PDF) tailored for different job profiles (e.g. Frontend Engineer, Data Science, Research).
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploadFile(null);
+                        setCustomFileName('');
+                        setUploadAsPrimary(true);
+                        setUploadModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium cursor-pointer shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Upload Your First Resume</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+
         </div>
       </main>
 
@@ -1391,6 +1960,226 @@ export default function StudentDashboard() {
           <span className="text-[10px] font-medium">Profile</span>
         </Link>
       </nav>
+
+      {/* Upload to Resume Vault Modal */}
+      {uploadModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overscroll-contain animate-in fade-in duration-150"
+          onClick={() => !uploadingResume && setUploadModalOpen(false)}
+        >
+          <div 
+            className="bg-background-100 w-full max-w-lg rounded-2xl shadow-2xl border border-gray-400 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5 border-b border-gray-400 flex justify-between items-center bg-background-100">
+              <div className="flex items-center gap-2">
+                <FileUp className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold text-gray-1000">Upload to Resume Vault</h3>
+              </div>
+              <button 
+                type="button"
+                onClick={() => !uploadingResume && setUploadModalOpen(false)} 
+                className="text-gray-500 hover:text-gray-1000 p-1 rounded-md hover:bg-gray-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUploadResume} className="p-6 space-y-5">
+              {/* Vault status banner */}
+              <div className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-background-200 border border-gray-400 text-xs font-mono">
+                <span className="text-gray-700">Capacity Used:</span>
+                <span className="font-bold text-gray-1000">{resumes.length} / 5 slots</span>
+              </div>
+
+              {/* File Dropzone */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-1.5">
+                  Select Resume File <span className="text-red-500">*</span>
+                </label>
+                <div 
+                  className={`border-2 border-dashed rounded-xl p-6 text-center flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer ${
+                    uploadFile 
+                      ? 'border-blue-500/50 bg-blue-500/5' 
+                      : 'border-gray-400 hover:border-gray-600 bg-background-200'
+                  }`}
+                  onClick={() => document.getElementById('vault-file-input').click()}
+                >
+                  <input
+                    id="vault-file-input"
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) handleFileSelection(e.target.files[0]);
+                    }}
+                  />
+                  
+                  {uploadFile ? (
+                    <div className="space-y-1">
+                      <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center mx-auto">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-bold text-gray-1000 truncate max-w-xs">{uploadFile.name}</p>
+                      <p className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+                        {formatBytes(uploadFile.size)} · Ready to upload
+                      </p>
+                      <span className="text-[10px] text-gray-500 underline cursor-pointer">Click to replace</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center mx-auto">
+                        <Upload className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-medium text-gray-1000">
+                        Click to browse or drop PDF here
+                      </p>
+                      <p className="text-[11px] text-gray-600 font-mono">
+                        Maximum file size: 2MB · PDF only
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Custom Resume Label */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-900 mb-1.5">
+                  Resume Title / Label <span className="text-gray-500 font-normal">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Full-Stack Developer Resume"
+                  value={customFileName}
+                  onChange={(e) => setCustomFileName(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-gray-400 rounded-md bg-background-200 text-gray-1000 focus:outline-none focus:border-gray-900"
+                />
+                <p className="text-[11px] text-gray-600 font-mono mt-1">
+                  Helpful for distinguishing resumes tailored for different company roles.
+                </p>
+              </div>
+
+              {/* Set as Primary Checkbox */}
+              <label className="flex items-start gap-2.5 p-3 rounded-lg bg-background-200 border border-gray-400 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={uploadAsPrimary || resumes.length === 0}
+                  disabled={resumes.length === 0}
+                  onChange={(e) => setUploadAsPrimary(e.target.checked)}
+                  className="mt-0.5 rounded border-gray-400 text-gray-900 focus:ring-0"
+                />
+                <div className="text-xs">
+                  <span className="font-semibold text-gray-900 block">Set as primary application resume</span>
+                  <span className="text-gray-600 text-[11px]">
+                    This resume will be pre-selected by default when applying for jobs and campus opportunities.
+                  </span>
+                </div>
+              </label>
+
+              {/* Modal Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-400">
+                <button
+                  type="button"
+                  disabled={uploadingResume}
+                  onClick={() => setUploadModalOpen(false)}
+                  className="px-3.5 py-1.5 rounded-md border border-gray-400 text-xs font-medium text-gray-700 hover:bg-gray-200 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!uploadFile || uploadingResume}
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium disabled:opacity-50 cursor-pointer transition-opacity shadow-xs"
+                >
+                  {uploadingResume ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload to Vault</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Resume Confirmation Modal */}
+      {deleteModalResume && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => !deletingResume && setDeleteModalResume(null)}
+        >
+          <div 
+            className="bg-background-100 w-full max-w-md rounded-2xl shadow-2xl border border-gray-400 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5 border-b border-gray-400 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-gray-1000">Delete Resume</h3>
+                <p className="text-xs text-gray-600">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-3 text-xs">
+              <p className="text-gray-800">
+                Are you sure you want to permanently remove <strong className="text-gray-1000 font-semibold">{deleteModalResume.fileName}</strong> from your Resume Vault?
+              </p>
+              {deleteModalResume.isPrimary && resumes.length > 1 && (
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px]">
+                  This is currently your primary resume. A remaining resume will automatically become primary.
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-gray-400 flex items-center justify-end gap-2 bg-background-200">
+              <button
+                type="button"
+                disabled={deletingResume}
+                onClick={() => setDeleteModalResume(null)}
+                className="px-3.5 py-1.5 rounded-md border border-gray-400 text-xs font-medium text-gray-700 hover:bg-gray-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingResume}
+                onClick={handleDeleteResume}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium cursor-pointer shadow-xs"
+              >
+                {deletingResume ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Resume</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PDF Preview Modal */}
+      {selectedPdfUrl && (
+        <PdfViewerModal
+          url={selectedPdfUrl}
+          title={selectedPdfTitle}
+          onClose={() => setSelectedPdfUrl(null)}
+        />
+      )}
     </div>
   );
 }

@@ -156,6 +156,18 @@ const applyForOpportunity = async (req, res) => {
     }
     // Upload new resume file to Cloudinary if provided in request
     else if (req.file) {
+      if (req.file.size > 2 * 1024 * 1024) {
+        return res.status(400).json({ success: false, message: 'Resume file size cannot exceed 2MB' });
+      }
+      const Resume = require('../models/Resume');
+      const count = await Resume.countDocuments({ userId });
+      if (count >= 5) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Resume vault limit reached (maximum 5 resumes). Please select an existing resume from your vault or manage your vault on the dashboard.' 
+        });
+      }
+
       try {
         const uploadStream = new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
@@ -170,12 +182,12 @@ const applyForOpportunity = async (req, res) => {
         const resumeUrl = await uploadStream;
 
         // Create new Resume document
-        const Resume = require('../models/Resume');
         const newResume = new Resume({
           userId,
           fileUrl: resumeUrl,
           fileName: req.file.originalname || 'Resume',
-          isPrimary: false
+          fileSize: req.file.size || 0,
+          isPrimary: count === 0
         });
         await newResume.save();
         

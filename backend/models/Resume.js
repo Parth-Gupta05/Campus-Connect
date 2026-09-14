@@ -15,6 +15,10 @@ const ResumeSchema = new mongoose.Schema({
     type: String,
     default: 'Resume'
   },
+  fileSize: {
+    type: Number,
+    default: 0
+  },
   isPrimary: {
     type: Boolean,
     default: false
