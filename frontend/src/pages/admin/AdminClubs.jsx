@@ -41,6 +41,10 @@ export default function AdminClubs() {
   const [latestCredentials, setLatestCredentials] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  // Custom Delete Leader Modal state
+  const [leaderToDelete, setLeaderToDelete] = useState(null);
+  const [isDeletingLeader, setIsDeletingLeader] = useState(false);
+
   // Create Club Form State
   const [newClubName, setNewClubName] = useState('');
   const [newClubCategory, setNewClubCategory] = useState('Technical');
@@ -279,18 +283,34 @@ export default function AdminClubs() {
     }
   };
 
-  const handleRemoveCoreMember = async (clubId, studentId, studentName) => {
-    if (!window.confirm(`Remove ${studentName || 'this student'} from the Core Committee of ${viewCoreClub?.name}?`)) return;
+  const handleInitiateRemoveCoreMember = (clubId, student, clubName, role) => {
+    setLeaderToDelete({
+      clubId,
+      studentId: student?._id || student?.id,
+      studentName: student?.name || 'this student',
+      studentUid: student?.uid || '',
+      clubName: clubName || viewCoreClub?.name || 'this organization',
+      role: role || 'Core Member'
+    });
+  };
+
+  const handleConfirmRemoveCoreMember = async () => {
+    if (!leaderToDelete) return;
+    const { clubId, studentId, studentName } = leaderToDelete;
+    setIsDeletingLeader(true);
     try {
       await axios.delete(`/admin/clubs/${clubId}/core-members/${studentId}`);
-      showToast('Member removed from Core Committee roster', 'success');
+      showToast(`${studentName} removed from Core Committee`, 'success');
       setViewCoreClub(prev => prev ? {
         ...prev,
         coreMembers: (prev.coreMembers || []).filter(m => m.student?._id !== studentId && m.student?.id !== studentId)
       } : null);
       fetchClubs();
+      setLeaderToDelete(null);
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to remove core member', 'error');
+    } finally {
+      setIsDeletingLeader(false);
     }
   };
 
@@ -1215,7 +1235,7 @@ export default function AdminClubs() {
 
                         <button
                           type="button"
-                          onClick={() => handleRemoveCoreMember(viewCoreClub._id, student?._id, student?.name)}
+                          onClick={() => handleInitiateRemoveCoreMember(viewCoreClub._id, student, viewCoreClub.name, member.role)}
                           className="p-1.5 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-500/10 transition-colors cursor-pointer"
                           title="Remove from Core Committee"
                         >
@@ -1265,6 +1285,82 @@ export default function AdminClubs() {
               </div>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 5: CONFIRM DELETE LEADER CUSTOM MODAL */}
+      {/* ========================================================================= */}
+      {leaderToDelete && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-md z-[160] flex items-center justify-center p-4 overscroll-contain animate-in fade-in duration-150"
+          onClick={() => !isDeletingLeader && setLeaderToDelete(null)}
+        >
+          <div 
+            className="bg-background-100 border border-gray-400 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col text-gray-1000 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header / Body */}
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/25 flex items-center justify-center text-red-600 shrink-0">
+                  <Trash2 className="w-5 h-5" strokeWidth={1.75} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-gray-1000 tracking-tight">
+                    Remove Leadership Appointment
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Are you sure you want to remove <strong className="text-gray-1000 font-semibold">{leaderToDelete.studentName}</strong> from the Core Committee of <strong className="text-gray-1000 font-semibold">{leaderToDelete.clubName}</strong>?
+                  </p>
+                </div>
+              </div>
+
+              {/* Student Summary Card */}
+              <div className="p-3 rounded-xl bg-background-200 border border-gray-400 flex items-center justify-between gap-3 text-xs">
+                <div>
+                  <div className="font-semibold text-gray-1000">{leaderToDelete.studentName}</div>
+                  {leaderToDelete.studentUid && (
+                    <div className="font-mono text-[10px] text-gray-600">{leaderToDelete.studentUid}</div>
+                  )}
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full font-mono text-[10px] font-semibold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                  {leaderToDelete.role}
+                </span>
+              </div>
+
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                This will revoke this student's leadership role on the club's roster and synchronize with their portfolio.
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="p-3.5 px-6 bg-background-200/80 border-t border-gray-400 flex items-center justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                disabled={isDeletingLeader}
+                onClick={() => setLeaderToDelete(null)}
+                className="h-8 px-3.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingLeader}
+                onClick={handleConfirmRemoveCoreMember}
+                className="h-8 px-4 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition-colors cursor-pointer shadow-2xs flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isDeletingLeader ? (
+                  <span>Removing...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Remove Leader</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
