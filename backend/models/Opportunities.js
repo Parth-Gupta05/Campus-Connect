@@ -12,6 +12,16 @@ const OpportunitySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    companyLogo: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    companyDomain: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     location: {
       type: String,
       default: 'Remote',

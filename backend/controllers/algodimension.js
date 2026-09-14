@@ -261,6 +261,117 @@ const evaluateApplicantMatchController = async (req, res) => {
     }
 };
 
+/**
+ * Evaluates compatibility score between a student (or uploaded resume) and an opportunity.
+ * Does NOT require an existing Applicant record.
+ */
+const calculateOpportunityCompatibility = async (userId, opportunityId, resumeId = null, customResumeData = null) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) throw new Error('User not found');
+
+        const opportunity = await Opportunity.findById(opportunityId);
+        if (!opportunity) throw new Error('Opportunity not found');
+
+        // 1. Ensure opportunity requirement vector exists
+        if (!opportunity.jobVector || opportunity.jobVector.length === 0) {
+            console.log(`[COMPATIBILITY] Generating jobVector on-the-fly for ${opportunityId}...`);
+            const rawVector = await generateRequirementVector(opportunity);
+            const normalizedVector = normalizeRequirementVector(rawVector);
+            opportunity.jobVector = Object.values(normalizedVector);
+            opportunity.vectorProcessed = true;
+            await opportunity.save();
+        }
+
+        // 2. Resolve Resume & parsed data
+        let resume = null;
+        let resumeVector = [];
+        let parsedResumeData = { skills: [], education: [], experience: [], projects: [] };
+
+        if (customResumeData && customResumeData.skills) {
+            parsedResumeData = customResumeData;
+        } else if (resumeId) {
+            resume = await Resume.findOne({ _id: resumeId, userId });
+        } else if (user.resumes && user.resumes.length > 0) {
+            resume = await Resume.findById(user.resumes[0]);
+        } else if (user.resumeUrl) {
+            resume = await Resume.findOne({ fileUrl: user.resumeUrl, userId });
+        }
+
+        if (resume && resume.resumeVector && resume.resumeVector.length > 0 && !customResumeData) {
+            resumeVector = resume.resumeVector;
+            if (resume.parsedData) parsedResumeData = resume.parsedData;
+        } else {
+            if (resume && resume.parsedData) {
+                parsedResumeData = resume.parsedData;
+            }
+
+            if (user.resumeDetails) {
+                if (user.resumeDetails.skills && user.resumeDetails.skills.length > 0) {
+                    parsedResumeData.skills = Array.from(new Set([...(parsedResumeData.skills || []), ...user.resumeDetails.skills]));
+                }
+                if (user.resumeDetails.certificates) {
+                    parsedResumeData.certificates = user.resumeDetails.certificates;
+                }
+            }
+
+            resumeVector = computeRuleBasedSkillVector(parsedResumeData, user.scrapedData);
+
+            if (resume && !customResumeData) {
+                resume.resumeVector = resumeVector;
+                await resume.save();
+            }
+        }
+
+        // 3. Compute cosine similarity & matchScore
+        const similarity = calculateCosineSimilarity(resumeVector, opportunity.jobVector);
+        const matchScore = Math.min(Math.max(Math.round(similarity * 100), 0), 100);
+
+        // 4. Skills match breakdown
+        const candidateSkills = new Set((parsedResumeData.skills || []).map(s => (s || '').toLowerCase().trim()));
+        const reqSkills = opportunity.requiredSkills || [];
+        const matchingSkills = reqSkills.filter(s => candidateSkills.has((s || '').toLowerCase().trim()));
+        const missingSkills = reqSkills.filter(s => !candidateSkills.has((s || '').toLowerCase().trim()));
+
+        let reasoning = '';
+        if (matchScore >= 80) {
+            reasoning = 'Exceptional alignment! Your technical skills and problem solving heavily overlap with this role.';
+        } else if (matchScore >= 60) {
+            reasoning = 'Strong compatibility! You meet core requirements with high relevance in key competencies.';
+        } else if (matchScore >= 40) {
+            reasoning = 'Moderate compatibility. Good foundational background with potential to bridge remaining requirements.';
+        } else {
+            reasoning = 'Lower compatibility based on current parsed skills. Consider highlighting related domain projects.';
+        }
+
+        // 5. If user already applied, keep the applicant record updated too
+        const existingApp = await Applicant.findOne({ userId, opportunityId });
+        if (existingApp) {
+            existingApp.matchScore = matchScore;
+            existingApp.matchScoreCalculated = true;
+            existingApp.matchDetails = {
+                vectorSimilarity: similarity,
+                skillMatchScore: matchScore,
+                reasoning
+            };
+            await existingApp.save();
+        }
+
+        return {
+            matchScore,
+            similarity: Number(similarity.toFixed(3)),
+            matchingSkills,
+            missingSkills,
+            totalRequired: reqSkills.length,
+            reasoning,
+            resumeTitle: resume?.fileName || (customResumeData ? 'Uploaded Resume' : 'Profile Skills')
+        };
+    } catch (err) {
+        console.error('Error in calculateOpportunityCompatibility:', err);
+        throw err;
+    }
+};
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({
@@ -739,6 +850,10 @@ const getleetcodedata = async (leetcodeuserid, profileOnly = false) => {
     try {
         const query = `
           query getUserData($username: String!) {
+            allQuestionsCount {
+              difficulty
+              count
+            }
             matchedUser(username: $username) {
               username
               githubUrl
@@ -837,10 +952,16 @@ const getleetcodedata = async (leetcodeuserid, profileOnly = false) => {
                 const mediumSolved = acSubmissions.find(s => s.difficulty === 'Medium')?.count || 0;
                 const hardSolved = acSubmissions.find(s => s.difficulty === 'Hard')?.count || 0;
 
+                const allQuestions = json?.data?.allQuestionsCount || [];
+                const totalAll = allQuestions.find(q => q.difficulty === 'All')?.count || 4051;
+                const totalEasy = allQuestions.find(q => q.difficulty === 'Easy')?.count || 964;
+                const totalMedium = allQuestions.find(q => q.difficulty === 'Medium')?.count || 2113;
+                const totalHard = allQuestions.find(q => q.difficulty === 'Hard')?.count || 974;
+
                 const totalSubmissions = matched.submitStats?.totalSubmissionNum || [];
-                const totalEasy = totalSubmissions.find(s => s.difficulty === 'Easy')?.count || 0;
-                const totalMedium = totalSubmissions.find(s => s.difficulty === 'Medium')?.count || 0;
-                const totalHard = totalSubmissions.find(s => s.difficulty === 'Hard')?.count || 0;
+                const totalAcSubmissions = acSubmissions.find(s => s.difficulty === 'All')?.submissions || 0;
+                const totalUserSubmissions = totalSubmissions.find(s => s.difficulty === 'All')?.submissions || 0;
+                const acceptanceRate = totalUserSubmissions > 0 ? parseFloat(((totalAcSubmissions / totalUserSubmissions) * 100).toFixed(1)) : null;
 
                 let parsedCalendar = {};
                 try {
@@ -867,10 +988,11 @@ const getleetcodedata = async (leetcodeuserid, profileOnly = false) => {
                     easySolved,
                     mediumSolved,
                     hardSolved,
-                    totalQuestions: totalEasy + totalMedium + totalHard,
+                    totalQuestions: totalAll,
                     totalEasy,
                     totalMedium,
                     totalHard,
+                    acceptanceRate,
                     submissionCalendar: parsedCalendar,
                     recentSubmissions: json.data?.recentSubmissionList || []
                 };
@@ -886,6 +1008,11 @@ const getleetcodedata = async (leetcodeuserid, profileOnly = false) => {
                         easySolved,
                         mediumSolved,
                         hardSolved,
+                        totalEasy,
+                        totalMedium,
+                        totalHard,
+                        totalQuestions: totalAll,
+                        acceptanceRate,
                         totalSubmissionNum: totalSubmissions,
                         acSubmissionNum: acSubmissions
                     },
@@ -1249,5 +1376,6 @@ module.exports = {
     getLinkedInData,
     getLinkedInPosts,
     filterAchievementsWithGemini,
-    getGithubContributions
+    getGithubContributions,
+    calculateOpportunityCompatibility
 };

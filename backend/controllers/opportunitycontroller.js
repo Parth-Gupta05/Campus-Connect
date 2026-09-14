@@ -47,9 +47,17 @@ const getOpportunities = async (req, res) => {
     const total = await Opportunity.countDocuments(query);
 
     let appliedOppIds = [];
+    let userApplications = {};
     if (req.user && req.user.id) {
-      const applications = await Applicant.find({ userId: req.user.id }, 'opportunityId');
+      const applications = await Applicant.find({ userId: req.user.id }, 'opportunityId matchScore matchScoreCalculated matchDetails');
       appliedOppIds = applications.map(app => app.opportunityId.toString());
+      applications.forEach(app => {
+        userApplications[app.opportunityId.toString()] = {
+          matchScore: app.matchScore,
+          matchScoreCalculated: app.matchScoreCalculated,
+          matchDetails: app.matchDetails
+        };
+      });
     }
 
     res.status(200).json({
@@ -60,6 +68,7 @@ const getOpportunities = async (req, res) => {
       totalPages: Math.ceil(total / limitNum),
       opportunities,
       appliedOppIds,
+      userApplications,
     });
   } catch (error) {
     console.error('Error fetching opportunities:', error);
@@ -222,8 +231,94 @@ const applyForOpportunity = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Check AI resume match & compatibility score for an opportunity
+ * @route   POST /api/opportunities/:id/compatibility
+ * @access  Private (Student)
+ */
+const checkOpportunityCompatibility = async (req, res) => {
+  try {
+    const opportunityId = req.params.id;
+    const userId = req.user.id;
+    const { resumeId } = req.body;
+
+    let customResumeData = null;
+    let selectedResumeId = resumeId;
+
+    // If an external resume file was uploaded strictly for compatibility testing
+    if (req.file) {
+      try {
+        let extractedSkills = [];
+        try {
+          const pdfParse = require('pdf-parse');
+          const pdfData = await pdfParse(req.file.buffer);
+          const text = pdfData.text || '';
+          
+          const opp = await Opportunity.findById(opportunityId);
+          const reqSkills = opp?.requiredSkills || [];
+          reqSkills.forEach(s => {
+            const escaped = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+            if (regex.test(text)) {
+              extractedSkills.push(s);
+            }
+          });
+
+          // Also scan for common technical keywords in the document
+          const COMMON_TECH_SKILLS = [
+            'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C', 'C#', 'Go', 'Rust', 'Ruby', 'PHP', 'Swift', 'Kotlin',
+            'React', 'React.js', 'Next.js', 'Vue', 'Angular', 'Node.js', 'Express.js', 'Django', 'Flask', 'FastAPI', 'Spring Boot',
+            'HTML', 'CSS', 'Tailwind', 'TailwindCSS', 'Bootstrap', 'Sass', 'Redux',
+            'MongoDB', 'PostgreSQL', 'MySQL', 'SQLite', 'Redis', 'Firebase', 'Supabase', 'GraphQL', 'REST API', 'RESTful API',
+            'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP', 'Cloudinary', 'CI/CD', 'Git', 'GitHub', 'Linux',
+            'Machine Learning', 'Deep Learning', 'NLP', 'Data Science', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy',
+            'Cybersecurity', 'JWT', 'OAuth', 'Microservices', 'System Design', 'Agile', 'Scrum'
+          ];
+          COMMON_TECH_SKILLS.forEach(skill => {
+            if (!extractedSkills.includes(skill)) {
+              const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+              if (regex.test(text)) {
+                extractedSkills.push(skill);
+              }
+            }
+          });
+        } catch (parseErr) {
+          console.warn('PDF parse warning in check-compatibility:', parseErr.message);
+        }
+
+        // Strictly evaluated in-memory for testing; NEVER stored in Cloudinary or the user's resume vault
+        selectedResumeId = null;
+        customResumeData = {
+          skills: extractedSkills,
+          fileName: req.file.originalname || 'External Test Resume'
+        };
+      } catch (uploadErr) {
+        console.error('Resume processing error:', uploadErr);
+        return res.status(500).json({ success: false, message: 'Failed to process uploaded resume file' });
+      }
+    }
+
+    const { calculateOpportunityCompatibility } = require('./algodimension');
+    const result = await calculateOpportunityCompatibility(userId, opportunityId, selectedResumeId, customResumeData);
+
+    return res.status(200).json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error('Error checking compatibility:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to evaluate opportunity compatibility',
+      details: error.message
+    });
+  }
+};
+
 module.exports = {
   getOpportunities,
   getOpportunityById,
   applyForOpportunity,
+  checkOpportunityCompatibility,
 };

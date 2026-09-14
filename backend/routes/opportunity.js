@@ -6,6 +6,7 @@ const {
   getOpportunities,
   getOpportunityById,
   applyForOpportunity,
+  checkOpportunityCompatibility,
 } = require('../controllers/opportunitycontroller');
 const { authMiddleware } = require('../middleware/authMiddleware');
 
@@ -19,5 +20,8 @@ router.get('/:id', authMiddleware, getOpportunityById);
 
 // Apply for an opportunity (with optional resume file upload)
 router.post('/:id/apply', authMiddleware, upload.single('resume'), applyForOpportunity);
+
+// Check AI match & compatibility for an opportunity
+router.post('/:id/compatibility', authMiddleware, upload.single('resume'), checkOpportunityCompatibility);
 
 module.exports = router;
