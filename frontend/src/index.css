@@ -269,6 +269,23 @@ body {
   border: 1px solid var(--ds-gray-400) !important;
 }
 
+/* === Footer Signature Typography === */
+.geist-footer-typography {
+  font-size: clamp(2.5rem, 13.5vw, 13.5rem);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.10) 50%, rgba(0, 0, 0, 0) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .geist-footer-typography,
+[data-theme="dark"] .geist-footer-typography {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.07) 50%, rgba(255, 255, 255, 0) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 /* === Custom Thin Scrollbar === */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;

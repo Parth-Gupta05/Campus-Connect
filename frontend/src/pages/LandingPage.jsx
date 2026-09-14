@@ -1967,7 +1967,7 @@ export default function LandingPage() {
 
         {/* Center/Bottom Deck: Massive Minimal 'Campus Connect' Grand Finale Signature */}
         <div className="w-full overflow-hidden select-none pointer-events-none px-4 py-1 text-center -my-2">
-          <span className="block text-[clamp(2.5rem,13.5vw,13.5rem)] font-black tracking-tighter leading-none whitespace-nowrap bg-gradient-to-b from-gray-500/30 via-gray-500/15 to-transparent dark:from-white/[0.18] dark:via-white/[0.07] dark:to-transparent bg-clip-text text-transparent transition-all">
+          <span className="geist-footer-typography block font-black tracking-tighter leading-none whitespace-nowrap transition-all">
             Campus Connect
           </span>
         </div>
