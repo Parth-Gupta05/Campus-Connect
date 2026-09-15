@@ -11,6 +11,11 @@ const UserSchema = new mongoose.Schema({
     sparse: true,
     unique: true,
   },
+  universityEmail: {
+    type: String,
+    sparse: true,
+    unique: true,
+  },
   admissionYear: { type: String, default: '' },
   graduationYear: { type: String, default: '' },
   branch: { type: String, default: '' },
@@ -73,6 +78,18 @@ const UserSchema = new mongoose.Schema({
     default: null,
   },
   resetOtpExpiry: {
+    type: Date,
+    default: null,
+  },
+  pendingLinkEmail: {
+    type: String,
+    default: null,
+  },
+  linkEmailOtp: {
+    type: String,
+    default: null,
+  },
+  linkEmailOtpExpiry: {
     type: Date,
     default: null,
   },

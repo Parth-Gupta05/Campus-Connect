@@ -3,6 +3,7 @@ const multer = require('multer');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const { 
   getProfile, 
+  getPublicProfile,
   updateProfile, 
   refreshMetrics, 
   updatePortfolio, 
@@ -14,7 +15,8 @@ const {
   addManualAchievement, 
   getGithubHeatmap, 
   verifyPlatform, 
-  generateVerificationCode 
+  generateVerificationCode,
+  searchUsers
 } = require('../controllers/userController');
 const { 
   uploadAndParseResume,
@@ -47,10 +49,14 @@ const uploadResumeMiddleware = (req, res, next) => {
   });
 };
 
-// Apply auth middleware to all routes in this file
+// Public Route (No Auth Required)
+router.get('/public/:uid', getPublicProfile);
+
+// Apply auth middleware to all other routes in this file
 router.use(authMiddleware);
 
 router.get('/profile', getProfile);
+router.get('/search', searchUsers);
 router.get('/github-heatmap', getGithubHeatmap);
 router.put('/profile', updateProfile);
 router.post('/refresh-metrics', refreshMetrics);

@@ -31,13 +31,70 @@ const getProfile = async (req, res) => {
   }
 };
 
+const getPublicProfile = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    
+    // Support parsing like 23_COMPA10_27 or 23-COMPA10-27
+    const normalizedUid = uid.replace(/_/g, '-').toUpperCase();
+    
+    const user = await User.findOne({ uid: normalizedUid })
+      .select('-password -resetOtp -verificationCode -pendingAchievements')
+      .populate('resumes');
+      
+    if (!user) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching public profile:', error);
+    res.status(500).json({ message: 'Server error fetching public profile' });
+  }
+};
+
+const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.json([]);
+    }
+    
+    const normalizedQ = q.replace(/_/g, '-');
+    
+    const users = await User.find({
+      $and: [
+        { role: 'student' },
+        {
+          $or: [
+            { name: { $regex: q, $options: 'i' } },
+            { uid: { $regex: normalizedQ, $options: 'i' } },
+            { email: { $regex: q, $options: 'i' } },
+            { universityEmail: { $regex: q, $options: 'i' } }
+          ]
+        }
+      ]
+    })
+    .select('name uid avatarUrl branch')
+    .limit(10)
+    .lean();
+    
+    res.json(users);
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({ message: 'Server error searching users' });
+  }
+};
+
 const scrapeAndCacheMetrics = async (user) => {
   let githubData = null;
+  let githubHeatmapData = null;
   let leetcodeData = null;
 
   if (user.githubUsername) {
     try {
       githubData = await getgithubdata(user.githubUsername);
+      githubHeatmapData = await getGithubContributions(user.githubUsername);
     } catch (err) {
       console.warn('Failed to fetch github data:', err.message);
     }
@@ -88,7 +145,7 @@ const scrapeAndCacheMetrics = async (user) => {
     }
   }
 
-  user.scrapedData = { github: githubData, leetcode: leetcodeData, linkedin: linkedinData };
+  user.scrapedData = { github: githubData, githubHeatmap: githubHeatmapData, leetcode: leetcodeData, linkedin: linkedinData };
   
   // Merge LinkedIn certificates into resumeDetails.certificates
   if (linkedinData && linkedinData.certifications) {
@@ -111,6 +168,7 @@ const scrapeAndCacheMetrics = async (user) => {
     });
   }
 
+  user.markModified('scrapedData');
   user.lastScrapedAt = new Date();
   await user.save();
   return user;
@@ -545,6 +603,7 @@ const generateVerificationCode = async (req, res) => {
 
 module.exports = {
   getProfile,
+  getPublicProfile,
   updateProfile,
   refreshMetrics,
   updatePortfolio,
@@ -556,5 +615,6 @@ module.exports = {
   addManualAchievement,
   getGithubHeatmap,
   verifyPlatform,
-  generateVerificationCode
+  generateVerificationCode,
+  searchUsers
 };

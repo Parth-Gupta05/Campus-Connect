@@ -189,7 +189,7 @@ router.get('/students', authMiddleware, adminMiddleware, async (req, res) => {
 // @access  Admin
 router.get('/students/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const studentId = req.params.id;
+    const identifier = req.params.id;
     const User = require('../models/User');
     const Github = require('../models/Github');
     const Leetcode = require('../models/Leetcode');
@@ -199,9 +199,24 @@ router.get('/students/:id', authMiddleware, adminMiddleware, async (req, res) =>
     const Event = require('../models/Event');
     const PlacementPost = require('../models/PlacementPost');
 
+    const mongoose = require('mongoose');
+
+    let user;
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      user = await User.findById(req.params.id).select('-password');
+    }
+    if (!user) {
+      user = await User.findOne({ uid: req.params.id.toUpperCase() }).select('-password');
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    const studentId = user._id;
+
     // Run all independent queries concurrently
     const [
-      user,
       github,
       leetcode,
       linkedin,
@@ -211,7 +226,6 @@ router.get('/students/:id', authMiddleware, adminMiddleware, async (req, res) =>
       events,
       placements
     ] = await Promise.all([
-      User.findById(studentId).select('-password'),
       Github.findOne({ user: studentId }),
       Leetcode.findOne({ user: studentId }),
       LindedIn.findOne({ user: studentId }),
@@ -225,9 +239,7 @@ router.get('/students/:id', authMiddleware, adminMiddleware, async (req, res) =>
       PlacementPost.find({ author: studentId }).sort({ createdAt: -1 }).select('title company role postType salary createdAt')
     ]);
 
-    if (!user) {
-      return res.status(404).json({ message: 'Student not found' });
-    }
+
 
     res.json({
       success: true,

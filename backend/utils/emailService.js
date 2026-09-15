@@ -80,5 +80,30 @@ module.exports = {
       console.error('Error sending reset OTP email:', error);
       throw error;
     }
+  },
+  sendLinkEmailOtp: async (email, otp) => {
+    try {
+      const mailOptions = {
+        from: `"Campus Connect" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: `Verify Your Email Address`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; text-align: center;">
+            <h2>Verify Your Email</h2>
+            <p>You have requested to link this email address to your Campus Connect account. Use the following OTP to complete the verification:</p>
+            <h1 style="font-size: 32px; letter-spacing: 5px; color: #4F46E5;">${otp}</h1>
+            <p>This OTP is valid for 10 minutes.</p>
+            <br/>
+            <p>If you did not request this, please ignore this email.</p>
+            <p>Best Regards,</p>
+            <p><strong>Campus Connect Team</strong></p>
+          </div>
+        `
+      };
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Error sending link OTP email:', error);
+      throw error;
+    }
   }
 };

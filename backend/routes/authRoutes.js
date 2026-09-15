@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Club = require('../models/Club');
+const emailService = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -61,12 +62,20 @@ router.post('/register', async (req, res) => {
     }
 
     const isEmail = identifier.includes('@');
-    const email = isEmail ? identifier : undefined;
+    let email, universityEmail;
+    if (isEmail) {
+      if (identifier.endsWith('@tcetmumbai.in')) {
+        universityEmail = identifier;
+      } else {
+        email = identifier;
+      }
+    }
     const uid = !isEmail ? identifier.toUpperCase() : undefined;
 
     // Check if user already exists
     const query = [];
     if (email) query.push({ email });
+    if (universityEmail) query.push({ universityEmail });
     if (uid) query.push({ uid });
 
     const existingUser = await User.findOne({ $or: query });
@@ -88,6 +97,7 @@ router.post('/register', async (req, res) => {
     // Create new user
     const user = new User({
       email,
+      universityEmail,
       uid,
       password: hashedPassword,
       role: role === 'admin' ? 'admin' : 'student', // Default to student
@@ -124,6 +134,7 @@ router.post('/register', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
+        universityEmail: user.universityEmail,
         uid: user.uid,
         role: user.role
       }
@@ -144,11 +155,13 @@ router.post('/login', async (req, res) => {
     }
 
     const isEmail = identifier.includes('@');
-    const email = isEmail ? identifier : undefined;
     const uid = !isEmail ? identifier.toUpperCase() : undefined;
 
     const query = [];
-    if (email) query.push({ email });
+    if (isEmail) {
+      query.push({ email: identifier });
+      query.push({ universityEmail: identifier });
+    }
     if (uid) query.push({ uid });
 
     // Find user
@@ -204,6 +217,7 @@ router.post('/login', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
+        universityEmail: user.universityEmail,
         uid: user.uid,
         role: user.role,
         isMissingCredential: isClub ? false : (!user.email || !user.uid)
@@ -244,14 +258,38 @@ router.post('/link-account', async (req, res) => {
     }
 
     if (isEmail) {
-      if (user.email) {
-        return res.status(400).json({ message: 'Email is already linked' });
+      const isUniversity = identifier.endsWith('@tcetmumbai.in');
+      
+      // Validation before sending OTP
+      if (isUniversity) {
+        if (user.universityEmail) {
+          return res.status(400).json({ message: 'University email is already linked' });
+        }
+        const existingUser = await User.findOne({ universityEmail: identifier });
+        if (existingUser) {
+          return res.status(400).json({ message: 'This email is already in use by another account' });
+        }
+      } else {
+        if (user.email) {
+          return res.status(400).json({ message: 'Email is already linked' });
+        }
+        const existingUser = await User.findOne({ email: identifier });
+        if (existingUser) {
+          return res.status(400).json({ message: 'This email is already in use by another account' });
+        }
       }
-      const existingUser = await User.findOne({ email: identifier });
-      if (existingUser) {
-        return res.status(400).json({ message: 'This email is already in use by another account' });
-      }
-      user.email = identifier;
+
+      // Generate OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      user.pendingLinkEmail = identifier;
+      user.linkEmailOtp = otp;
+      user.linkEmailOtpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+      
+      await user.save();
+      await emailService.sendLinkEmailOtp(identifier, otp);
+      
+      return res.json({ requiresOtp: true, message: 'OTP sent to email' });
+
     } else {
       const uid = identifier.toUpperCase();
       if (user.uid) {
@@ -292,6 +330,76 @@ router.post('/link-account', async (req, res) => {
   } catch (error) {
     console.error('Link account error:', error);
     res.status(500).json({ message: 'Server error during account linking' });
+  }
+});
+
+// @route   POST /api/auth/verify-link-otp
+// @desc    Verify OTP to link email
+// @access  Private
+router.post('/verify-link-otp', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ message: 'No token, authorization denied' });
+  }
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+
+  const { otp } = req.body;
+  if (!otp) {
+    return res.status(400).json({ message: 'Please provide the OTP' });
+  }
+
+  try {
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.linkEmailOtp || user.linkEmailOtp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (Date.now() > user.linkEmailOtpExpiry) {
+      return res.status(400).json({ message: 'OTP has expired' });
+    }
+
+    const emailToLink = user.pendingLinkEmail;
+    if (!emailToLink) {
+      return res.status(400).json({ message: 'No pending email to link' });
+    }
+
+    const isUniversity = emailToLink.endsWith('@tcetmumbai.in');
+    if (isUniversity) {
+      user.universityEmail = emailToLink;
+    } else {
+      user.email = emailToLink;
+    }
+
+    user.pendingLinkEmail = null;
+    user.linkEmailOtp = null;
+    user.linkEmailOtpExpiry = null;
+
+    await user.save();
+
+    res.json({
+      message: 'Email linked successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        uid: user.uid,
+        role: user.role,
+        isMissingCredential: !user.email || !user.uid
+      }
+    });
+
+  } catch (error) {
+    console.error('Verify link OTP error:', error);
+    res.status(500).json({ message: 'Server error verifying OTP' });
   }
 });
 
