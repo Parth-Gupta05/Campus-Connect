@@ -169,7 +169,7 @@ router.post('/login', async (req, res) => {
     let isClub = false;
 
     if (!user && isEmail) {
-      user = await Club.findOne({ email });
+      user = await Club.findOne({ email: identifier });
       if (user) isClub = true;
     }
 
