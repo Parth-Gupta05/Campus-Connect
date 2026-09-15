@@ -50,10 +50,11 @@ export default function Clubs() {
 
   // Check if current user is an assigned member of a club
   const isUserMember = (club) => {
-    if (!user?._id || !club.assignedStudents) return false;
+    const userId = user?.id || user?._id;
+    if (!userId || !club.assignedStudents) return false;
     return club.assignedStudents.some((member) => {
       const memberId = member.studentId?._id || member.studentId || member;
-      return memberId?.toString() === user._id?.toString();
+      return memberId?.toString() === userId.toString();
     });
   };
 
@@ -289,9 +290,9 @@ export default function Clubs() {
 
                 return (
                   <Link
-                    to={`/clubs/${club._id}`}
                     key={club._id}
-                    className="group bg-background-100 border border-gray-400 rounded-xl overflow-hidden hover:border-gray-900 transition-all duration-200 shadow-2xs hover:shadow-xs flex flex-col cursor-pointer"
+                    to={`/clubs/${club._id}`}
+                    className="group relative isolate bg-background-100 border border-gray-400 rounded-xl overflow-hidden hover:border-gray-900 transition-all duration-200 shadow-2xs hover:shadow-xs flex flex-col cursor-pointer"
                   >
                     {/* Banner Header with Overlapping Logo */}
                     <div className="relative">
@@ -337,8 +338,21 @@ export default function Clubs() {
                       </div>
                     </div>
 
+                    {/* Bottom Right Color Leak Effect & Fading Border Glow */}
+                    <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-sky-500/10 dark:bg-sky-400/15 blur-[50px] rounded-full pointer-events-none z-0 transition-all duration-500 group-hover:bg-sky-500/30 group-hover:scale-125" />
+                    
+                    <div 
+                      className="absolute inset-0 rounded-xl pointer-events-none z-20 transition-opacity duration-500 opacity-40 group-hover:opacity-100"
+                      style={{
+                        borderRight: '1.5px solid rgba(14, 165, 233, 0.6)',
+                        borderBottom: '1.5px solid rgba(14, 165, 233, 0.6)',
+                        WebkitMaskImage: 'radial-gradient(circle at bottom right, black 0%, transparent 50%)',
+                        maskImage: 'radial-gradient(circle at bottom right, black 0%, transparent 50%)'
+                      }}
+                    />
+
                     {/* Card Content */}
-                    <div className="p-5 pt-8 flex-1 flex flex-col justify-between">
+                    <div className="p-5 pt-8 flex-1 flex flex-col justify-between relative z-10">
                       <div>
                         {/* Member Count Pill (Right-aligned to balance with floating left logo) */}
                         <div className="flex items-center justify-end gap-2 mb-2 min-h-[26px]">

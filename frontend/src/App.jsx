@@ -4,6 +4,7 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentProfile from './pages/StudentProfile';
+import PublicProfile from './pages/PublicProfile';
 import Certificates from './pages/Certificates';
 import Opportunities from './pages/Opportunities';
 import ClubDashboard from './pages/ClubDashboard';
@@ -49,6 +50,7 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
+              <Route path="/student/:uid" element={<PublicProfile />} />
               
               <Route path="/dashboard" element={
                 <ProtectedRoute allowedRoles={['student']}>

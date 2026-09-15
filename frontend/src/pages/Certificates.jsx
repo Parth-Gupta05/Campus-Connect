@@ -536,18 +536,7 @@ export default function Certificates() {
                           )}
                         </div>
 
-                        {/* Floating View Overlay on Hover (if document exists) */}
-                        {hasFile && (
-                          <div
-                            onClick={() => handleViewDoc(cert)}
-                            className="absolute inset-0 bg-gray-1000/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                          >
-                            <span className="px-3 py-1.5 rounded-lg bg-background-100 text-gray-1000 text-xs font-semibold shadow-md flex items-center gap-1.5">
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>View Document</span>
-                            </span>
-                          </div>
-                        )}
+
                       </div>
 
                       {/* Card Content Body */}

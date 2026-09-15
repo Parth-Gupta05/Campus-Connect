@@ -425,10 +425,10 @@ export default function AicteDiaryView() {
                   {/* Activity Name & Date */}
                   <td className="p-3.5">
                     <div className="font-semibold text-gray-1000 text-sm">{item.title}</div>
-                    <div className="text-[11px] font-mono text-gray-600 mt-0.5 flex items-center gap-2">
-                      <span>{eventDateStr}</span>
-                      <span>&bull;</span>
-                      <span className="px-1.5 py-0.2 rounded bg-background-200 text-gray-1000 border border-gray-400">
+                    <div className="text-[11px] font-mono text-gray-600 mt-0.5 flex flex-wrap items-center gap-2">
+                      <span className="whitespace-nowrap">{eventDateStr}</span>
+                      <span className="hidden sm:inline">&bull;</span>
+                      <span className="px-1.5 py-0.5 rounded bg-background-200 text-gray-1000 border border-gray-400 whitespace-nowrap">
                         {item.semesterLabel}
                       </span>
                     </div>
@@ -446,7 +446,7 @@ export default function AicteDiaryView() {
                   <td className="p-3.5">
                     <span 
                       title={item.categoryTitle}
-                      className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-gray-200 border border-gray-400 text-gray-900 max-w-[160px] truncate"
+                      className="inline-block px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-gray-200 border border-gray-400 text-gray-900 max-w-[140px] sm:max-w-[180px] truncate align-middle"
                     >
                       #{item.aicteCategory} {item.categoryShortTitle}
                     </span>
@@ -455,18 +455,18 @@ export default function AicteDiaryView() {
                   {/* Designation & Multiplier */}
                   <td className="p-3.5 font-mono">
                     {item.tier === 'Core' ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
-                        <Award className="w-3 h-3" />
-                        {item.designation} (2x Core)
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 whitespace-nowrap">
+                        <Award className="w-3 h-3 shrink-0" />
+                        <span>{item.designation} (2x Core)</span>
                       </span>
                     ) : item.tier === 'WC' ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20">
-                        <Sparkles className="w-3 h-3" />
-                        {item.designation} (2x WC)
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 whitespace-nowrap">
+                        <Sparkles className="w-3 h-3 shrink-0" />
+                        <span>{item.designation} (2x WC)</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] text-gray-700 bg-gray-200 border border-gray-400">
-                        {item.designation} (1x)
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] text-gray-700 bg-gray-200 border border-gray-400 whitespace-nowrap">
+                        <span>{item.designation} (1x)</span>
                       </span>
                     )}
                   </td>
@@ -481,16 +481,16 @@ export default function AicteDiaryView() {
 
                   {/* Points Awarded */}
                   <td className="p-3.5 text-right font-mono">
-                    <span className="px-2 py-0.5 rounded font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                    <span className="inline-flex items-center justify-center whitespace-nowrap px-2 py-0.5 rounded font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 text-xs">
                       +{item.pointsAwarded} pts
                     </span>
                   </td>
 
                   {/* Status */}
                   <td className="p-3.5 text-right">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {item.isAutoCore ? 'Auto (Core)' : 'Verified'}
+                    <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 whitespace-nowrap">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>{item.isAutoCore ? 'Auto (Core)' : 'Verified'}</span>
                     </span>
                   </td>
                 </tr>

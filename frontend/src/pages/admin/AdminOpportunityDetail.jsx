@@ -344,7 +344,7 @@ export default function AdminOpportunityDetail() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <Link 
-                            to={`/admin/students/${user._id}`}
+                            to={`/admin/students/${user.uid || user._id}`}
                             className="font-bold text-sm text-gray-1000 hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate"
                           >
                             {user.name || 'Unknown Student'}
@@ -407,7 +407,7 @@ export default function AdminOpportunityDetail() {
 
                       {/* View Dossier Action */}
                       <Link
-                        to={`/admin/students/${user._id}`}
+                        to={`/admin/students/${user.uid || user._id}`}
                         className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer"
                       >
                         <span>Dossier</span>

@@ -260,7 +260,7 @@ export default function AdminStudents() {
                 return (
                   <Link 
                     key={student._id}
-                    to={`/admin/students/${student._id}`}
+                    to={`/admin/students/${student.uid || student._id}`}
                     className="group rounded-xl border border-gray-400 bg-background-100 hover:border-gray-900 dark:hover:border-gray-100 p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between cursor-pointer"
                   >
                     <div>

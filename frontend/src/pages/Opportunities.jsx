@@ -162,12 +162,29 @@ export default function Opportunities() {
   const [compatResumeFile, setCompatResumeFile] = useState(null);
   const [compatUploadMode, setCompatUploadMode] = useState(false);
 
+  const [vaultResumes, setVaultResumes] = useState([]);
+
+  const fetchVaultResumes = async () => {
+    try {
+      if (user) {
+        const res = await axios.get('/user/resumes');
+        setVaultResumes(res.data?.resumes || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch resumes:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchVaultResumes();
+  }, [user]);
+
   useEffect(() => {
     if (isApplyModalOpen || isCompatModalOpen) {
-      if (user?.resumes?.length > 0) {
+      if (vaultResumes.length > 0) {
         setUploadMode(false);
         setCompatUploadMode(false);
-        const defaultId = user.resumes[0]._id || user.resumes[0];
+        const defaultId = vaultResumes[0]._id || vaultResumes[0];
         setSelectedResumeId(defaultId);
         setCompatResumeId(defaultId);
       } else {
@@ -180,7 +197,7 @@ export default function Opportunities() {
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [isApplyModalOpen, isCompatModalOpen, user]);
+  }, [isApplyModalOpen, isCompatModalOpen, vaultResumes]);
 
   const fetchOpportunities = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -259,9 +276,20 @@ export default function Opportunities() {
     if (e) e.preventDefault();
     if (!selectedOpp) return;
 
-    if (!uploadMode && !selectedResumeId && (!user?.resumes || user.resumes.length === 0)) {
+    if (!uploadMode && !selectedResumeId && vaultResumes.length === 0) {
       showToast('Please select a resume or upload a new one.', 'error');
       return;
+    }
+
+    if (uploadMode) {
+      if (vaultResumes.length >= 5) {
+        showToast('Resume vault is full. Free up space or select an existing resume.', 'error');
+        return;
+      }
+      if (!resumeFile) {
+        showToast('Please upload a resume file.', 'error');
+        return;
+      }
     }
 
     setApplying(true);
@@ -271,8 +299,8 @@ export default function Opportunities() {
         formData.append('resume', resumeFile);
       } else if (!uploadMode && selectedResumeId) {
         formData.append('resumeId', selectedResumeId);
-      } else if (!uploadMode && user?.resumes?.length > 0 && !selectedResumeId) {
-        formData.append('resumeId', user.resumes[0]._id || user.resumes[0]);
+      } else if (!uploadMode && vaultResumes.length > 0 && !selectedResumeId) {
+        formData.append('resumeId', vaultResumes[0]._id || vaultResumes[0]);
       }
 
       const res = await axios.post(`/opportunities/${selectedOpp._id}/apply`, formData, {
@@ -284,6 +312,10 @@ export default function Opportunities() {
       setIsApplyModalOpen(false);
       setResumeFile(null);
       setSelectedResumeId('');
+      
+      if (uploadMode && resumeFile) {
+        fetchVaultResumes();
+      }
     } catch (err) {
       console.error('Error applying for opportunity:', err);
       const msg = err.response?.data?.message || 'Failed to submit application';
@@ -309,8 +341,8 @@ export default function Opportunities() {
         formData.append('resume', compatResumeFile);
       } else if (!compatUploadMode && compatResumeId) {
         formData.append('resumeId', compatResumeId);
-      } else if (user?.resumes?.length > 0) {
-        formData.append('resumeId', user.resumes[0]._id || user.resumes[0]);
+      } else if (vaultResumes.length > 0) {
+        formData.append('resumeId', vaultResumes[0]._id || vaultResumes[0]);
       }
 
       const res = await axios.post(`/opportunities/${selectedOpp._id}/compatibility`, formData, {
@@ -743,8 +775,10 @@ export default function Opportunities() {
                     );
 
                     return (
-                      <div className="relative overflow-hidden p-4 sm:p-5 rounded-xl bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-purple-500/5 dark:from-purple-950/30 dark:via-indigo-950/20 dark:to-purple-900/15 border border-purple-500/30 dark:border-purple-500/40 hover:border-purple-500/50 flex flex-col gap-3.5 shadow-xs shadow-purple-500/5 transition-all duration-300">
-                        <div className="absolute -top-10 -right-10 w-28 h-28 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+                      <div className="relative overflow-hidden p-4 sm:p-5 rounded-xl bg-background-200 border border-gray-400 hover:border-gray-500 flex flex-col gap-3.5 shadow-xs transition-all duration-300 group">
+                        {/* Vercel-style Top Glow */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-24 bg-purple-500/20 blur-[40px] pointer-events-none rounded-full" />
+                        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/60 to-transparent" />
                         
                         {/* Header & Trigger Row */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 relative z-10">
@@ -949,7 +983,7 @@ export default function Opportunities() {
 
               <form onSubmit={handleApplySubmit} className="space-y-5">
                 {/* Mode Switcher Tabs */}
-                {user?.resumes && user.resumes.length > 0 && (
+                {vaultResumes.length > 0 && (
                   <div className="flex bg-background-200 p-1 rounded-xl border border-gray-400">
                     <button
                       type="button"
@@ -977,12 +1011,12 @@ export default function Opportunities() {
                 )}
 
                 {/* Option A: Select Existing Resume */}
-                {!uploadMode && user?.resumes && user.resumes.length > 0 ? (
+                {!uploadMode && vaultResumes.length > 0 ? (
                   <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
                     <label className="block text-[11px] font-mono uppercase tracking-wider text-gray-600">
                       Choose From Saved Resumes
                     </label>
-                    {user.resumes.map((res) => {
+                    {vaultResumes.map((res) => {
                       const resId = res._id || res;
                       const isSelected = selectedResumeId === resId;
 
@@ -1038,29 +1072,49 @@ export default function Opportunities() {
                     <label className="block text-[11px] font-mono uppercase tracking-wider text-gray-600">
                       Attach Custom PDF Resume
                     </label>
-                    <div className="border border-dashed border-gray-400 hover:border-gray-700 bg-background-200/50 rounded-xl p-6 text-center transition-colors relative cursor-pointer">
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={(e) => setResumeFile(e.target.files[0])}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
-                      {resumeFile ? (
-                        <div className="text-xs font-medium text-gray-900 flex flex-col items-center gap-1.5">
-                          <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                          <span className="font-semibold text-gray-1000">{resumeFile.name}</span>
-                          <span className="text-[10px] font-mono text-gray-600">Click to replace PDF</span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-1.5 text-gray-600">
-                          <UploadCloud className="w-7 h-7 text-gray-500 mb-0.5" />
-                          <span className="text-xs font-medium text-gray-900">Upload PDF resume</span>
+                    {vaultResumes.length >= 5 ? (
+                      <div className="border border-dashed border-red-500/40 bg-red-500/5 rounded-xl p-6 text-center">
+                        <div className="flex flex-col items-center gap-1.5 text-red-600 dark:text-red-400">
+                          <AlertCircle className="w-7 h-7 mb-0.5" />
+                          <span className="text-xs font-semibold">Resume Vault is Full</span>
                           <span className="text-[11px] font-sans">
-                            Drag & drop or click to select file
+                            You have reached the maximum of 5 saved resumes. Free up vault to continue uploading a custom resume.
                           </span>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="border border-dashed border-gray-400 hover:border-gray-700 bg-background-200/50 rounded-xl p-6 text-center transition-colors relative cursor-pointer">
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file && file.size > 2 * 1024 * 1024) {
+                              showToast('File size must be less than 2MB', 'error');
+                              e.target.value = null;
+                              return;
+                            }
+                            setResumeFile(file);
+                          }}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                        {resumeFile ? (
+                          <div className="text-xs font-medium text-gray-900 flex flex-col items-center gap-1.5">
+                            <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                            <span className="font-semibold text-gray-1000">{resumeFile.name}</span>
+                            <span className="text-[10px] font-mono text-gray-600">Click to replace PDF</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-1.5 text-gray-600">
+                            <UploadCloud className="w-7 h-7 text-gray-500 mb-0.5" />
+                            <span className="text-xs font-medium text-gray-900">Upload PDF resume</span>
+                            <span className="text-[11px] font-sans">
+                              Drag & drop or click to select file
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1104,8 +1158,12 @@ export default function Opportunities() {
               if (e.target === e.currentTarget) setIsCompatModalOpen(false);
             }}
           >
-            <div className="bg-background-100 border border-purple-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex justify-between items-start border-b border-gray-400 pb-4">
+            <div className="relative bg-background-100 border border-gray-400 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+              {/* Vercel-style Top Glow for Modal */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-32 bg-purple-500/15 blur-[50px] pointer-events-none rounded-full" />
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/60 to-transparent" />
+              
+              <div className="flex justify-between items-start border-b border-gray-400 pb-4 relative z-10">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-purple-500/30">
                     <Sparkles className="w-4 h-4 text-white" />
@@ -1130,7 +1188,7 @@ export default function Opportunities() {
 
               <form onSubmit={handleCheckCompatibility} className="space-y-5">
                 {/* Mode Switcher Tabs */}
-                {user?.resumes && user.resumes.length > 0 && (
+                {vaultResumes.length > 0 && (
                   <div className="flex bg-background-200 p-1 rounded-xl border border-gray-400">
                     <button
                       type="button"
@@ -1158,12 +1216,12 @@ export default function Opportunities() {
                 )}
 
                 {/* Option A: Select Existing Resume */}
-                {!compatUploadMode && user?.resumes && user.resumes.length > 0 ? (
+                {!compatUploadMode && vaultResumes.length > 0 ? (
                   <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
                     <label className="block text-[11px] font-mono uppercase tracking-wider text-gray-600">
                       Choose Resume to Benchmark
                     </label>
-                    {user.resumes.map((res) => {
+                    {vaultResumes.map((res) => {
                       const resId = res._id || res;
                       const isSelected = compatResumeId === resId;
 

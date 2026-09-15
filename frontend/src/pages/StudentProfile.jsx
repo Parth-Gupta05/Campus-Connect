@@ -218,7 +218,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
 // =============================================================================
 // 2. RESUME & PORTFOLIO EDITOR MODAL (Geist Workspace Modal)
 // =============================================================================
-function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
+function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initialSectionId }) {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('all');
   const [skillsStr, setSkillsStr] = useState(profile?.resumeDetails?.skills?.join(', ') || '');
@@ -233,6 +233,17 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
   const [achievements, setAchievements] = useState(profile?.resumeDetails?.achievements || []);
   const [loading, setLoading] = useState(false);
   const [parsing, setParsing] = useState(false);
+
+  useEffect(() => {
+    if (initialSectionId) {
+      setTimeout(() => {
+        const el = document.getElementById(initialSectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+  }, [initialSectionId]);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -445,7 +456,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
             
             {/* Online Profiles */}
             {(activeTab === 'all' || activeTab === 'handles') && (
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+              <div id="section-handles" className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
                 <div className="flex items-center gap-2 border-b border-gray-400/70 pb-3">
                   <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
                     <Globe className="w-3.5 h-3.5" strokeWidth={1.5} />
@@ -524,7 +535,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
 
             {/* Education History */}
             {(activeTab === 'all' || activeTab === 'education') && (
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+              <div id="section-education" className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-400/70 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
@@ -623,7 +634,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
 
             {/* Experience History */}
             {(activeTab === 'all' || activeTab === 'experience') && (
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+              <div id="section-experience" className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-400/70 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
@@ -720,7 +731,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
 
             {/* Featured Projects */}
             {(activeTab === 'all' || activeTab === 'projects') && (
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+              <div id="section-projects" className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-400/70 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
@@ -799,7 +810,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf }) {
 
             {/* Honors & Achievements */}
             {(activeTab === 'all' || activeTab === 'achievements') && (
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+              <div id="section-achievements" className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-400/70 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
@@ -973,6 +984,52 @@ export default function StudentProfile() {
   const [userPlacementPosts, setUserPlacementPosts] = useState([]);
   const [activeTab, setActiveTab] = useState('portfolio');
   const [copiedCode, setCopiedCode] = useState(false);
+  const [linkingAccount, setLinkingAccount] = useState(null);
+  const [linkingInput, setLinkingInput] = useState('');
+  const [linkingLoading, setLinkingLoading] = useState(false);
+  const [linkingOtpRequired, setLinkingOtpRequired] = useState(false);
+  const [linkingOtp, setLinkingOtp] = useState('');
+
+  const handleLinkAccount = async () => {
+    if (!linkingInput) return;
+    setLinkingLoading(true);
+    try {
+      const resp = await axios.post('/auth/link-account', { identifier: linkingInput });
+      if (resp.data.requiresOtp) {
+        setLinkingOtpRequired(true);
+        showToast('OTP sent to your email', 'success');
+      } else {
+        const res = await axios.get('/user/profile');
+        setProfile(res.data);
+        setLinkingAccount(null);
+        setLinkingInput('');
+        showToast('Account linked successfully!', 'success');
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to link account', 'error');
+    } finally {
+      setLinkingLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!linkingOtp) return;
+    setLinkingLoading(true);
+    try {
+      await axios.post('/auth/verify-link-otp', { otp: linkingOtp });
+      const res = await axios.get('/user/profile');
+      setProfile(res.data);
+      setLinkingAccount(null);
+      setLinkingInput('');
+      setLinkingOtp('');
+      setLinkingOtpRequired(false);
+      showToast('Email verified and linked successfully!', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Invalid OTP', 'error');
+    } finally {
+      setLinkingLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -1067,6 +1124,7 @@ export default function StudentProfile() {
     selectedAchievement ||
     verifyingPlatform ||
     avatarCropSrc ||
+    linkingAccount ||
     (profile && (!profile.isProfileComplete || !profile.email || !profile.uid))
   );
 
@@ -1146,6 +1204,21 @@ export default function StudentProfile() {
   if (portfolioUrl) profileStrength += 10;
   if (hasCertificates && !hasIncompleteCerts) profileStrength += 10;
 
+  const handleShareProfile = async () => {
+    if (!profile.uid) {
+      showToast('UID is missing, cannot share profile', 'error');
+      return;
+    }
+    // Support parsing like 23-COMPA10-27 to make it URL friendly, or just use the exact UID
+    const publicUrl = `${window.location.origin}/student/${profile.uid.toUpperCase()}`;
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      showToast('Public profile link copied to clipboard!', 'success');
+    } catch (err) {
+      showToast('Failed to copy URL', 'error');
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
       <Sidebar />
@@ -1158,6 +1231,7 @@ export default function StudentProfile() {
       {/* Resume Editor Modal */}
       {showEditor && (
         <ResumeEditorModal 
+          initialSectionId={typeof showEditor === 'string' ? showEditor : null}
           profile={profile} 
           onClose={() => setShowEditor(false)} 
           onComplete={(updatedProfile) => setProfile(updatedProfile)} 
@@ -1168,6 +1242,67 @@ export default function StudentProfile() {
       {/* PDF Viewer Modal */}
       {showPdf && profile.resumeUrl && (
         <PdfViewerModal url={profile.resumeUrl} onClose={() => setShowPdf(false)} />
+      )}
+
+      {/* Link Account Modal */}
+      {linkingAccount && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in duration-150" onClick={() => { setLinkingAccount(null); setLinkingOtpRequired(false); setLinkingOtp(''); }}>
+          <div className="bg-background-100 rounded-xl shadow-2xl max-w-md w-full border border-gray-400 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center pb-3 border-b border-gray-400">
+              <h2 className="text-sm font-semibold text-gray-1000">
+                {linkingOtpRequired ? 'Verify OTP' : `Link ${linkingAccount === 'email' ? 'Personal Email' : linkingAccount === 'universityEmail' ? 'University Email' : 'Student UID'}`}
+              </h2>
+              <button onClick={() => { setLinkingAccount(null); setLinkingOtpRequired(false); setLinkingOtp(''); }} className="text-gray-700 hover:text-gray-1000"><X className="w-4 h-4" /></button>
+            </div>
+            
+            {!linkingOtpRequired ? (
+              <>
+                <div>
+                  <p className="text-xs text-gray-700 mb-3 font-sans">
+                    {linkingAccount === 'email' ? 'Enter your personal email address. E.g. name@gmail.com' : 
+                     linkingAccount === 'universityEmail' ? 'Enter your university email address. E.g. name@tcetmumbai.in' : 
+                     'Enter your 14-character student UID. E.g. 23-COMPA10-27'}
+                  </p>
+                  <input
+                    type="text"
+                    value={linkingInput}
+                    onChange={(e) => setLinkingInput(e.target.value)}
+                    placeholder={linkingAccount === 'email' ? 'name@gmail.com' : linkingAccount === 'universityEmail' ? 'name@tcetmumbai.in' : '23-COMPA10-27'}
+                    className="w-full px-3 py-2 text-xs border border-gray-400 bg-background-200 rounded-md text-gray-1000 focus:outline-none focus:border-gray-600"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button onClick={() => { setLinkingAccount(null); setLinkingOtpRequired(false); setLinkingOtp(''); }} className="px-4 py-1.5 rounded-md border border-gray-400 text-xs font-medium text-gray-800 hover:bg-gray-200 transition-colors">Cancel</button>
+                  <button onClick={handleLinkAccount} disabled={linkingLoading} className="px-4 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity">
+                    {linkingLoading ? 'Processing...' : (linkingAccount !== 'uid' ? 'Send OTP' : 'Link Account')}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="text-xs text-gray-700 mb-3 font-sans">
+                    Please enter the 6-digit OTP sent to <strong>{linkingInput}</strong>.
+                  </p>
+                  <input
+                    type="text"
+                    value={linkingOtp}
+                    onChange={(e) => setLinkingOtp(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
+                    className="w-full px-3 py-2 text-xs border border-gray-400 bg-background-200 rounded-md text-gray-1000 focus:outline-none focus:border-gray-600 font-mono tracking-widest text-center text-lg"
+                    maxLength={6}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button onClick={() => { setLinkingOtpRequired(false); setLinkingOtp(''); }} className="px-4 py-1.5 rounded-md border border-gray-400 text-xs font-medium text-gray-800 hover:bg-gray-200 transition-colors">Back</button>
+                  <button onClick={handleVerifyOtp} disabled={linkingLoading} className="px-4 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity">
+                    {linkingLoading ? 'Verifying...' : 'Verify OTP'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Achievement Details Modal */}
@@ -1408,6 +1543,14 @@ export default function StudentProfile() {
                   <Edit3 className="w-3.5 h-3.5" strokeWidth={1.5} />
                   <span>Edit Resume</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={handleShareProfile}
+                  className="h-8 px-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-medium text-emerald-700 dark:text-emerald-400 transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <span>Share Profile</span>
+                </button>
                 {profile.resumeUrl && (
                   <button
                     type="button"
@@ -1641,7 +1784,7 @@ export default function StudentProfile() {
                     <Code2 className="w-3.5 h-3.5" strokeWidth={1.5} /> Verified Technical Skills
                   </h3>
                   <button
-                    onClick={() => setShowEditor(true)}
+                    onClick={() => setShowEditor('section-skills')}
                     className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
                   >
                     Manage Skills &rarr;
@@ -1671,7 +1814,7 @@ export default function StudentProfile() {
                     <Briefcase className="w-3.5 h-3.5" strokeWidth={1.5} /> Work Experience
                   </h3>
                   <button
-                    onClick={() => setShowEditor(true)}
+                    onClick={() => setShowEditor('section-experience')}
                     className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
                   >
                     + Add Role
@@ -1710,7 +1853,7 @@ export default function StudentProfile() {
                     <GraduationCap className="w-3.5 h-3.5" strokeWidth={1.5} /> Academic Background
                   </h3>
                   <button
-                    onClick={() => setShowEditor(true)}
+                    onClick={() => setShowEditor('section-education')}
                     className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
                   >
                     + Add Degree
@@ -1743,7 +1886,7 @@ export default function StudentProfile() {
                     <FolderGit2 className="w-3.5 h-3.5" strokeWidth={1.5} /> Featured Projects
                   </h3>
                   <button
-                    onClick={() => setShowEditor(true)}
+                    onClick={() => setShowEditor('section-projects')}
                     className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
                   >
                     + Add Project
@@ -1802,7 +1945,7 @@ export default function StudentProfile() {
                     <Award className="w-3.5 h-3.5" strokeWidth={1.5} /> Verified Achievements &amp; Awards
                   </h3>
                   <button
-                    onClick={() => setShowEditor(true)}
+                    onClick={() => setShowEditor('section-achievements')}
                     className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
                   >
                     + Add Achievement
@@ -1972,6 +2115,54 @@ export default function StudentProfile() {
               =================================================================== */}
           {activeTab === 'identities' && (
             <div className="space-y-6 animate-in fade-in duration-150">
+              
+              {/* Core Account Identities Card */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                <div className="flex items-center gap-3 border-b border-gray-400 pb-4">
+                  <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center">
+                    <ShieldCheck className="w-4 h-4 text-gray-1000" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-1000">Core Account Identities</h3>
+                    <p className="text-[11px] text-gray-600 font-sans">Manage your primary identifiers and recovery methods</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4 pt-1">
+                  {/* Email */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="text-xs font-semibold text-gray-1000">Personal Email</div>
+                      <div className="text-[11px] text-gray-600 font-mono">{profile.email || 'Not connected'}</div>
+                    </div>
+                    {!profile.email && (
+                      <button onClick={() => setLinkingAccount('email')} className="text-xs font-mono text-gray-700 hover:text-gray-1000 underline cursor-pointer">Link Email</button>
+                    )}
+                  </div>
+                  
+                  {/* University Email */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="text-xs font-semibold text-gray-1000">University Email</div>
+                      <div className="text-[11px] text-gray-600 font-mono">{profile.universityEmail || 'Not connected'}</div>
+                    </div>
+                    {!profile.universityEmail && (
+                      <button onClick={() => setLinkingAccount('universityEmail')} className="text-xs font-mono text-gray-700 hover:text-gray-1000 underline cursor-pointer">Link University Email</button>
+                    )}
+                  </div>
+
+                  {/* UID */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="text-xs font-semibold text-gray-1000">Student UID</div>
+                      <div className="text-[11px] text-gray-600 font-mono">{profile.uid || 'Not connected'}</div>
+                    </div>
+                    {!profile.uid && (
+                      <button onClick={() => setLinkingAccount('uid')} className="text-xs font-mono text-gray-700 hover:text-gray-1000 underline cursor-pointer">Link UID</button>
+                    )}
+                  </div>
+                </div>
+              </div>
               
               {/* GitHub Card */}
               <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">

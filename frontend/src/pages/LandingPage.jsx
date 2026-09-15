@@ -720,19 +720,7 @@ export default function LandingPage() {
 
           <div className="mx-auto max-w-[1220px] px-6">
             <div className="flex flex-col items-center text-center">
-              {/* Announcement Pill */}
-              <div 
-                className={`inline-flex items-center gap-2 rounded-full border border-gray-400 bg-background-100/90 backdrop-blur-md px-3.5 py-1 text-xs text-gray-900 mb-8 transition-all duration-700 hover:border-gray-500 cursor-pointer shadow-xs ${
-                  heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
-                }`}
-                style={{ transitionDelay: '100ms' }}
-              >
-                <span className="rounded-full bg-blue-700 text-white px-1.5 py-0.5 text-[10px] font-semibold tracking-tight">
-                  VERIFIED PROOF
-                </span>
-                <span>Direct LeetCode &amp; GitHub Sync</span>
-                <ChevronRight className="w-3.5 h-3.5 text-gray-700" />
-              </div>
+
 
               {/* Display Headline */}
               <h1 
@@ -948,11 +936,6 @@ export default function LandingPage() {
                     {isPlayingTour ? <Pause className="w-3 h-3 text-teal-600 shrink-0" /> : <Play className="w-3 h-3 text-blue-600 shrink-0" />}
                     <span className="whitespace-nowrap">{isPlayingTour ? 'Tour: Active' : 'Tour Paused'}</span>
                   </button>
-
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-700/10 border border-teal-700/30 px-2.5 py-0.5 text-[11px] font-mono text-teal-700 font-medium whitespace-nowrap shrink-0">
-                    <span className="h-1.5 w-1.5 rounded-full bg-teal-700 animate-pulse shrink-0" />
-                    <span className="whitespace-nowrap">VERIFIED STUDENT</span>
-                  </span>
                 </div>
               </div>
 
@@ -1017,10 +1000,6 @@ export default function LandingPage() {
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <h3 className="text-sm font-semibold text-gray-1000 tracking-tight">Alex Chen</h3>
-                                <span className="inline-flex items-center gap-1 rounded-full bg-teal-700/10 border border-teal-700/30 px-1.5 py-0.2 text-[9px] font-mono text-teal-700 font-medium">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-teal-700" />
-                                  VERIFIED
-                                </span>
                               </div>
                               <div className="flex items-center gap-1 mt-0.5">
                                 <span className="px-1.5 py-0.2 rounded bg-background-100 border border-gray-400 text-[9.5px] font-mono text-gray-700">

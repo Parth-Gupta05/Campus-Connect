@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -175,8 +175,60 @@ function RepoModal({ repo, onClose }) {
   );
 }
 
+// Dynamic greeting function
+const getGreeting = (name) => {
+  const hour = new Date().getHours();
+  let timeBasedGreeting = "";
+  if (hour >= 5 && hour < 12) timeBasedGreeting = `Good morning, ${name}`;
+  else if (hour >= 12 && hour < 17) timeBasedGreeting = `Good afternoon, ${name}`;
+  else if (hour >= 17 && hour < 21) timeBasedGreeting = `Good evening, ${name}`;
+  else timeBasedGreeting = `Up late working, ${name}?`;
+
+  const greetings = [
+    `Ready to grind, ${name}!`,
+    `Welcome back, ${name}!`,
+    `Let's build something amazing, ${name}.`,
+    `Stay focused and keep pushing, ${name}.`,
+    `Your next big opportunity is waiting, ${name}.`,
+    `Time to level up your skills, ${name}.`,
+    `Success is built one line at a time, ${name}.`,
+    `Keep striving for excellence, ${name}.`,
+    `Welcome to your command center, ${name}.`,
+    `Let's make today productive, ${name}.`,
+    `Your career journey continues here, ${name}.`,
+    `Consistency is key. Keep at it, ${name}!`,
+    `Dream big, work hard, ${name}.`,
+    `Every expert was once a beginner, ${name}.`,
+    `Ready to tackle new challenges, ${name}?`,
+    `Your potential is limitless, ${name}.`,
+    `Stay curious and keep learning, ${name}.`,
+    `The best way to predict the future is to invent it, ${name}.`,
+    `Small steps lead to big results, ${name}.`,
+    `Focus on the process, results will follow, ${name}.`,
+    `Let's hit those learning goals today, ${name}.`,
+    `Your future self will thank you for today, ${name}.`,
+    `Time to debug, build, and deploy, ${name}.`
+  ];
+  
+  // 30% chance to show the time-based greeting, 70% for a random quote
+  if (Math.random() < 0.3) {
+    return timeBasedGreeting;
+  }
+  return greetings[Math.floor(Math.random() * greetings.length)];
+};
+
+const getInitials = (name) => {
+  if (!name) return 'ST';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+};
+
 export default function StudentDashboard() {
   const { user } = useContext(AuthContext);
+
   const { showToast } = useToast();
   const { resolvedTheme } = useTheme();
   const navigate = useNavigate();
@@ -185,6 +237,39 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'coding' | 'campus' | 'vault'
+  
+  const displayName = useMemo(() => {
+    const fullName = profile?.name || user?.name || user?.email?.split('@')[0] || 'Student';
+    return fullName.split(' ')[0];
+  }, [profile?.name, user?.name, user?.email]);
+  
+  const currentGreeting = useMemo(() => getGreeting(displayName), [displayName]);
+  const [displayedGreeting, setDisplayedGreeting] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
+
+  useEffect(() => {
+    let i = 0;
+    setDisplayedGreeting('');
+    setShowCursor(true);
+    let timeoutId;
+
+    const typingInterval = setInterval(() => {
+      if (i < currentGreeting.length) {
+        setDisplayedGreeting(currentGreeting.substring(0, i + 1));
+        i++;
+      } else {
+        clearInterval(typingInterval);
+        timeoutId = setTimeout(() => {
+          setShowCursor(false);
+        }, 2000);
+      }
+    }, 60);
+
+    return () => {
+      clearInterval(typingInterval);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [currentGreeting]);
   const [activeHeatmap, setActiveHeatmap] = useState('github');
   const [selectedRepo, setSelectedRepo] = useState(null);
   const [animMounted, setAnimMounted] = useState(false);
@@ -612,29 +697,10 @@ export default function StudentDashboard() {
               =================================================================== */}
           <section className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-gray-200 border border-gray-400 flex items-center justify-center font-semibold text-gray-1000 text-sm shrink-0">
-                  {profile?.photo ? (
-                    <img src={profile.photo} alt="" className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    profile?.name?.slice(0, 2).toUpperCase() || 'ST'
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-xl font-semibold text-gray-1000 tracking-tight">
-                      {profile?.name || user?.email?.split('@')[0] || 'Student Dashboard'}
-                    </h1>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-teal-700/10 border border-teal-700/30 px-2 py-0.5 text-[10px] font-mono text-teal-700 font-medium">
-                      <span className="h-1.5 w-1.5 rounded-full bg-teal-700" />
-                      VERIFIED
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-700 font-mono mt-0.5">
-                    {education.length > 0 ? education[0].institution : 'Campus Connect'}
-                    {education.length > 0 && education[0].degree ? ` · ${education[0].degree}` : ''}
-                  </p>
-                </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-1000 tracking-tight">
+                  {displayedGreeting}{showCursor && <span className="animate-pulse opacity-70">|</span>}
+                </h1>
               </div>
 
               {/* Header Action Button */}
