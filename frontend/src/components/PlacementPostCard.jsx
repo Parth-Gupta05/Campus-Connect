@@ -114,10 +114,36 @@ export default function PlacementPostCard({ post }) {
   return (
     <article
       onClick={handleCardClick}
-      className="group relative bg-background-100 border border-gray-400 hover:border-gray-900/40 rounded-xl p-5 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer text-gray-1000"
+      className="group relative isolate bg-background-100 border border-gray-400 hover:border-gray-900/40 rounded-xl p-5 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer text-gray-1000 overflow-hidden flex flex-col"
     >
-      {/* Header: Company Info + Outcome/Difficulty */}
-      <div className="flex items-start justify-between gap-4 mb-3">
+      {/* Top Left Color Leak Effect from Logo */}
+      {post.company?.logoUrl ? (
+        <div 
+          className="absolute -top-24 -left-24 w-72 h-72 pointer-events-none z-0 transition-all duration-500 opacity-30 dark:opacity-15 group-hover:opacity-50 dark:group-hover:opacity-30 group-hover:scale-125 mix-blend-multiply dark:mix-blend-plus-lighter"
+          style={{
+            backgroundImage: `url(${post.company.logoUrl})`,
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            filter: 'blur(55px) saturate(250%)'
+          }}
+        />
+      ) : (
+        <div className="absolute -top-24 -left-24 w-72 h-72 bg-gray-400/30 dark:bg-gray-400/10 blur-[55px] rounded-full pointer-events-none z-0 transition-all duration-500 group-hover:bg-gray-400/40 dark:group-hover:bg-gray-400/20 group-hover:scale-125" />
+      )}
+
+      {/* Fading Border Glow on Top Left */}
+      <div 
+        className="absolute inset-0 rounded-xl pointer-events-none z-20 transition-opacity duration-500 opacity-60 dark:opacity-40 group-hover:opacity-100 border-t-[1.5px] border-l-[1.5px] border-gray-400 dark:border-white/40"
+        style={{
+          WebkitMaskImage: 'radial-gradient(circle at top left, black 0%, transparent 60%)',
+          maskImage: 'radial-gradient(circle at top left, black 0%, transparent 60%)'
+        }}
+      />
+
+      <div className="relative z-10 flex flex-col flex-1">
+        {/* Header: Company Info + Outcome/Difficulty */}
+        <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-center gap-3 min-w-0">
           {/* Company Logo */}
           <div className="w-10 h-10 rounded-lg bg-background-200 border border-gray-400 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
@@ -309,6 +335,7 @@ export default function PlacementPostCard({ post }) {
         onCommentClick={() => navigate(`/placements/${post._id}`)}
         compact={true}
       />
+      </div>
     </article>
   );
 }

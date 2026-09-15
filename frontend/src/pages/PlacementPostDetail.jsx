@@ -226,8 +226,34 @@ export default function PlacementPostDetail() {
           </div>
 
           {/* Company & Header Banner */}
-          <div className="bg-background-200 border border-gray-400 rounded-xl p-6 md:p-8 shadow-2xs">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-gray-400">
+          <div className="group relative isolate overflow-hidden bg-background-200 border border-gray-400 rounded-xl p-6 md:p-8 shadow-2xs">
+            {/* Top Left Color Leak Effect from Logo */}
+            {post.company?.logoUrl ? (
+              <div 
+                className="absolute -top-32 -left-32 w-96 h-96 pointer-events-none z-0 transition-all duration-500 opacity-30 dark:opacity-15 group-hover:opacity-50 dark:group-hover:opacity-30 mix-blend-multiply dark:mix-blend-plus-lighter"
+                style={{
+                  backgroundImage: `url(${post.company.logoUrl})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  filter: 'blur(70px) saturate(250%)'
+                }}
+              />
+            ) : (
+              <div className="absolute -top-32 -left-32 w-96 h-96 bg-gray-400/30 dark:bg-gray-400/10 blur-[70px] rounded-full pointer-events-none z-0 transition-all duration-500 group-hover:bg-gray-400/40 dark:group-hover:bg-gray-400/20" />
+            )}
+
+            {/* Fading Border Glow on Top Left */}
+            <div 
+              className="absolute inset-0 rounded-xl pointer-events-none z-20 transition-opacity duration-500 opacity-60 dark:opacity-40 group-hover:opacity-100 border-t-[1.5px] border-l-[1.5px] border-gray-400 dark:border-white/40"
+              style={{
+                WebkitMaskImage: 'radial-gradient(circle at top left, black 0%, transparent 60%)',
+                maskImage: 'radial-gradient(circle at top left, black 0%, transparent 60%)'
+              }}
+            />
+
+            <div className="relative z-10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-gray-400">
               <div className="flex items-center gap-4">
                 {/* Company Logo */}
                 <div className="w-16 h-16 rounded-xl bg-background-100 border border-gray-400 p-2 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
@@ -339,6 +365,7 @@ export default function PlacementPostDetail() {
                 </div>
               )}
             </div>
+          </div>
           </div>
 
           {/* Author Card */}

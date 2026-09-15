@@ -271,7 +271,7 @@ body {
 
 /* === Footer Signature Typography === */
 .geist-footer-typography {
-  font-size: clamp(2.5rem, 13.5vw, 13.5rem);
+  font-size: clamp(2.5rem, 11.5vw, 13.5rem);
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.10) 50%, rgba(0, 0, 0, 0) 100%);
   -webkit-background-clip: text;
   background-clip: text;

@@ -168,7 +168,7 @@ export default function Sidebar() {
               <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
             </svg>
           </div>
-          <span className="font-sans font-semibold text-sm tracking-tight text-gray-1000 whitespace-nowrap">
+          <span className="font-sans font-semibold text-sm tracking-tight text-gray-1000 whitespace-nowrap truncate min-w-0">
             Campus Connect
           </span>
         </Link>
