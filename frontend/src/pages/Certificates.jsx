@@ -1,7 +1,5 @@
 import React, { useContext, useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
 import PageHeader from '../components/ui/PageHeader';
 import PdfViewerModal from '../components/PdfViewerModal';
 import { AuthContext } from '../context/AuthContext';
@@ -384,11 +382,8 @@ export default function Certificates() {
   );
 
   return (
-    <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
-      <Sidebar />
-      <main className={`flex-1 min-w-0 bg-background-100 ${isModalOpen || viewingDoc ? 'overflow-hidden' : ''}`}>
-        <Topbar />
-
+    <>
+      <div className={`flex-1 min-w-0 bg-background-100 ${isModalOpen || viewingDoc ? 'overflow-hidden' : ''}`}>
         <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
           {/* Standardized Level 1 & 2 Page Header with Scope Tabs */}
           <PageHeader
@@ -679,7 +674,7 @@ export default function Certificates() {
             </div>
           )}
         </div>
-      </main>
+      </div>
 
       {/* ======================================================== */}
       {/* 1. ADD / EDIT CERTIFICATE MODAL                          */}
@@ -933,7 +928,8 @@ export default function Certificates() {
               </div>
             </div>
           </div>
-        ))}
-    </div>
+        )
+      )}
+    </>
   );
 }

@@ -120,7 +120,7 @@ const ToastItem = ({ toast, onRemove }) => {
       className={`pointer-events-auto ml-auto w-full sm:w-[350px] bg-background-100/95 backdrop-blur-md border border-gray-400 rounded-xl shadow-xl p-3 flex items-start gap-2.5 text-gray-1000 transition-all duration-200 transform select-none ${
         isDismissing 
           ? 'opacity-0 translate-y-2 scale-95' 
-          : 'opacity-100 translate-y-0 scale-100 animate-in slide-in-from-bottom-2 fade-in duration-200'
+          : 'animate-in slide-in-from-bottom-2 fade-in duration-200'
       }`}
     >
       <div className="mt-0.5 shrink-0">

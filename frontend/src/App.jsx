@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentProfile from './pages/StudentProfile';
 import PublicProfile from './pages/PublicProfile';
+import Appearance from './pages/Appearance';
 import Certificates from './pages/Certificates';
 import Opportunities from './pages/Opportunities';
 import ClubDashboard from './pages/ClubDashboard';
@@ -19,6 +20,7 @@ import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Topbar from './components/Topbar';
+import Sidebar from './components/Sidebar';
 import AdminSidebar from './components/admin/AdminSidebar';
 import AdminOpportunities from './pages/admin/AdminOpportunities';
 import AdminOpportunityDetail from './pages/admin/AdminOpportunityDetail';
@@ -40,6 +42,24 @@ function AdminLayout({ children }) {
   );
 }
 
+function MainLayout({ children }) {
+  const location = useLocation();
+  const hideSearchRoutes = ['/admin', '/club']; 
+  const showSearch = !hideSearchRoutes.some(path => location.pathname.startsWith(path));
+
+  return (
+    <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100 transition-colors duration-200">
+      <Sidebar />
+      <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
+        <Topbar showSearch={showSearch} />
+        <main className="flex-1 min-w-0 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -54,73 +74,113 @@ function App() {
               
               <Route path="/dashboard" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <StudentDashboard />
+                  <MainLayout>
+                    <StudentDashboard />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
               
               <Route path="/profile" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <StudentProfile />
+                  <MainLayout>
+                    <StudentProfile />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/appearance" element={
+                <ProtectedRoute allowedRoles={['student']}>
+                  <MainLayout>
+                    <Appearance />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/opportunities" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <Opportunities />
+                  <MainLayout>
+                    <Opportunities />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/placements" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <PlacementFeed />
+                  <MainLayout>
+                    <PlacementFeed />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/placements/create" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <CreatePlacementPost />
+                  <MainLayout>
+                    <CreatePlacementPost />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/placements/edit/:id" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <CreatePlacementPost />
+                  <MainLayout>
+                    <CreatePlacementPost />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/placements/:id" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <PlacementPostDetail />
+                  <MainLayout>
+                    <PlacementPostDetail />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/certificates" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <Certificates />
+                  <MainLayout>
+                    <Certificates />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/clubs" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <Clubs />
+                  <MainLayout>
+                    <Clubs />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/events" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <Events />
+                  <MainLayout>
+                    <Events />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/clubs/:id" element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <ClubProfile />
+                  <MainLayout>
+                    <ClubProfile />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
               <Route path="/club" element={
                 <ProtectedRoute allowedRoles={['club']}>
-                  <ClubDashboard />
+                  <MainLayout>
+                    <ClubDashboard />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/club/profile" element={
+                <ProtectedRoute allowedRoles={['club']}>
+                  <MainLayout>
+                    <ClubProfile />
+                  </MainLayout>
                 </ProtectedRoute>
               } />
 
