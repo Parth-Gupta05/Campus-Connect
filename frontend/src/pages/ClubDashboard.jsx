@@ -28,10 +28,16 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { FaInstagram, FaFacebookF, FaLinkedinIn } from 'react-icons/fa';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 import EventAttendees from '../components/EventAttendees';
 import ImageCropperModal from '../components/ImageCropperModal';
+import { getEventStatus, formatTime12h } from '../utils/eventUtils';
 
 export default function ClubDashboard() {
   const { user } = useContext(AuthContext);
@@ -66,6 +72,7 @@ export default function ClubDashboard() {
   const [newMemberUid, setNewMemberUid] = useState('');
   const [newMemberRole, setNewMemberRole] = useState('Member');
   const [newMemberTier, setNewMemberTier] = useState('Member');
+  const [memberToRemove, setMemberToRemove] = useState(null);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
@@ -76,6 +83,7 @@ export default function ClubDashboard() {
     title: '', 
     date: '', 
     time: '', 
+    registrationDeadline: '',
     venue: '', 
     description: '', 
     posterImage: '',
@@ -83,6 +91,7 @@ export default function ClubDashboard() {
     aicteCategory: 5,
     activitySummary: ''
   });
+  const [editingEventId, setEditingEventId] = useState(null);
   const [eventFilter, setEventFilter] = useState('all'); // 'all' | 'upcoming' | 'completed'
 
   // Announcement State
@@ -142,7 +151,8 @@ export default function ClubDashboard() {
     showAddMemberModal ||
     showCreateEventModal ||
     showCreateAnnouncementModal ||
-    cropData
+    cropData ||
+    memberToRemove
   );
 
   useEffect(() => {
@@ -253,37 +263,68 @@ export default function ClubDashboard() {
     }
   };
 
-  const handleRemoveMember = async (studentId) => {
-    if (!window.confirm('Are you sure you want to remove this student from your club roster?')) return;
+  const handleRemoveMember = (studentId) => {
+    setMemberToRemove(studentId);
+  };
+
+  const confirmRemoveMember = async () => {
+    if (!memberToRemove) return;
     try {
-      await axios.delete(`/clubs/members/${studentId}`);
-      setClub({ ...club, assignedStudents: club.assignedStudents.filter(m => m.studentId?._id !== studentId) });
+      await axios.delete(`/clubs/members/${memberToRemove}`);
+      setClub({ ...club, assignedStudents: club.assignedStudents.filter(m => m.studentId?._id !== memberToRemove) });
       showToast('Member removed from club roster', 'success');
     } catch (err) {
       showToast('Failed to remove member', 'error');
+    } finally {
+      setMemberToRemove(null);
     }
   };
 
-  const handleCreateEvent = async (e) => {
+  const openCreateEventModal = () => {
+    setEditingEventId(null);
+    setNewEvent({ 
+      title: '', date: '', time: '', registrationDeadline: '', venue: '', description: '', posterImage: '', durationHours: 2, aicteCategory: 5, activitySummary: ''
+    });
+    setShowCreateEventModal(true);
+  };
+
+  const openEditEventModal = (ev) => {
+    setEditingEventId(ev._id);
+    setNewEvent({
+      title: ev.title || '',
+      date: ev.date ? new Date(ev.date).toISOString().split('T')[0] : '',
+      time: ev.time || '',
+      registrationDeadline: ev.registrationDeadline ? new Date(ev.registrationDeadline).toISOString().slice(0,16) : '',
+      venue: ev.venue || '',
+      description: ev.description || '',
+      posterImage: ev.posterImage || '',
+      durationHours: ev.durationHours || 2,
+      aicteCategory: ev.aicteCategory || 5,
+      activitySummary: ev.activitySummary || ''
+    });
+    setShowCreateEventModal(true);
+  };
+
+  const handleSubmitEvent = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/events', newEvent);
-      setEvents([res.data.event, ...events]);
+      if (editingEventId) {
+        const res = await axios.put(`/events/${editingEventId}`, newEvent);
+        setEvents(events.map(ev => ev._id === editingEventId ? res.data.event : ev));
+        showToast('Event updated successfully', 'success');
+      } else {
+        const res = await axios.post('/events', newEvent);
+        setEvents([res.data.event, ...events]);
+        showToast('Event created and published with AICTE points', 'success');
+      }
+      
       setNewEvent({ 
-        title: '', 
-        date: '', 
-        time: '', 
-        venue: '', 
-        description: '', 
-        posterImage: '',
-        durationHours: 2,
-        aicteCategory: 5,
-        activitySummary: ''
+        title: '', date: '', time: '', registrationDeadline: '', venue: '', description: '', posterImage: '', durationHours: 2, aicteCategory: 5, activitySummary: ''
       });
+      setEditingEventId(null);
       setShowCreateEventModal(false);
-      showToast('Event created and published with AICTE points', 'success');
     } catch (err) {
-      showToast(err.response?.data?.message || 'Failed to publish event', 'error');
+      showToast(err.response?.data?.message || 'Failed to save event', 'error');
     }
   };
 
@@ -302,12 +343,9 @@ export default function ClubDashboard() {
 
   if (loading) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000">
-        <Sidebar />
-        <div className="flex-1 flex flex-col items-center justify-center min-h-screen">
-          <div className="w-9 h-9 border-2 border-gray-1000 border-t-transparent rounded-full animate-spin mb-4" />
-          <p className="text-sm font-mono text-gray-700">Connecting to Club Administration...</p>
-        </div>
+      <div className="flex-1 flex flex-col items-center justify-center min-h-screen">
+        <div className="w-9 h-9 border-2 border-gray-1000 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-mono text-gray-700">Connecting to Club Administration...</p>
       </div>
     );
   }
@@ -326,11 +364,12 @@ export default function ClubDashboard() {
   // Filtered events calculation
   const filteredEvents = events.filter(ev => {
     if (eventFilter === 'all') return true;
+    const status = getEventStatus(ev);
     if (eventFilter === 'upcoming') {
-      return new Date(ev.date) >= new Date();
+      return status === 'UPCOMING' || status === 'ONGOING';
     }
     if (eventFilter === 'completed') {
-      return new Date(ev.date) < new Date();
+      return status === 'COMPLETED';
     }
     return true;
   });
@@ -340,10 +379,8 @@ export default function ClubDashboard() {
 
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 selection:bg-gray-1000 selection:text-background-100 font-sans transition-colors duration-200">
-      <Sidebar />
-      <main className="flex-1 min-w-0 bg-background-100">
-        <Topbar showSearch={false} />
+    <>
+    <div className="flex-1 min-w-0 bg-background-100">
 
         {/* ===================================================================
             1. CLUB COVER BANNER & BRANDING HEADER
@@ -912,7 +949,7 @@ export default function ClubDashboard() {
                   </div>
 
                   <button 
-                    onClick={() => setShowCreateEventModal(true)} 
+                    onClick={() => openCreateEventModal()} 
                     className="h-8 px-3.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -924,8 +961,8 @@ export default function ClubDashboard() {
               {/* Event Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredEvents.map((ev, i) => {
-                  const eventDate = new Date(ev.date);
-                  const isPast = eventDate < new Date();
+                  const status = getEventStatus(ev);
+                  const isPast = status === 'COMPLETED';
                   const registeredCount = ev.registeredStudents?.length || 0;
 
                   return (
@@ -948,11 +985,13 @@ export default function ClubDashboard() {
                           {/* Status Pill Badge */}
                           <div className="absolute top-3 left-3">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold border backdrop-blur-md shadow-xs ${
-                              isPast 
+                              status === 'COMPLETED' 
                                 ? 'bg-background-100/90 text-gray-700 border-gray-400' 
+                                : status === 'ONGOING'
+                                ? 'bg-green-600 text-white border-green-500 animate-pulse'
                                 : 'bg-blue-600 text-white border-blue-500'
                             }`}>
-                              {isPast ? 'COMPLETED' : 'UPCOMING'}
+                              {status}
                             </span>
                           </div>
                         </div>
@@ -964,16 +1003,24 @@ export default function ClubDashboard() {
                           <div className="space-y-1.5 text-xs text-gray-700 font-mono">
                             <div className="flex items-center gap-2">
                               <Calendar className="w-3.5 h-3.5 text-gray-600 shrink-0" />
-                              <span>{eventDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                              <span>{new Date(ev.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="w-3.5 h-3.5 text-gray-600 shrink-0" />
-                              <span>{ev.time || 'TBA'}</span>
+                              <span>{ev.time ? formatTime12h(ev.time) : 'TBA'}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-3.5 h-3.5 text-gray-600 shrink-0" />
                               <span className="truncate">{ev.venue || 'Campus Auditorium'}</span>
                             </div>
+                            {ev.registrationDeadline && (
+                              <div className="flex items-center gap-2">
+                                <AlertCircle className="w-3.5 h-3.5 text-orange-600 shrink-0" />
+                                <span className="text-gray-700">
+                                  Reg. Deadline: {new Date(ev.registrationDeadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           {ev.description && (
@@ -991,13 +1038,21 @@ export default function ClubDashboard() {
                           <span>{registeredCount} Registered</span>
                         </div>
 
-                        <button 
-                          onClick={() => setSelectedEventId(ev._id)} 
-                          className="h-8 px-3.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer shadow-2xs shrink-0"
-                        >
-                          <QrCode className="w-3.5 h-3.5 text-teal-400 shrink-0" />
-                          <span>Attendees &amp; QR</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => openEditEventModal(ev)} 
+                            className="h-8 px-3 rounded-md bg-background-200 border border-gray-400 text-gray-700 hover:text-gray-1000 text-xs font-medium hover:bg-gray-200 transition-colors cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            onClick={() => setSelectedEventId(ev._id)} 
+                            className="h-8 px-3.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer shadow-2xs shrink-0"
+                          >
+                            <QrCode className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                            <span>Attendees &amp; QR</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1014,7 +1069,7 @@ export default function ClubDashboard() {
                       : `No ${eventFilter} events in the archive.`}
                   </p>
                   <button
-                    onClick={() => setShowCreateEventModal(true)}
+                    onClick={() => openCreateEventModal()}
                     className="mt-4 inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -1104,7 +1159,7 @@ export default function ClubDashboard() {
 
         </div>
 
-      </main>
+      </div>
 
       {/* Selected Event Attendees Modal Overlay */}
       {selectedEventId && (
@@ -1112,7 +1167,7 @@ export default function ClubDashboard() {
           eventId={selectedEventId} 
           isEventCompleted={(() => {
             const ev = events.find(e => e._id === selectedEventId);
-            return ev ? (ev.status === 'completed' || new Date(ev.date) < new Date()) : false;
+            return getEventStatus(ev) === 'COMPLETED';
           })()} 
           onClose={() => setSelectedEventId(null)} 
         />
@@ -1291,12 +1346,12 @@ export default function ClubDashboard() {
             </button>
             
             <div className="mb-5">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-blue-700 font-semibold">Publish Event</span>
-              <h2 className="text-heading-18 font-bold text-gray-1000 tracking-tight mt-0.5">Create Campus Event</h2>
-              <p className="text-xs text-gray-700 mt-1">Host a workshop, hackathon, or cultural drive for enrolled university students.</p>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-blue-700 font-semibold">{editingEventId ? 'Edit Event' : 'Publish Event'}</span>
+              <h2 className="text-heading-18 font-bold text-gray-1000 tracking-tight mt-0.5">{editingEventId ? 'Update Campus Event' : 'Create Campus Event'}</h2>
+              <p className="text-xs text-gray-700 mt-1">{editingEventId ? 'Modify details of an existing event.' : 'Host a workshop, hackathon, or cultural drive for enrolled university students.'}</p>
             </div>
 
-            <form onSubmit={handleCreateEvent} className="space-y-4">
+            <form onSubmit={handleSubmitEvent} className="space-y-4">
               <div>
                 <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">Event Title</label>
                 <input 
@@ -1329,6 +1384,27 @@ export default function ClubDashboard() {
                     onChange={e => setNewEvent({...newEvent, time: e.target.value})} 
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">Registration Deadline (Optional)</label>
+                <input 
+                  type="datetime-local" 
+                  className="w-full px-3 py-2 text-xs font-mono bg-background-200 border border-gray-400 rounded-md text-gray-1000 focus:outline-none focus:border-gray-900 dark:focus:border-gray-100" 
+                  value={newEvent.registrationDeadline} 
+                  onChange={e => {
+                    const selected = new Date(e.target.value);
+                    const eventStart = new Date(`${newEvent.date}T${newEvent.time || '00:00'}`);
+                    if (newEvent.date && newEvent.time && selected > eventStart) {
+                      showToast('Deadline cannot be after event start time', 'error');
+                    } else {
+                      setNewEvent({...newEvent, registrationDeadline: e.target.value});
+                    }
+                  }} 
+                />
+                <p className="text-[10px] text-gray-500 mt-1 font-mono">
+                  If left blank, registration closes exactly when the event starts.
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -1452,7 +1528,7 @@ export default function ClubDashboard() {
                   className="w-full py-2.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                 >
                   <Calendar className="w-4 h-4" />
-                  <span>Publish Event to Campus</span>
+                  <span>{editingEventId ? 'Save Changes' : 'Publish Event to Campus'}</span>
                 </button>
               </div>
             </form>
@@ -1517,6 +1593,39 @@ export default function ClubDashboard() {
         </div>
       )}
 
+      {/* Confirmation Modal for Removing Member */}
+      {memberToRemove && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-background-100 border border-gray-400 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-gray-1000 font-mono tracking-tight mb-2">
+                Remove Member
+              </h3>
+              <p className="text-sm text-gray-700">
+                Are you sure you want to remove this student from your club roster? This action cannot be undone.
+              </p>
+            </div>
+            <div className="bg-background-200 border-t border-gray-400 p-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setMemberToRemove(null)}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:text-gray-1000 hover:bg-background-100 border border-transparent hover:border-gray-400 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmRemoveMember}
+                className="px-4 py-2 rounded-lg text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 transition-all cursor-pointer"
+              >
+                Remove Member
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* Media Image Cropper Integration */}
       {cropData && (
         <ImageCropperModal
@@ -1527,6 +1636,6 @@ export default function ClubDashboard() {
           onCancel={() => setCropData(null)}
         />
       )}
-    </div>
+    </>
   );
 }

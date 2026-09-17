@@ -244,7 +244,7 @@ export default function NotificationSidebar({ isOpen, onClose, unreadCount, setU
                       </p>
                       <span className="text-[10px] text-gray-600 mt-2 block font-mono">
                         {new Date(notification.createdAt).toLocaleString(undefined, {
-                          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
                         })}
                       </span>
                     </div>

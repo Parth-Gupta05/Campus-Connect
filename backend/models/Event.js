@@ -30,6 +30,9 @@ const EventSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  registrationDeadline: {
+    type: Date
+  },
   venue: {
     type: String,
     default: ''
