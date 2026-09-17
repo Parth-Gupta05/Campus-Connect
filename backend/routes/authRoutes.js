@@ -1,11 +1,20 @@
 const express = require('express');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const User = require('../models/User');
 const Club = require('../models/Club');
 const emailService = require('../utils/emailService');
 
 const router = express.Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: { message: 'Too many login attempts, please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Helper to hash password
 const hashPassword = (password) => {
@@ -55,7 +64,8 @@ const parseUID = (uid) => {
 // Register Route
 router.post('/register', async (req, res) => {
   try {
-    const { identifier, password, role } = req.body;
+    let { identifier, password, role } = req.body;
+    identifier = identifier?.trim();
 
     if (!identifier || !password) {
       return res.status(400).json({ message: 'Please provide email/UID and password' });
@@ -146,9 +156,10 @@ router.post('/register', async (req, res) => {
 });
 
 // Login Route
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
-    const { identifier, password, remember } = req.body;
+    let { identifier, password, remember } = req.body;
+    identifier = identifier?.trim();
 
     if (!identifier || !password) {
       return res.status(400).json({ message: 'Please provide email/UID and password' });
@@ -245,10 +256,11 @@ router.post('/link-account', async (req, res) => {
       return res.status(401).json({ message: 'Invalid token' });
     }
 
-    const { identifier } = req.body;
-    if (!identifier) {
+    let { identifier } = req.body;
+    if (!identifier || !identifier.trim()) {
       return res.status(400).json({ message: 'Please provide an identifier to link' });
     }
+    identifier = identifier.trim();
 
     const isEmail = identifier.includes('@');
     const user = await User.findById(decoded.id);
@@ -349,10 +361,11 @@ router.post('/verify-link-otp', async (req, res) => {
     return res.status(401).json({ message: 'Invalid token' });
   }
 
-  const { otp } = req.body;
-  if (!otp) {
+  let { otp } = req.body;
+  if (!otp || !otp.trim()) {
     return res.status(400).json({ message: 'Please provide the OTP' });
   }
+  otp = otp.trim();
 
   try {
     const user = await User.findById(decoded.id);
