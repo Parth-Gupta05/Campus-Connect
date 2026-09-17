@@ -7,6 +7,15 @@ import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { ActivityCalendar } from 'react-activity-calendar';
 import PdfViewerModal from '../components/PdfViewerModal';
+import { ProfileThemeProvider } from '../profile/ProfileThemeProvider';
+import { AnimatedGridPattern } from '../components/backgrounds/animated-grid-pattern';
+import { InteractiveGridPattern } from '../components/backgrounds/interactive-grid-pattern';
+import { HexagonPattern } from '../components/backgrounds/hexagon-pattern';
+import { StripedPattern } from '../components/backgrounds/striped-pattern';
+import { NoiseTexture } from '../components/backgrounds/noise-texture';
+import { LightRays } from '../components/backgrounds/light-rays';
+import { GlyphMatrix } from '../components/backgrounds/glyph-matrix';
+import { cn } from '../lib/utils';
 import {
   ExternalLink,
   Briefcase,
@@ -25,7 +34,8 @@ import {
   Star,
   Download,
   AlertTriangle,
-  FileText
+  FileText,
+  Trophy
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
@@ -59,7 +69,7 @@ const CountUp = ({ end }) => {
             >
               <span className="opacity-0">0</span>
               {[...Array(10)].map((_, j) => (
-                <span key={j} className="text-gray-1000">{j}</span>
+                <span key={j} className="text-[var(--profile-text)]">{j}</span>
               ))}
             </span>
           </span>
@@ -69,11 +79,13 @@ const CountUp = ({ end }) => {
   );
 };
 
-export default function PublicProfile() {
-  const { uid } = useParams();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+export default function PublicProfile({ previewUid = null, previewCustomization = null, previewProfileData = null }) {
+  const { uid: paramUid } = useParams();
+  const uid = previewUid || paramUid;
+  
+  const [profile, setProfile] = useState(previewProfileData || null);
+  const [loading, setLoading] = useState(!previewProfileData);
+  const [error, setError] = useState(null);
   
   const { user } = useContext(AuthContext);
   const isAuthenticated = !!user;
@@ -84,11 +96,29 @@ export default function PublicProfile() {
   const [showPdf, setShowPdf] = useState(false);
 
   const calendarTheme = {
-    light: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
-    dark: ['#1f2937', '#0e4429', '#006d32', '#26a641', '#39d353'],
+    light: [
+      'color-mix(in srgb, var(--profile-text) 10%, transparent)',
+      'color-mix(in srgb, var(--profile-accent) 40%, transparent)',
+      'color-mix(in srgb, var(--profile-accent) 60%, transparent)',
+      'color-mix(in srgb, var(--profile-accent) 80%, transparent)',
+      'var(--profile-accent)'
+    ],
+    dark: [
+      'color-mix(in srgb, var(--profile-text) 10%, transparent)',
+      'color-mix(in srgb, var(--profile-accent) 40%, transparent)',
+      'color-mix(in srgb, var(--profile-accent) 60%, transparent)',
+      'color-mix(in srgb, var(--profile-accent) 80%, transparent)',
+      'var(--profile-accent)'
+    ],
   };
 
   useEffect(() => {
+    if (previewProfileData) {
+      setProfile(previewProfileData);
+      setLoading(false);
+      return;
+    }
+
     const fetchProfile = async () => {
       try {
         const res = await axios.get(`/user/public/${uid}`);
@@ -100,7 +130,7 @@ export default function PublicProfile() {
       }
     };
     if (uid) fetchProfile();
-  }, [uid]);
+  }, [uid, previewProfileData]);
 
   if (loading) {
     return (
@@ -115,9 +145,9 @@ export default function PublicProfile() {
       <div className="min-h-screen bg-background-100 flex flex-col">
         <Topbar showSearch={false} />
         <div className="flex-1 flex flex-col items-center justify-center p-4">
-          <ShieldCheck className="w-12 h-12 text-gray-400 mb-4" />
-          <h1 className="text-xl font-semibold text-gray-1000 mb-2">{error || 'Profile not found'}</h1>
-          <p className="text-sm text-gray-600 mb-6 font-mono">The requested student profile could not be loaded.</p>
+          <ShieldCheck className="w-12 h-12 text-[var(--profile-muted-text)] mb-4" />
+          <h1 className="text-xl font-semibold text-[var(--profile-text)] mb-2">{error || 'Profile not found'}</h1>
+          <p className="text-sm text-[var(--profile-muted-text)] mb-6 font-mono">The requested student profile could not be loaded.</p>
           <Link to="/" className="px-4 py-2 bg-gray-1000 text-background-100 text-xs font-medium rounded-md hover:opacity-90">
             Return Home
           </Link>
@@ -198,58 +228,146 @@ export default function PublicProfile() {
   const studentCgpa = profile.cgpa || '';
   const resumes = profile.resumes || [];
 
+  const activeCustomization = previewCustomization || profile.profileCustomization || {};
+  const visibility = activeCustomization.visibility || {};
+  const privacy = activeCustomization.metricsPrivacy || {};
+
+  // Determine which blocks in the top strip to show
+  const showProblemsSolved = visibility.showLeetcode !== false && profile.leetcodeVerified;
+  const showPublicRepos = visibility.showGithub !== false && profile.githubVerified;
+  const showGlobalRank = visibility.showLeetcode !== false && privacy.leetcodeRank !== false && profile.leetcodeVerified;
+  const showCgpa = privacy.cgpa === true;
+  
+  const showMetricsStrip = showProblemsSolved || showPublicRepos || showGlobalRank || showCgpa;
+
+  // Compute Layout Columns
+  const hasExperience = visibility.showExperience !== false && experience.length > 0;
+  const hasProjects = visibility.showProjects !== false && projects.length > 0;
+  const hasLeftColumn = hasExperience || hasProjects;
+
+  const hasEducation = visibility.showEducation !== false && education.length > 0;
+  const hasSkills = profile.resumeDetails?.skills?.length > 0;
+  const hasRightColumn = hasEducation || hasSkills;
+
   return (
-    <div className={`flex min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100 ${isAuthenticated ? 'flex-col md:flex-row' : ''}`}>
-      {isAuthenticated && <Sidebar />}
-      <main className="flex-1 min-w-0 bg-background-100">
-        <Topbar showSearch={isAuthenticated} defaultSearchQuery={profile?.name || ''} />
-        
-        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8 pb-20">
+    <ProfileThemeProvider customization={activeCustomization}>
+      <div className={`flex min-h-screen bg-[var(--profile-bg)] text-[var(--profile-text)] selection:bg-[var(--profile-accent)] selection:text-[var(--profile-bg)] ${isAuthenticated && !previewUid ? 'flex-col md:flex-row' : ''}`}>
+        {isAuthenticated && !previewUid && <Sidebar />}
+        <main className="flex-1 min-w-0 bg-transparent relative isolate">
+          <div className="profile-pattern-overlay" />
+          <div className="relative z-10">
+            {!previewUid && (
+              <Topbar showSearch={isAuthenticated} defaultSearchQuery={profile?.name || ''} />
+            )}
+            
+            <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8 pb-20">
             {/* Profile Header */}
-            <section className="rounded-xl border border-gray-400 bg-background-200 p-6 shadow-2xs space-y-6 mt-4">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-              <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-800 border-2 border-gray-400 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+            <section className="profile-card relative overflow-hidden mt-4">
+              {/* Banner Texture Layer */}
+              {activeCustomization.appearance?.texture && activeCustomization.appearance.texture !== 'none' && (
+                <div className="absolute inset-0 z-0 h-40 opacity-100 pointer-events-auto">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--profile-card-bg)] z-10 pointer-events-none" />
+                  {activeCustomization.appearance.texture === 'animated-grid' && <AnimatedGridPattern width={40} height={40} className="[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)] fill-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)]" />}
+                  {activeCustomization.appearance.texture === 'interactive-grid' && (
+                    <InteractiveGridPattern
+                      squares={[60, 60]}
+                      className={cn(
+                        "[mask-image:linear-gradient(to_right,transparent_20%,white_80%)]",
+                        "inset-x-[-20%] inset-y-[-100%] h-[300%] w-[150%] skew-y-12",
+                        "stroke-[color-mix(in_srgb,var(--profile-accent)_20%,transparent)]"
+                      )}
+                      squaresClassName=""
+                    />
+                  )}
+                  {activeCustomization.appearance.texture === 'hexagon' && (
+                    <HexagonPattern
+                      radius={30}
+                      style={{
+                        stroke: 'var(--profile-accent)',
+                        strokeOpacity: 0.2,
+                        fill: 'var(--profile-accent)',
+                        fillOpacity: 0.8
+                      }}
+                      hexagons={[
+                        [10, 2], [11, 4], [13, 3], [14, 5], [16, 2], [17, 4], [19, 3], 
+                        [21, 2], [23, 4], [25, 3], [27, 2], [29, 4], [31, 3], [33, 2]
+                      ]}
+                      className={cn(
+                        "[mask-image:linear-gradient(to_right,transparent_10%,white_90%)]",
+                        "inset-x-[-10%] inset-y-[-100%] h-[300%] w-[120%] skew-y-6"
+                      )}
+                    />
+                  )}
+                  {activeCustomization.appearance.texture === 'striped' && (
+                    <StripedPattern className="[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_20%,transparent)]" />
+                  )}
+                  {activeCustomization.appearance.texture === 'light-rays' && (
+                    <LightRays 
+                      color="var(--profile-accent)"
+                      className="[mask-image:linear-gradient(to_right,transparent_10%,white_40%,white_70%,transparent)]"
+                    />
+                  )}
+                  {activeCustomization.appearance.texture === 'noise' && (
+                    <NoiseTexture noiseOpacity={1.0} className="opacity-100 dark:opacity-100" />
+                  )}
+                  {activeCustomization.appearance.texture === 'glyph-matrix' && (
+                    <GlyphMatrix
+                      glyphs="01·•+*/\<>="
+                      cellSize={14}
+                      mutationRate={0.04}
+                      interval={90}
+                      fadeBottom={0.6}
+                      color="var(--profile-accent)"
+                      className="opacity-100 [mask-image:linear-gradient(to_right,transparent_5%,white_60%)]"
+                    />
+                  )}
+                </div>
+              )}
+              
+              <div className="p-6 relative z-10 space-y-6 pointer-events-none">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+                  <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-800 border-2 border-[var(--profile-card-border)] flex items-center justify-center shrink-0 overflow-hidden shadow-2xs relative z-20 pointer-events-auto">
                 {profile.avatarUrl ? (
                   <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="font-semibold text-gray-700 text-xl font-mono">
+                  <span className="font-semibold text-[var(--profile-muted-text)] text-xl font-mono">
                     {profile.name?.slice(0, 2).toUpperCase() || 'ST'}
                   </span>
                 )}
               </div>
               <div className="space-y-1.5 flex-1 min-w-0 pt-1">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <h1 className="text-xl font-semibold text-gray-1000 tracking-tight">{profile.name}</h1>
+                  <h1 className="text-xl font-semibold text-[var(--profile-text)] tracking-tight">{profile.name}</h1>
                   {profile.uid && (
-                    <span className="px-2 py-0.5 rounded-full bg-background-100 border border-gray-400 text-[10px] font-mono text-gray-700">
+                    <span className="px-2 py-0.5 rounded-full bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] text-[10px] font-mono text-[var(--profile-muted-text)]">
                       {profile.uid}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-gray-600 font-sans">
+                <p className="text-xs text-[var(--profile-muted-text)] font-sans pointer-events-auto">
                   {education.length > 0 ? `${education[0].degree} · ${education[0].institution}` : 'Campus Connect Student'}
                 </p>
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-3">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-3 pointer-events-auto">
                   {profile.githubUsername && profile.githubVerified && (
-                    <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:opacity-80 transition-opacity">
+                    <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] text-[var(--profile-muted-text)] hover:text-[var(--profile-accent)] hover:border-[var(--profile-accent)] transition-colors">
                       <FaGithub className="w-3.5 h-3.5" />
                       <span>{profile.githubUsername}</span>
                     </a>
                   )}
                   {profile.leetcodeUsername && profile.leetcodeVerified && (
-                    <a href={`https://leetcode.com/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 hover:opacity-80 transition-opacity">
+                    <a href={`https://leetcode.com/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] text-[var(--profile-muted-text)] hover:text-[var(--profile-accent)] hover:border-[var(--profile-accent)] transition-colors">
                       <SiLeetcode className="w-3.5 h-3.5" />
                       <span>{profile.leetcodeUsername}</span>
                     </a>
                   )}
                   {profile.linkedInUrl && (
-                    <a href={formatExternalUrl(profile.linkedInUrl)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400 hover:opacity-80 transition-opacity">
+                    <a href={formatExternalUrl(profile.linkedInUrl)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] text-[var(--profile-muted-text)] hover:text-[var(--profile-accent)] hover:border-[var(--profile-accent)] transition-colors">
                       <FaLinkedin className="w-3.5 h-3.5" />
                       <span>LinkedIn</span>
                     </a>
                   )}
                   {profile.resumeDetails?.portfolioUrl && (
-                    <a href={formatExternalUrl(profile.resumeDetails.portfolioUrl)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-400 hover:opacity-80 transition-opacity">
+                    <a href={formatExternalUrl(profile.resumeDetails.portfolioUrl)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] text-[var(--profile-muted-text)] hover:text-[var(--profile-accent)] hover:border-[var(--profile-accent)] transition-colors">
                       <ExternalLink className="w-3.5 h-3.5" />
                       <span>Portfolio</span>
                     </a>
@@ -257,100 +375,116 @@ export default function PublicProfile() {
                 </div>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
           {/* 4-Column Clean Metrics Strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-gray-400 bg-background-200 divide-y md:divide-y-0 md:divide-x divide-gray-400 overflow-hidden shadow-2xs">
-            <div className="p-5 flex flex-col justify-center">
-              <div className="text-[11px] font-mono text-gray-700 uppercase tracking-wider">Problems Solved</div>
-              <div className="text-2xl font-bold font-sans text-gray-1000 mt-1">
-                {leetcode?.profile ? (
-                  <>
-                    <CountUp end={totalSolved} />
-                    <span className="text-xs font-mono font-normal text-gray-600 ml-1">/{totalAvailable}</span>
-                  </>
-                ) : (
-                  <span className="text-gray-500 font-mono text-base font-normal">—</span>
-                )}
-              </div>
-            </div>
-
-            <div className="p-5 flex flex-col justify-center">
-              <div className="text-[11px] font-mono text-gray-700 uppercase tracking-wider">Public Repos</div>
-              <div className="text-2xl font-bold font-sans text-gray-1000 mt-1">
-                {github?.profile ? (
-                  <CountUp end={github.profile.public_repos || 0} />
-                ) : (
-                  <span className="text-gray-500 font-mono text-base font-normal">—</span>
-                )}
-              </div>
-            </div>
-
-            <div className="p-5 flex flex-col justify-center">
-              <div className="text-[11px] font-mono text-gray-700 uppercase tracking-wider">Global Rank</div>
-              <div className="text-2xl font-bold font-sans text-gray-1000 mt-1">
-                {leetcode?.profile?.ranking ? (
-                  `#${leetcode.profile.ranking.toLocaleString()}`
-                ) : (
-                  <span className="text-gray-500 font-mono text-base font-normal">—</span>
-                )}
-              </div>
-            </div>
-
-            <div className="p-5 flex flex-col justify-center">
-              <div className="text-[11px] font-mono text-gray-700 uppercase tracking-wider">Academic CGPA</div>
-              <div className="text-2xl font-bold font-sans text-teal-700 mt-1 flex items-baseline">
-                {studentCgpa ? (
-                  <>
-                    <span>{studentCgpa}</span>
-                    {!studentCgpa.includes('/') && !isNaN(Number(studentCgpa)) && (
-                      <span className="text-xs font-mono font-normal text-gray-600 ml-1.5">/ 10.0</span>
+          {showMetricsStrip && (
+            <div className="flex flex-wrap profile-card divide-y md:divide-y-0 md:divide-x divide-[var(--profile-card-border)] overflow-hidden">
+              {showProblemsSolved && (
+                <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
+                  <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">Problems Solved</div>
+                  <div className="text-2xl font-bold font-sans text-[var(--profile-text)] mt-1">
+                    {leetcode?.profile ? (
+                      <>
+                        <CountUp end={totalSolved} />
+                        <span className="text-xs font-mono font-normal text-[var(--profile-muted-text)] ml-1">/{totalAvailable}</span>
+                      </>
+                    ) : (
+                      <span className="text-[var(--profile-muted-text)] font-mono text-base font-normal">—</span>
                     )}
-                  </>
-                ) : (
-                  <span className="text-gray-500 font-mono text-base font-normal">—</span>
-                )}
-              </div>
+                  </div>
+                </div>
+              )}
+
+              {showPublicRepos && (
+                <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
+                  <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">Public Repos</div>
+                  <div className="text-2xl font-bold font-sans text-[var(--profile-text)] mt-1">
+                    {github?.profile && privacy.githubTotalStars !== false ? (
+                      <CountUp end={github.profile.public_repos || 0} />
+                    ) : (
+                      <span className="text-[var(--profile-muted-text)] font-mono text-base font-normal">—</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {showGlobalRank && (
+                <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
+                  <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">LeetCode Global Rank</div>
+                  <div className="text-2xl font-bold font-sans text-[var(--profile-text)] mt-1">
+                    {leetcode?.profile?.ranking ? (
+                      `#${leetcode.profile.ranking.toLocaleString()}`
+                    ) : (
+                      <span className="text-[var(--profile-muted-text)] font-mono text-base font-normal">—</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {showCgpa && (
+                <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
+                  <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">Academic CGPA</div>
+                  <div className="text-2xl font-bold font-sans text-teal-700 mt-1 flex items-baseline">
+                    {studentCgpa ? (
+                      <>
+                        <span>{studentCgpa}</span>
+                        {!studentCgpa.includes('/') && !isNaN(Number(studentCgpa)) && (
+                          <span className="text-xs font-mono font-normal text-[var(--profile-muted-text)] ml-1.5">/ 10.0</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-[var(--profile-muted-text)] font-mono text-base font-normal">—</span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
           {/* Activity Heatmap Card */}
-          <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+          {((privacy.githubHeatmap !== false && profile.githubVerified) || (privacy.leetcodeHeatmap !== false && profile.leetcodeVerified)) && (
+            <div className="profile-card p-6 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Verified Activity Stream</h2>
-                  <p className="text-xs text-gray-700 font-mono mt-0.5">Commits and coding problem submissions across the last 365 days</p>
+                  <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Verified Activity Stream</h2>
+                  <p className="text-xs text-[var(--profile-muted-text)] font-mono mt-0.5">Commits and coding problem submissions across the last 365 days</p>
                 </div>
 
-                <div className="inline-flex p-0.5 rounded-lg bg-background-100 border border-gray-400 self-start sm:self-auto">
-                  <button
-                    type="button"
-                    onClick={() => setActiveHeatmap('github')}
-                    className={`px-3 py-1 text-xs font-mono rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
-                      activeHeatmap === 'github' ? 'bg-gray-200 text-gray-1000 font-medium' : 'text-gray-700 hover:text-gray-1000'
-                    }`}
-                  >
-                    <span>GitHub</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveHeatmap('leetcode')}
-                    className={`px-3 py-1 text-xs font-mono rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
-                      activeHeatmap === 'leetcode' ? 'bg-gray-200 text-gray-1000 font-medium' : 'text-gray-700 hover:text-gray-1000'
-                    }`}
-                  >
-                    <span>LeetCode</span>
-                  </button>
+                <div className="inline-flex p-0.5 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] self-start sm:self-auto">
+                  {privacy.githubHeatmap !== false && profile.githubVerified && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveHeatmap('github')}
+                      className={`px-3 py-1 text-xs font-mono rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                        activeHeatmap === 'github' ? 'bg-[var(--profile-text)] text-[var(--profile-bg)] font-medium' : 'text-[var(--profile-muted-text)] hover:text-[var(--profile-text)]'
+                      }`}
+                    >
+                      <span>GitHub</span>
+                    </button>
+                  )}
+                  {privacy.leetcodeHeatmap !== false && profile.leetcodeVerified && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveHeatmap('leetcode')}
+                      className={`px-3 py-1 text-xs font-mono rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                        activeHeatmap === 'leetcode' || privacy.githubHeatmap === false ? 'bg-[var(--profile-text)] text-[var(--profile-bg)] font-medium' : 'text-[var(--profile-muted-text)] hover:text-[var(--profile-text)]'
+                      }`}
+                    >
+                      <span>LeetCode</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
               <div className="w-full overflow-x-auto py-2 custom-scrollbar">
                 <div className="min-w-[780px] flex justify-center py-2">
-                  {activeHeatmap === 'github' ? (
+                  {(activeHeatmap === 'github' && privacy.githubHeatmap !== false) || (privacy.leetcodeHeatmap === false) ? (
                     githubHeatmap.length > 0 ? (
                       <ActivityCalendar
                         data={githubHeatmap}
-                        colorScheme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+                        colorScheme="light"
                         theme={calendarTheme}
                         blockSize={11}
                         blockMargin={3}
@@ -359,16 +493,16 @@ export default function PublicProfile() {
                         labels={{ totalCount: '{{count}} contributions in the past year' }}
                       />
                     ) : (
-                      <div className="py-10 text-xs text-gray-600 font-mono text-center flex flex-col items-center justify-center gap-2">
-                        <FaGithub className="w-6 h-6 text-gray-500" />
-                        <span className="font-semibold text-gray-900">No GitHub activity recorded</span>
+                      <div className="py-10 text-xs text-[var(--profile-muted-text)] font-mono text-center flex flex-col items-center justify-center gap-2">
+                        <FaGithub className="w-6 h-6 text-[var(--profile-muted-text)]" />
+                        <span className="font-semibold text-[var(--profile-text)]">No GitHub activity recorded</span>
                       </div>
                     )
                   ) : (
                     calendarData.length > 0 ? (
                       <ActivityCalendar
                         data={calendarData}
-                        colorScheme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+                        colorScheme="light"
                         theme={calendarTheme}
                         blockSize={11}
                         blockMargin={3}
@@ -377,25 +511,27 @@ export default function PublicProfile() {
                         labels={{ totalCount: '{{count}} submissions in the past year' }}
                       />
                     ) : (
-                      <div className="py-10 text-xs text-gray-600 font-mono text-center flex flex-col items-center justify-center gap-2">
+                      <div className="py-10 text-xs text-[var(--profile-muted-text)] font-mono text-center flex flex-col items-center justify-center gap-2">
                         <SiLeetcode className="w-6 h-6 text-[#ffa116]" />
-                        <span className="font-semibold text-gray-900">No LeetCode activity recorded</span>
+                        <span className="font-semibold text-[var(--profile-text)]">No LeetCode activity recorded</span>
                       </div>
                     )
                   )}
                 </div>
               </div>
             </div>
+          )}
 
           {/* Top Repositories & Resume Vault */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Top Repositories Preview */}
-            <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                  <FaGithub className="text-sm" /> Top Repositories
-                </h3>
-              </div>
+            {visibility.showGithub !== false && profile.githubVerified && (
+              <div className="profile-card p-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-[var(--profile-muted-text)] flex items-center gap-2">
+                    <FaGithub className="text-sm" /> Top Repositories
+                  </h3>
+                </div>
 
               {github?.repositories?.length > 0 ? (
                 <div className="divide-y divide-gray-400 pt-1">
@@ -405,16 +541,16 @@ export default function PublicProfile() {
                       className="py-3 flex items-center justify-between group px-2 rounded-md transition-colors"
                     >
                       <div className="min-w-0 pr-4">
-                        <a href={repo.html_url || `https://github.com/${github.profile.login}/${repo.name}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-gray-1000 hover:underline truncate inline-flex items-center gap-1.5">
+                        <a href={repo.html_url || `https://github.com/${github.profile.login}/${repo.name}`} target="_blank" rel="noreferrer" className="text-xs font-medium text-[var(--profile-text)] hover:underline truncate inline-flex items-center gap-1.5">
                           {repo.name}
                         </a>
-                        <p className="text-[11px] text-gray-700 truncate mt-0.5">
+                        <p className="text-[11px] text-[var(--profile-muted-text)] truncate mt-0.5">
                           {repo.description || 'No description'}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 text-xs font-mono text-gray-700 shrink-0">
+                      <div className="flex items-center gap-3 text-xs font-mono text-[var(--profile-muted-text)] shrink-0">
                         {repo.language && (
-                          <span className="text-[11px] text-gray-600">{repo.language}</span>
+                          <span className="text-[11px] text-[var(--profile-muted-text)]">{repo.language}</span>
                         )}
                         <span className="flex items-center gap-1 text-[11px]">
                           <Star className="w-3 h-3 text-amber-500 fill-amber-500/20" />
@@ -425,16 +561,17 @@ export default function PublicProfile() {
                   ))}
                 </div>
               ) : (
-                <div className="text-xs text-gray-600 font-mono py-6 text-center border border-dashed border-gray-400 rounded-lg">
+                <div className="text-xs text-[var(--profile-muted-text)] font-mono py-6 text-center border border-dashed border-gray-400 rounded-lg">
                   No public repositories found.
                 </div>
               )}
             </div>
+            )}
 
             {/* Resume Vault Preview */}
-            <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
+            <div className="profile-card p-6 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                <h3 className="text-xs font-mono uppercase tracking-wider text-[var(--profile-muted-text)] flex items-center gap-2">
                   <FileText className="w-3.5 h-3.5" /> Resume Vault
                 </h3>
               </div>
@@ -443,13 +580,13 @@ export default function PublicProfile() {
                 <div className="pt-2 flex flex-col gap-3">
                   <div 
                     onClick={() => setShowPdf(true)}
-                    className="p-4 rounded-xl border border-gray-400 bg-background-100 flex flex-col items-center text-center cursor-pointer hover:border-gray-600 transition-colors group"
+                    className="p-4 rounded-xl border border-[var(--profile-card-border)] bg-[var(--profile-bg)] flex flex-col items-center text-center cursor-pointer hover:border-[var(--profile-text)] transition-colors group"
                   >
                     <FileText className="w-8 h-8 text-blue-500 mb-2 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-                    <span className="text-sm font-medium text-gray-1000 mb-1 group-hover:text-blue-600 transition-colors">
+                    <span className="text-sm font-medium text-[var(--profile-text)] mb-1 group-hover:text-blue-600 transition-colors">
                       {resumes[0].name || 'Primary Resume'}
                     </span>
-                    <span className="text-xs font-mono text-gray-600 mb-3">
+                    <span className="text-xs font-mono text-[var(--profile-muted-text)] mb-3">
                       Publicly available resume
                     </span>
                     <button
@@ -462,37 +599,107 @@ export default function PublicProfile() {
                   </div>
                 </div>
               ) : (
-                <div className="py-6 text-center text-xs text-gray-600 font-mono border border-dashed border-gray-400 rounded-lg mt-2 flex flex-col items-center gap-2">
-                  <Lock className="w-4 h-4 text-gray-400" />
+                <div className="py-6 text-center text-xs text-[var(--profile-muted-text)] font-mono border border-dashed border-gray-400 rounded-lg mt-2 flex flex-col items-center gap-2">
+                  <Lock className="w-4 h-4 text-[var(--profile-muted-text)]" />
                   <span>No public resumes available.</span>
                 </div>
               )}
             </div>
           </div>
+          
+          {/* LeetCode Achievements (Badges, Contest Rating, etc) */}
+          {privacy.leetcodeAchievements !== false && leetcode?.profile && profile.leetcodeVerified && (
+            <div className="profile-card p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--profile-card-border)] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] flex items-center justify-center shrink-0">
+                    <SiLeetcode className="w-4 h-4 text-[#ffa116]" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">LeetCode Achievements</h2>
+                    <p className="text-xs text-[var(--profile-muted-text)] font-mono mt-0.5">Badges, contest ratings, and algorithmic topics</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 text-xs font-mono flex-wrap">
+                  <span className="px-2.5 py-1 rounded-md bg-[var(--profile-bg)] border border-[var(--profile-card-border)] text-[var(--profile-text)] font-medium flex items-center gap-1.5">
+                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                    {leetcode?.contest?.rating > 0 ? `Rating: ${Math.round(leetcode.contest.rating)}` : 'Unranked'}
+                  </span>
+                  
+                  {leetcode?.contest?.topPercentage > 0 && (
+                    <span className="px-2.5 py-1 rounded-md bg-[var(--profile-bg)] border border-[var(--profile-card-border)] text-[var(--profile-text)] font-medium">
+                      Top {leetcode.contest.topPercentage}%
+                    </span>
+                  )}
+                  
+                  <span className="px-2.5 py-1 rounded-md bg-[var(--profile-bg)] border border-[var(--profile-card-border)] text-[var(--profile-text)] font-medium flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                    {leetcode?.profile?.reputation || 0} Rep
+                  </span>
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              {/* Experience */}
-              {experience.length > 0 && (
-                <section className="bg-background-200 border border-gray-400 rounded-xl p-6">
+              <div className="pt-2">
+                <h3 className="text-xs font-mono uppercase tracking-wider text-[var(--profile-muted-text)] mb-3">Earned Badges</h3>
+                {leetcode?.badges?.length > 0 ? (
+                  <div className="flex flex-wrap gap-4">
+                    {leetcode.badges.map((b, i) => (
+                      <div key={i} className="flex flex-col items-center gap-2 p-3 rounded-lg border border-[var(--profile-card-border)] bg-[var(--profile-bg)] min-w-[80px] hover:border-[var(--profile-accent)] transition-colors">
+                        <img src={b.icon.startsWith('/') ? `https://leetcode.com${b.icon}` : b.icon} alt={b.displayName} className="w-10 h-10 object-contain drop-shadow-sm" />
+                        <span className="text-[10px] font-mono text-[var(--profile-muted-text)] text-center max-w-[100px] leading-tight">{b.displayName}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-[var(--profile-muted-text)] font-mono py-4 border border-dashed border-[var(--profile-card-border)] rounded-lg text-center bg-[var(--profile-bg)]/50">
+                    No badges earned yet.
+                  </div>
+                )}
+              </div>
+
+              {(leetcode?.skills?.fundamental?.length > 0 || leetcode?.skills?.intermediate?.length > 0) && (
+                <div className="pt-2">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-[var(--profile-muted-text)] mb-3">Top Algorithmic Topics</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[...(leetcode.skills?.fundamental || []), ...(leetcode.skills?.intermediate || [])]
+                      .slice(0, 8)
+                      .map((topic, i) => (
+                        <span key={i} className="px-2 py-1 rounded-md bg-[var(--profile-bg)] border border-[var(--profile-card-border)] text-[11px] font-mono text-[var(--profile-text)]">
+                          {topic.tagName} ({topic.problemsSolved})
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {(hasLeftColumn || hasRightColumn) && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {hasLeftColumn && (
+                <div className={`space-y-6 ${hasRightColumn ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
+                  {/* Experience */}
+                  {hasExperience && (
+                <section className="profile-card p-6">
                   <div className="flex items-center gap-2 mb-5">
-                    <Briefcase className="w-4 h-4 text-gray-500" />
-                    <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Experience</h2>
+                    <Briefcase className="w-4 h-4 text-[var(--profile-muted-text)]" />
+                    <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Experience</h2>
                   </div>
                   <div className="space-y-5">
                     {experience.map((exp, i) => (
                       <div key={i} className="group flex gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center shrink-0">
-                          <Building2 className="w-4 h-4 text-gray-400" />
+                        <div className="w-10 h-10 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] flex items-center justify-center shrink-0">
+                          <Building2 className="w-4 h-4 text-[var(--profile-muted-text)]" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-medium text-gray-1000">{exp.role}</h3>
-                          <div className="text-xs text-gray-600 font-mono mt-0.5">{exp.company}</div>
-                          <div className="text-[11px] text-gray-500 mt-1 flex items-center gap-3 font-mono">
+                          <h3 className="text-sm font-medium text-[var(--profile-text)]">{exp.role}</h3>
+                          <div className="text-xs text-[var(--profile-muted-text)] font-mono mt-0.5">{exp.company}</div>
+                          <div className="text-[11px] text-[var(--profile-muted-text)] mt-1 flex items-center gap-3 font-mono">
                             <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {exp.duration}</span>
                             {exp.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {exp.location}</span>}
                           </div>
-                          {exp.description && <p className="text-xs text-gray-700 mt-2.5 leading-relaxed">{exp.description}</p>}
+                          {exp.description && <p className="text-xs text-[var(--profile-muted-text)] mt-2.5 leading-relaxed">{exp.description}</p>}
                         </div>
                       </div>
                     ))}
@@ -501,41 +708,29 @@ export default function PublicProfile() {
               )}
 
               {/* Projects */}
-              {projects.length > 0 && (
-                <section className="bg-background-200 border border-gray-400 rounded-xl p-6">
+              {hasProjects && (
+                <section className="profile-card p-6">
                   <div className="flex items-center gap-2 mb-5">
-                    <FolderGit2 className="w-4 h-4 text-gray-500" />
-                    <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Projects</h2>
+                    <FolderGit2 className="w-4 h-4 text-[var(--profile-muted-text)]" />
+                    <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Projects</h2>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {projects.map((proj, i) => (
-                      <div key={i} className="group relative isolate p-4 rounded-lg bg-background-100 border border-gray-400 flex flex-col h-full hover:border-gray-900 transition-colors overflow-hidden">
-                        {/* Bottom Right Color Leak Effect & Fading Border Glow */}
-                        <div className="absolute -bottom-20 -right-20 w-48 h-48 bg-indigo-500/10 dark:bg-indigo-400/15 blur-[40px] rounded-full pointer-events-none z-0 transition-all duration-500 group-hover:bg-indigo-500/30 group-hover:scale-125" />
-                        
-                        <div 
-                          className="absolute inset-0 rounded-lg pointer-events-none z-20 transition-opacity duration-500 opacity-40 group-hover:opacity-100"
-                          style={{
-                            borderRight: '1.5px solid rgba(99, 102, 241, 0.6)',
-                            borderBottom: '1.5px solid rgba(99, 102, 241, 0.6)',
-                            WebkitMaskImage: 'radial-gradient(circle at bottom right, black 0%, transparent 80%)',
-                            maskImage: 'radial-gradient(circle at bottom right, black 0%, transparent 80%)'
-                          }}
-                        />
+                      <div key={i} className="group relative isolate p-4 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] flex flex-col h-full hover:border-[var(--profile-accent)] transition-colors overflow-hidden">
                         
                         <div className="relative z-10 flex items-start justify-between gap-2 mb-2">
-                          <h3 className="text-sm font-medium text-gray-1000 leading-tight">{proj.title}</h3>
+                          <h3 className="text-sm font-medium text-[var(--profile-text)] leading-tight">{proj.title}</h3>
                           {proj.link && (
-                            <a href={formatExternalUrl(proj.link)} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-gray-900 shrink-0">
+                            <a href={formatExternalUrl(proj.link)} target="_blank" rel="noreferrer" className="text-[var(--profile-muted-text)] hover:text-[var(--profile-text)] shrink-0">
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 line-clamp-3 mb-4 flex-1">{proj.description}</p>
+                        <p className="text-xs text-[var(--profile-muted-text)] line-clamp-3 mb-4 flex-1">{proj.description}</p>
                         {proj.techStack && (
                           <div className="flex flex-wrap gap-1.5 mt-auto">
                             {proj.techStack.split(',').map((tech, ti) => (
-                              <span key={ti} className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-gray-200 text-gray-700">{tech.trim()}</span>
+                              <span key={ti} className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--profile-bg)] border border-[var(--profile-card-border)] text-[var(--profile-muted-text)]">{tech.trim()}</span>
                             ))}
                           </div>
                         )}
@@ -546,23 +741,25 @@ export default function PublicProfile() {
               )}
 
 
-            </div>
+                </div>
+              )}
 
-            <div className="space-y-6">
-              {/* Education */}
-              {education.length > 0 && (
-                <section className="bg-background-200 border border-gray-400 rounded-xl p-5">
+              {hasRightColumn && (
+                <div className={`space-y-6 ${hasLeftColumn ? 'lg:col-span-1' : 'lg:col-span-3'}`}>
+                  {/* Education */}
+                  {hasEducation && (
+                <section className="profile-card p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <GraduationCap className="w-4 h-4 text-gray-500" />
-                    <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Education</h2>
+                    <GraduationCap className="w-4 h-4 text-[var(--profile-muted-text)]" />
+                    <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Education</h2>
                   </div>
-                  <div className="space-y-4">
+                  <div className="relative border-l-2 border-[var(--profile-card-border)] ml-1.5 space-y-6 py-1">
                     {education.map((edu, i) => (
-                      <div key={i} className="relative pl-4 border-l-2 border-gray-300">
-                        <div className="absolute w-2 h-2 rounded-full bg-gray-400 -left-[5px] top-1.5 border-2 border-background-200"></div>
-                        <h3 className="text-sm font-medium text-gray-1000 leading-tight">{edu.institution}</h3>
-                        <div className="text-xs text-gray-600 mt-1 font-mono">{edu.degree}</div>
-                        <div className="text-[11px] text-gray-500 mt-1 flex justify-between font-mono">
+                      <div key={i} className="relative pl-4">
+                        <div className="absolute w-2 h-2 rounded-full bg-[var(--profile-muted-text)] -left-[5px] top-1.5 ring-4 ring-[var(--profile-card-bg)]"></div>
+                        <h3 className="text-sm font-medium text-[var(--profile-text)] leading-tight">{edu.institution}</h3>
+                        <div className="text-xs text-[var(--profile-muted-text)] mt-1 font-mono">{edu.degree}</div>
+                        <div className="text-[11px] text-[var(--profile-muted-text)] mt-1 flex justify-between font-mono">
                           <span>{edu.duration}</span>
                           {edu.score && <span className="font-medium text-emerald-600">Score: {edu.score}</span>}
                         </div>
@@ -573,50 +770,52 @@ export default function PublicProfile() {
               )}
 
               {/* Skills */}
-              {profile.resumeDetails?.skills?.length > 0 && (
-                <section className="bg-background-200 border border-gray-400 rounded-xl p-5">
+              {hasSkills && (
+                <section className="profile-card p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <Code2 className="w-4 h-4 text-gray-500" />
-                    <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Skills</h2>
+                    <Code2 className="w-4 h-4 text-[var(--profile-muted-text)]" />
+                    <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Skills</h2>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {profile.resumeDetails.skills.map((skill, i) => (
-                      <span key={i} className="px-2 py-1 bg-background-100 border border-gray-300 rounded-md text-[11px] font-mono text-gray-800">
+                      <span key={i} className="px-2 py-1 bg-[var(--profile-bg)] border border-[var(--profile-card-border)] rounded-md text-[11px] font-mono text-[var(--profile-text)]">
                         {skill}
                       </span>
                     ))}
                   </div>
                 </section>
               )}
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
           {/* Achievements & Certifications */}
-          {(achievements.length > 0 || certificates.length > 0) && (
-            <section className="bg-background-200 border border-gray-400 rounded-xl p-6">
+          {visibility.showCertificates !== false && (achievements.length > 0 || certificates.length > 0) && (
+            <section className="profile-card p-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-gray-500" />
-                  <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Achievements & Certifications</h2>
+                  <Award className="w-4 h-4 text-[var(--profile-muted-text)]" />
+                  <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Achievements & Certifications</h2>
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {achievements.slice(0, isCertsExpanded ? achievements.length : 4).map((ach, i) => (
-                  <div key={`ach-${i}`} className="flex gap-3.5 p-4 rounded-xl border border-gray-300 bg-background-100 shadow-sm transition-all hover:border-gray-400">
+                  <div key={`ach-${i}`} className="flex gap-3.5 p-4 rounded-xl border border-[var(--profile-card-border)] bg-[var(--profile-bg)] shadow-sm transition-all hover:border-[var(--profile-text)]">
                     <div className="w-1.5 rounded-full bg-amber-500/50 shrink-0 mb-1 mt-1"></div>
                     <div className="flex-1">
-                      <h3 className="text-sm font-medium text-gray-1000">{ach.title}</h3>
-                      <p className="text-xs text-gray-600 mt-1">{ach.description}</p>
+                      <h3 className="text-sm font-medium text-[var(--profile-text)]">{ach.title}</h3>
+                      <p className="text-xs text-[var(--profile-muted-text)] mt-1">{ach.description}</p>
                     </div>
                   </div>
                 ))}
                 {certificates.slice(0, isCertsExpanded ? certificates.length : (Math.max(0, 4 - achievements.length))).map((cert, i) => (
-                  <div key={`cert-${i}`} className="flex flex-col sm:flex-row gap-3.5 p-4 rounded-xl border border-gray-300 bg-background-100 shadow-sm transition-all hover:border-gray-400">
+                  <div key={`cert-${i}`} className="flex flex-col sm:flex-row gap-3.5 p-4 rounded-xl border border-[var(--profile-card-border)] bg-[var(--profile-bg)] shadow-sm transition-all hover:border-[var(--profile-text)]">
                     <Award className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5 hidden sm:block" />
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">{cert.title}</h3>
-                      <div className="text-xs text-gray-600 font-mono mt-1 flex items-center gap-2">
+                      <h3 className="text-sm font-medium text-[var(--profile-text)] truncate">{cert.title}</h3>
+                      <div className="text-xs text-[var(--profile-muted-text)] font-mono mt-1 flex items-center gap-2">
                         <span className="truncate">{cert.issuer}</span>
                         {cert.issueDate && (
                           <>
@@ -639,7 +838,7 @@ export default function PublicProfile() {
                 <div className="mt-6 text-center border-t border-gray-300 pt-4">
                   <button 
                     onClick={() => setIsCertsExpanded(!isCertsExpanded)}
-                    className="text-xs font-mono text-gray-600 hover:text-gray-1000 transition-colors inline-flex items-center gap-1"
+                    className="text-xs font-mono text-[var(--profile-muted-text)] hover:text-[var(--profile-text)] transition-colors inline-flex items-center gap-1"
                   >
                     {isCertsExpanded ? 'Show Less' : `Show ${achievements.length + certificates.length - 4} More`}
                   </button>
@@ -647,6 +846,7 @@ export default function PublicProfile() {
               )}
             </section>
           )}
+          </div>
         </div>
       </main>
 
@@ -659,5 +859,6 @@ export default function PublicProfile() {
         />
       )}
     </div>
+    </ProfileThemeProvider>
   );
 }

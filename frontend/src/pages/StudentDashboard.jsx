@@ -4,8 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import { ActivityCalendar } from 'react-activity-calendar';
 import { fromUnixTime, format, formatDistanceToNow, subDays } from 'date-fns';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
+import { isEventPast, getEventStartDateTime, getEventStatus, formatTime12h } from '../utils/eventUtils';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
@@ -342,11 +341,9 @@ export default function StudentDashboard() {
         setProfile(profileRes.data);
         setResumes(resumesRes.data?.resumes || profileRes.data?.resumes || []);
         
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
         const futureEvents = eventsRes.data
-          .filter(ev => new Date(ev.date) >= today)
-          .sort((a, b) => new Date(a.date) - new Date(b.date));
+          .filter(ev => !isEventPast(ev))
+          .sort((a, b) => getEventStartDateTime(a) - getEventStartDateTime(b));
           
         setUpcomingEvents(futureEvents.slice(0, 3));
       } catch (err) {
@@ -537,17 +534,16 @@ export default function StudentDashboard() {
 
   if (loading) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans">
-        <Sidebar />
-        <main className="flex-1 relative">
+      <>
+        <div className="flex-1 relative bg-background-100">
           <div className="hidden md:flex bg-background-100 border-b border-gray-400 h-14 w-full" />
           <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
             <div className="h-8 w-48 bg-gray-200 animate-pulse rounded-md" />
             <div className="h-20 w-full bg-gray-200 animate-pulse rounded-xl" />
             <div className="h-64 w-full bg-gray-200 animate-pulse rounded-xl" />
           </div>
-        </main>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -661,10 +657,11 @@ export default function StudentDashboard() {
   // SVG Ring Calculations for Multi-Segment LeetCode Donut
   const ringRadius = 46;
   const ringCircumference = 2 * Math.PI * ringRadius; // ~289.03
+  const maxArcLength = (240 / 360) * ringCircumference;
   const activeSegmentsCount = (easySolved > 0 ? 1 : 0) + (mediumSolved > 0 ? 1 : 0) + (hardSolved > 0 ? 1 : 0);
-  const ringGap = activeSegmentsCount > 1 ? 3 : 0;
-  const totalRingGap = ringGap * activeSegmentsCount;
-  const effectiveCircumference = Math.max(0, ringCircumference - totalRingGap);
+  const ringGap = activeSegmentsCount > 1 ? 4 : 0;
+  const totalRingGap = ringGap * Math.max(0, activeSegmentsCount - 1);
+  const effectiveCircumference = Math.max(0, maxArcLength - totalRingGap);
 
   const easyRatio = totalSolved > 0 ? (easySolved / totalSolved) : 0;
   const medRatio = totalSolved > 0 ? (mediumSolved / totalSolved) : 0;
@@ -683,14 +680,10 @@ export default function StudentDashboard() {
   const hardPctOfSolved = totalSolved > 0 ? ((hardSolved / totalSolved) * 100).toFixed(1) : 0;
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
-      <Sidebar />
+    <>
       <RepoModal repo={selectedRepo} onClose={() => setSelectedRepo(null)} />
 
-      <main className="flex-1 min-w-0">
-        <Topbar />
-
-        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8">
+      <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8">
           
           {/* ===================================================================
               1. MINIMALIST HEADER & CANONICAL VERCEL TABS
@@ -1213,207 +1206,158 @@ export default function StudentDashboard() {
                   </div>
 
                   <div className="flex items-center gap-2 text-xs font-mono flex-wrap">
-                    <span className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-800 font-medium">
+                    <span className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-800 font-medium flex items-center gap-1.5">
+                      <Trophy className="w-3 h-3 text-amber-500" />
                       Rank: #{leetcode?.profile?.ranking?.toLocaleString() || '—'}
                     </span>
-                    {leetcode?.contest?.contestRating ? (
+                    {leetcode?.contest?.rating > 0 && (
                       <span className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-800 font-medium">
-                        Rating: {Math.round(leetcode.contest.contestRating)}
+                        Rating: {Math.round(leetcode.contest.rating)}
                       </span>
-                    ) : null}
-                    {acceptanceRate && (
+                    )}
+                    {leetcode?.contest?.topPercentage > 0 && (
                       <span className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-800 font-medium">
-                        Acceptance: {acceptanceRate}%
+                        Top {leetcode.contest.topPercentage}%
+                      </span>
+                    )}
+                    {leetcode?.profile?.reputation > 0 && (
+                      <span className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-800 font-medium flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                        {leetcode.profile.reputation} Rep
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Main Telemetry Visualization: Multi-Segment Ring & Difficulty Cards */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                {/* Main Telemetry Visualization: Geist Design */}
+                <div className="flex flex-col md:flex-row items-center justify-center gap-10 py-8 px-6 rounded-xl border border-gray-400 bg-background-100 shadow-2xs">
                   
-                  {/* Left: Multi-Segment Donut Ring (5 cols) */}
-                  <div className="lg:col-span-5 flex flex-col items-center justify-center p-2">
-                    <div className="relative w-44 h-44 shrink-0 flex items-center justify-center">
-                      <svg viewBox="0 0 120 120" className="w-full h-full transform -rotate-90 origin-center">
-                        {/* Background track */}
+                  {/* Left: Multi-Segment Donut Ring */}
+                  <div className="relative w-40 h-40 shrink-0 flex items-center justify-center">
+                    <svg viewBox="0 0 120 120" className="w-full h-full" style={{ transform: 'rotate(150deg)' }}>
+                      {/* Background track */}
+                      <circle
+                        cx="60"
+                        cy="60"
+                        r={ringRadius}
+                        fill="none"
+                        className="stroke-gray-300"
+                        strokeWidth="3"
+                        strokeDasharray={`${maxArcLength} ${ringCircumference - maxArcLength}`}
+                        strokeDashoffset="0"
+                        strokeLinecap="round"
+                      />
+
+                      {/* Easy Segment */}
+                      {easyArc > 0 && (
                         <circle
                           cx="60"
                           cy="60"
                           r={ringRadius}
                           fill="none"
-                          stroke="currentColor"
-                          strokeWidth="8"
-                          className="text-gray-300 dark:text-gray-800"
+                          className="stroke-emerald-500"
+                          strokeWidth="4"
+                          strokeDasharray={`${easyArc} ${ringCircumference - easyArc}`}
+                          strokeDashoffset={easyOffset}
+                          strokeLinecap="round"
+                          style={{ transition: 'stroke-dasharray 1s ease-out, stroke-dashoffset 1s ease-out' }}
                         />
+                      )}
 
-                        {/* Easy Segment */}
-                        {easyArc > 0 && (
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r={ringRadius}
-                            fill="none"
-                            stroke="#10b981"
-                            strokeWidth="8"
-                            strokeDasharray={`${easyArc} ${ringCircumference - easyArc}`}
-                            strokeDashoffset={easyOffset}
-                            strokeLinecap="round"
-                            className="transition-all duration-1000 ease-out"
-                          />
-                        )}
+                      {/* Medium Segment */}
+                      {medArc > 0 && (
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r={ringRadius}
+                          fill="none"
+                          className="stroke-amber-500"
+                          strokeWidth="4"
+                          strokeDasharray={`${medArc} ${ringCircumference - medArc}`}
+                          strokeDashoffset={medOffset}
+                          strokeLinecap="round"
+                          style={{ transition: 'stroke-dasharray 1s ease-out, stroke-dashoffset 1s ease-out' }}
+                        />
+                      )}
 
-                        {/* Medium Segment */}
-                        {medArc > 0 && (
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r={ringRadius}
-                            fill="none"
-                            stroke="#f59e0b"
-                            strokeWidth="8"
-                            strokeDasharray={`${medArc} ${ringCircumference - medArc}`}
-                            strokeDashoffset={medOffset}
-                            strokeLinecap="round"
-                            className="transition-all duration-1000 ease-out"
-                          />
-                        )}
+                      {/* Hard Segment */}
+                      {hardArc > 0 && (
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r={ringRadius}
+                          fill="none"
+                          className="stroke-rose-500"
+                          strokeWidth="4"
+                          strokeDasharray={`${hardArc} ${ringCircumference - hardArc}`}
+                          strokeDashoffset={hardOffset}
+                          strokeLinecap="round"
+                          style={{ transition: 'stroke-dasharray 1s ease-out, stroke-dashoffset 1s ease-out' }}
+                        />
+                      )}
+                    </svg>
 
-                        {/* Hard Segment */}
-                        {hardArc > 0 && (
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r={ringRadius}
-                            fill="none"
-                            stroke="#ef4444"
-                            strokeWidth="8"
-                            strokeDasharray={`${hardArc} ${ringCircumference - hardArc}`}
-                            strokeDashoffset={hardOffset}
-                            strokeLinecap="round"
-                            className="transition-all duration-1000 ease-out"
-                          />
-                        )}
-                      </svg>
-
-                      {/* Donut Center Display */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                        <span className="text-3xl font-extrabold font-sans text-gray-1000 tracking-tight leading-none">
+                    {/* Donut Center Display */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
+                      <div className="flex items-baseline justify-center">
+                        <span className="text-[32px] font-bold text-gray-1000 tracking-tight leading-none font-sans">
                           <CountUp end={totalSolved} />
                         </span>
-                        <span className="text-[10px] font-mono font-semibold uppercase tracking-widest text-gray-600 mt-1">
-                          Solved
-                        </span>
-                        <span className="text-[11px] font-mono text-gray-600 font-normal mt-0.5">
-                          of {totalAvailable.toLocaleString()}
-                        </span>
                       </div>
-                    </div>
-
-                    {/* Streak & Active Days Badges */}
-                    <div className="flex items-center gap-2 mt-4 flex-wrap justify-center">
-                      {leetcode?.calendar?.streak !== undefined && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 text-[11px] font-mono font-medium">
-                          <Flame className="w-3.5 h-3.5 fill-orange-500/30" />
-                          <span>{leetcode.calendar.streak} Day Streak</span>
-                        </div>
-                      )}
-                      {leetcode?.calendar?.totalActiveDays !== undefined && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-[11px] font-mono font-medium">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{leetcode.calendar.totalActiveDays} Active Days</span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-1 mt-1">
+                        <Check className="w-3.5 h-3.5 text-emerald-500" />
+                        <span className="text-[11px] font-mono font-medium text-gray-700">Solved</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-gray-500 mt-0.5">of {totalAvailable}</span>
                     </div>
                   </div>
 
-                  {/* Right: 3 Structured Difficulty Cards (7 cols) */}
-                  <div className="lg:col-span-7 space-y-3">
+                  {/* Right: 3 Difficulty Breakdown Cards */}
+                  <div className="flex flex-col gap-2 w-full max-w-[200px]">
                     
-                    {/* Easy Card */}
-                    <div className="rounded-lg border border-gray-400 bg-background-100/60 p-3.5 space-y-2.5 transition-colors hover:bg-background-100">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            Easy
-                          </span>
-                          <span className="text-[11px] font-mono text-gray-600">
-                            {easyPctOfSolved}% of your solved
-                          </span>
-                        </div>
-                        <div className="flex items-baseline gap-1 font-mono">
-                          <span className="text-sm font-bold text-gray-1000">{easySolved}</span>
-                          <span className="text-xs text-gray-600">/{totalEasy.toLocaleString()}</span>
-                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium ml-1">
-                            ({((easySolved / totalEasy) * 100).toFixed(1)}%)
-                          </span>
-                        </div>
+                    {/* Easy */}
+                    <div className="rounded-lg border border-gray-400 bg-background-200 py-2.5 px-4 flex items-center justify-between gap-3 transition-colors hover:bg-background-100">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="text-xs font-medium text-gray-1000">Easy</span>
                       </div>
-                      <div className="h-2 w-full bg-gray-300 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out" 
-                          style={{ width: `${Math.min(100, Math.max(easySolved > 0 ? 1.5 : 0, (easySolved / totalEasy) * 100))}%` }} 
-                        />
+                      <div className="text-xs font-mono text-gray-1000">
+                        <span className="font-semibold">{easySolved}</span>
+                        <span className="text-gray-500 ml-0.5">/ {totalEasy}</span>
                       </div>
                     </div>
 
-                    {/* Medium Card */}
-                    <div className="rounded-lg border border-gray-400 bg-background-100/60 p-3.5 space-y-2.5 transition-colors hover:bg-background-100">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                            Medium
-                          </span>
-                          <span className="text-[11px] font-mono text-gray-600">
-                            {medPctOfSolved}% of your solved
-                          </span>
-                        </div>
-                        <div className="flex items-baseline gap-1 font-mono">
-                          <span className="text-sm font-bold text-gray-1000">{mediumSolved}</span>
-                          <span className="text-xs text-gray-600">/{totalMedium.toLocaleString()}</span>
-                          <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium ml-1">
-                            ({((mediumSolved / totalMedium) * 100).toFixed(1)}%)
-                          </span>
-                        </div>
+                    {/* Medium */}
+                    <div className="rounded-lg border border-gray-400 bg-background-200 py-2.5 px-4 flex items-center justify-between gap-3 transition-colors hover:bg-background-100">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                        <span className="text-xs font-medium text-gray-1000">Medium</span>
                       </div>
-                      <div className="h-2 w-full bg-gray-300 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-amber-500 rounded-full transition-all duration-1000 ease-out" 
-                          style={{ width: `${Math.min(100, Math.max(mediumSolved > 0 ? 1.5 : 0, (mediumSolved / totalMedium) * 100))}%` }} 
-                        />
+                      <div className="text-xs font-mono text-gray-1000">
+                        <span className="font-semibold">{mediumSolved}</span>
+                        <span className="text-gray-500 ml-0.5">/ {totalMedium}</span>
                       </div>
                     </div>
 
-                    {/* Hard Card */}
-                    <div className="rounded-lg border border-gray-400 bg-background-100/60 p-3.5 space-y-2.5 transition-colors hover:bg-background-100">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                            Hard
-                          </span>
-                          <span className="text-[11px] font-mono text-gray-600">
-                            {hardPctOfSolved}% of your solved
-                          </span>
-                        </div>
-                        <div className="flex items-baseline gap-1 font-mono">
-                          <span className="text-sm font-bold text-gray-1000">{hardSolved}</span>
-                          <span className="text-xs text-gray-600">/{totalHard.toLocaleString()}</span>
-                          <span className="text-[10px] text-rose-600 dark:text-rose-400 font-medium ml-1">
-                            ({((hardSolved / totalHard) * 100).toFixed(1)}%)
-                          </span>
-                        </div>
+                    {/* Hard */}
+                    <div className="rounded-lg border border-gray-400 bg-background-200 py-2.5 px-4 flex items-center justify-between gap-3 transition-colors hover:bg-background-100">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                        <span className="text-xs font-medium text-gray-1000">Hard</span>
                       </div>
-                      <div className="h-2 w-full bg-gray-300 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-rose-500 rounded-full transition-all duration-1000 ease-out" 
-                          style={{ width: `${Math.min(100, Math.max(hardSolved > 0 ? 1.5 : 0, (hardSolved / totalHard) * 100))}%` }} 
-                        />
+                      <div className="text-xs font-mono text-gray-1000">
+                        <span className="font-semibold">{hardSolved}</span>
+                        <span className="text-gray-500 ml-0.5">/ {totalHard}</span>
                       </div>
                     </div>
 
+                    {/* Acceptance rate inline */}
+                    {acceptanceRate && (
+                      <div className="flex items-center justify-between text-[11px] font-mono text-gray-600 px-1 pt-1">
+                        <span>Acceptance</span>
+                        <span className="text-gray-1000 font-medium">{acceptanceRate}%</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1579,6 +1523,23 @@ export default function StudentDashboard() {
                 </div>
               </div>
 
+              {leetcode?.badges?.length > 0 && (
+                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                  <div className="flex items-center gap-2 border-b border-gray-400 pb-3">
+                    <Award className="w-4 h-4 text-[#ffa116]" />
+                    <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Earned Badges</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-4 pt-1">
+                    {leetcode.badges.map((b, i) => (
+                      <div key={i} className="flex flex-col items-center gap-2 p-3 rounded-lg border border-gray-400 bg-background-100/50 min-w-[80px] hover:bg-background-100 transition-colors">
+                        <img src={b.icon.startsWith('/') ? `https://leetcode.com${b.icon}` : b.icon} alt={b.displayName} className="w-10 h-10 object-contain drop-shadow-sm" />
+                        <span className="text-[10px] font-mono text-gray-700 text-center max-w-[100px] leading-tight">{b.displayName}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 
@@ -1689,12 +1650,18 @@ export default function StudentDashboard() {
                       <div
                         key={ev._id}
                         onClick={() => navigate(`/clubs/${ev.clubId?._id}`)}
-                        className="p-4 rounded-lg bg-background-100 border border-gray-400 flex flex-col justify-between cursor-pointer hover:border-gray-500 transition-colors"
+                        className="relative p-4 rounded-lg bg-background-100 border border-gray-400 flex flex-col justify-between cursor-pointer hover:border-gray-500 transition-colors"
                       >
+                        {getEventStatus(ev) === 'ONGOING' && (
+                          <div className="absolute top-3 right-3 flex h-2 w-2" title="Ongoing Now">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                          </div>
+                        )}
                         <div>
                           <div className="text-xs font-semibold text-gray-1000 truncate">{ev.title}</div>
                           <p className="text-[11px] text-gray-700 font-mono mt-1">
-                            {new Date(ev.date).toLocaleDateString()} at {ev.time}
+                            {new Date(ev.date).toLocaleDateString()} at {ev.time ? formatTime12h(ev.time) : 'TBA'}
                           </p>
                           <p className="text-[11px] text-gray-700 font-mono">{ev.venue}</p>
                         </div>
@@ -2005,7 +1972,7 @@ export default function StudentDashboard() {
           )}
 
         </div>
-      </main>
+
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden bg-background-100/95 backdrop-blur-md fixed bottom-0 w-full flex justify-around items-center h-14 border-t border-gray-400 z-40">
@@ -2246,6 +2213,6 @@ export default function StudentDashboard() {
           onClose={() => setSelectedPdfUrl(null)}
         />
       )}
-    </div>
+    </>
   );
 }

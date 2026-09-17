@@ -139,6 +139,51 @@ const UserSchema = new mongoose.Schema({
       issuedAt: { type: Date, default: Date.now }
     }],
     achievements: [mongoose.Schema.Types.Mixed]
+  },
+  profileCustomization: {
+    appearance: {
+      preset: {
+        type: String,
+        enum: ['geist', 'editorial', 'research', 'cyber', 'paper', 'brutalist', 'organic', 'luxury'],
+        default: 'geist'
+      },
+      accent: {
+        type: String,
+        enum: ['default', 'blue', 'violet', 'green', 'orange', 'rose', 'cyan'],
+        default: 'default'
+      },
+      cardStyle: {
+        type: String,
+        enum: ['default', 'glass', 'paper', 'outlined'],
+        default: 'default'
+      },
+      motion: {
+        type: String,
+        enum: ['none', 'subtle', 'interactive'],
+        default: 'subtle'
+      },
+      texture: {
+        type: String,
+        enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix'],
+        default: 'none'
+      }
+    },
+    visibility: {
+      showGithub: { type: Boolean, default: true },
+      showLeetcode: { type: Boolean, default: true },
+      showExperience: { type: Boolean, default: true },
+      showEducation: { type: Boolean, default: true },
+      showProjects: { type: Boolean, default: true },
+      showCertificates: { type: Boolean, default: true }
+    },
+    metricsPrivacy: {
+      githubHeatmap: { type: Boolean, default: true },
+      githubTotalStars: { type: Boolean, default: true },
+      leetcodeHeatmap: { type: Boolean, default: true },
+      leetcodeRank: { type: Boolean, default: true },
+      leetcodeAchievements: { type: Boolean, default: true },
+      cgpa: { type: Boolean, default: false }
+    }
   }
 }, { timestamps: true });
 
