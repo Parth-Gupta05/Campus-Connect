@@ -122,7 +122,8 @@ export default function SignIn() {
     setError('');
     setLoading(true);
     try {
-      const user = await login(identifier, password, rememberMe);
+      const trimmedIdentifier = identifier.trim();
+      const user = await login(trimmedIdentifier, password, rememberMe);
       showToast('Signed in successfully', 'success');
       if (user.role === 'admin') navigate('/admin');
       else if (user.role === 'club') navigate('/club');

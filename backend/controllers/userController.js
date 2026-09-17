@@ -40,16 +40,122 @@ const getPublicProfile = async (req, res) => {
     
     const user = await User.findOne({ uid: normalizedUid })
       .select('-password -resetOtp -verificationCode -pendingAchievements')
-      .populate('resumes');
+      .populate('resumes')
+      .lean();
       
     if (!user) {
       return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    // Enforce privacy settings server-side
+    const visibility = user.profileCustomization?.visibility || {
+      showGithub: true, showLeetcode: true, showExperience: true,
+      showEducation: true, showProjects: true, showCertificates: true
+    };
+    const metricsPrivacy = user.profileCustomization?.metricsPrivacy || {
+      githubHeatmap: true, githubTotalStars: true, leetcodeHeatmap: true,
+      leetcodeRank: true, cgpa: false
+    };
+
+    if (!metricsPrivacy.cgpa) {
+      delete user.cgpa;
+    }
+
+    // If Github section is completely hidden
+    if (!visibility.showGithub) {
+      delete user.githubUsername;
+      delete user.githubVerified;
+      if (user.scrapedData) delete user.scrapedData.github;
+    } else {
+      if (!metricsPrivacy.githubHeatmap && user.scrapedData?.github) {
+        delete user.scrapedData.github.heatmapData;
+      }
+      if (!metricsPrivacy.githubTotalStars && user.scrapedData?.github) {
+        delete user.scrapedData.github.stars;
+      }
+    }
+
+    // If Leetcode section is hidden
+    if (!visibility.showLeetcode) {
+      delete user.leetcodeUsername;
+      delete user.leetcodeVerified;
+      if (user.scrapedData) delete user.scrapedData.leetcode;
+    } else {
+      if (metricsPrivacy.leetcodeHeatmap === false && user.scrapedData?.leetcode) {
+        delete user.scrapedData.leetcode.heatmapData;
+      }
+      if (metricsPrivacy.leetcodeRank === false && user.scrapedData?.leetcode) {
+        delete user.scrapedData.leetcode.ranking;
+      }
+      if (metricsPrivacy.leetcodeAchievements === false && user.scrapedData?.leetcode) {
+        delete user.scrapedData.leetcode.profile;
+        delete user.scrapedData.leetcode.badges;
+        delete user.scrapedData.leetcode.contest;
+      }
+    }
+
+    // Resume details hiding
+    if (user.resumeDetails) {
+      if (!visibility.showExperience) delete user.resumeDetails.experience;
+      if (!visibility.showEducation) delete user.resumeDetails.education;
+      if (!visibility.showProjects) delete user.resumeDetails.projects;
+      if (!visibility.showCertificates) delete user.resumeDetails.certificates;
     }
 
     res.json(user);
   } catch (error) {
     console.error('Error fetching public profile:', error);
     res.status(500).json({ message: 'Server error fetching public profile' });
+  }
+};
+
+const updateProfileCustomization = async (req, res) => {
+  try {
+    const { appearance, visibility, metricsPrivacy } = req.body;
+    
+    // Explicit allowlist logic using $set to prevent accidental overwrites
+    const updatePayload = { $set: {} };
+    
+    // Appearance
+    if (appearance) {
+      if (appearance.preset !== undefined) updatePayload.$set['profileCustomization.appearance.preset'] = appearance.preset;
+      if (appearance.accent !== undefined) updatePayload.$set['profileCustomization.appearance.accent'] = appearance.accent;
+      if (appearance.cardStyle !== undefined) updatePayload.$set['profileCustomization.appearance.cardStyle'] = appearance.cardStyle;
+      if (appearance.motion !== undefined) updatePayload.$set['profileCustomization.appearance.motion'] = appearance.motion;
+      if (appearance.texture !== undefined) updatePayload.$set['profileCustomization.appearance.texture'] = appearance.texture;
+    }
+    
+    // Visibility
+    if (visibility) {
+      if (visibility.showGithub !== undefined) updatePayload.$set['profileCustomization.visibility.showGithub'] = visibility.showGithub;
+      if (visibility.showLeetcode !== undefined) updatePayload.$set['profileCustomization.visibility.showLeetcode'] = visibility.showLeetcode;
+      if (visibility.showExperience !== undefined) updatePayload.$set['profileCustomization.visibility.showExperience'] = visibility.showExperience;
+      if (visibility.showEducation !== undefined) updatePayload.$set['profileCustomization.visibility.showEducation'] = visibility.showEducation;
+      if (visibility.showProjects !== undefined) updatePayload.$set['profileCustomization.visibility.showProjects'] = visibility.showProjects;
+      if (visibility.showCertificates !== undefined) updatePayload.$set['profileCustomization.visibility.showCertificates'] = visibility.showCertificates;
+    }
+    
+    // Metrics Privacy
+    if (metricsPrivacy) {
+      if (metricsPrivacy.githubHeatmap !== undefined) updatePayload.$set['profileCustomization.metricsPrivacy.githubHeatmap'] = metricsPrivacy.githubHeatmap;
+      if (metricsPrivacy.githubTotalStars !== undefined) updatePayload.$set['profileCustomization.metricsPrivacy.githubTotalStars'] = metricsPrivacy.githubTotalStars;
+      if (metricsPrivacy.leetcodeHeatmap !== undefined) updatePayload.$set['profileCustomization.metricsPrivacy.leetcodeHeatmap'] = metricsPrivacy.leetcodeHeatmap;
+      if (metricsPrivacy.leetcodeRank !== undefined) updatePayload.$set['profileCustomization.metricsPrivacy.leetcodeRank'] = metricsPrivacy.leetcodeRank;
+      if (metricsPrivacy.leetcodeAchievements !== undefined) updatePayload.$set['profileCustomization.metricsPrivacy.leetcodeAchievements'] = metricsPrivacy.leetcodeAchievements;
+      if (metricsPrivacy.cgpa !== undefined) updatePayload.$set['profileCustomization.metricsPrivacy.cgpa'] = metricsPrivacy.cgpa;
+    }
+    
+    if (Object.keys(updatePayload.$set).length === 0) {
+      return res.status(400).json({ message: 'No valid properties provided to update.' });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, updatePayload, { returnDocument: 'after', runValidators: true }).select('profileCustomization');
+    if (!updatedUser) return res.status(404).json({ message: 'User not found' });
+    
+    res.json({ message: 'Profile customization updated', profileCustomization: updatedUser.profileCustomization });
+  } catch (error) {
+    console.error('Error updating profile customization:', error);
+    res.status(500).json({ message: 'Server error updating profile customization', error: error.message });
   }
 };
 
@@ -406,6 +512,9 @@ const getResumePdf = async (req, res) => {
   try {
     let targetUrl = req.query.url;
     if (!targetUrl) {
+      if (!req.user || !req.user.id) {
+        return res.status(401).send('Unauthorized. Please provide a URL or authenticate.');
+      }
       const studentId = req.query.studentId || req.user.id;
       const user = await User.findById(studentId);
       if (!user || !user.resumeUrl) {
@@ -616,5 +725,6 @@ module.exports = {
   getGithubHeatmap,
   verifyPlatform,
   generateVerificationCode,
-  searchUsers
+  searchUsers,
+  updateProfileCustomization
 };

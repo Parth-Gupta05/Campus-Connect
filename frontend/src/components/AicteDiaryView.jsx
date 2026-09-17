@@ -562,13 +562,13 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
       <div className="bg-white text-black w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
         
         {/* Modal Toolbar (hidden when printing) */}
-        <div className="print:hidden p-4 bg-gray-100 border-b border-gray-300 flex items-center justify-between">
+        <div className="print:hidden p-4 bg-gray-900 border-b border-gray-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Printer className="w-5 h-5 text-gray-800" />
-            <h3 className="font-bold text-gray-900 text-sm">
+            <Printer className="w-5 h-5 text-gray-300" />
+            <h3 className="font-bold text-white text-sm">
               Print Official AICTE Activity Diary Sheet
             </h3>
-            <span className="text-xs font-mono text-gray-600">
+            <span className="text-xs font-mono text-gray-400">
               (Matches Physical Booklet Layout)
             </span>
           </div>
@@ -576,14 +576,14 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-4 py-1.5 bg-black text-white text-xs font-medium rounded-md hover:bg-gray-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="px-4 py-1.5 bg-white text-black text-xs font-medium rounded-md hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print to PDF / Paper</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-600 hover:text-black rounded-md hover:bg-gray-200 transition-colors cursor-pointer"
+              className="p-1.5 text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -614,7 +614,7 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
               {/* 10-Row Activity Table */}
               <table className="w-full border-collapse border-2 border-black text-[11px]">
                 <thead>
-                  <tr className="bg-gray-100 text-center font-bold">
+                  <tr className="bg-[#f3f4f6] text-black text-center font-bold">
                     <th className="border border-black p-1.5 w-8">Sr. No</th>
                     <th className="border border-black p-1.5 w-20">Date</th>
                     <th className="border border-black p-1.5">Name of Activity</th>
@@ -652,7 +652,7 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
                   ))}
                   
                   {/* Total Hours Row */}
-                  <tr className="font-bold bg-gray-50">
+                  <tr className="font-bold bg-[#f9fafb] text-black">
                     <td colSpan="5" className="border border-black p-1.5 text-right uppercase">
                       Total Hours Achieved ({totalSelectedPoints} Points):
                     </td>
@@ -703,7 +703,7 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
               {/* 5-Row Description Table */}
               <table className="w-full border-collapse border-2 border-black text-[11px]">
                 <thead>
-                  <tr className="bg-gray-100 text-center font-bold">
+                  <tr className="bg-[#f3f4f6] text-black text-center font-bold">
                     <th className="border border-black p-1.5 w-8">Sr. No</th>
                     <th className="border border-black p-1.5 w-20">Date</th>
                     <th className="border border-black p-1.5 w-44">Name of Activity</th>

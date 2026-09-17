@@ -36,11 +36,21 @@ router.post('/', authMiddleware, clubMiddleware, async (req, res) => {
       venue,
       durationHours,
       aicteCategory,
-      activitySummary
+      activitySummary,
+      registrationDeadline
     } = req.body;
     
     if (!title || !date || !time) {
       return res.status(400).json({ message: 'Title, date, and time are required' });
+    }
+
+    const eventStartDateTime = new Date(date);
+    const [hours, minutes] = time.split(':');
+    eventStartDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+    let parsedDeadline = registrationDeadline ? new Date(registrationDeadline) : new Date(eventStartDateTime);
+    if (parsedDeadline > eventStartDateTime) {
+      return res.status(400).json({ message: 'Registration deadline cannot be after the event start time' });
     }
 
     const duration = Math.max(0.5, Number(durationHours) || 2);
@@ -82,6 +92,7 @@ router.post('/', authMiddleware, clubMiddleware, async (req, res) => {
       durationHours: duration,
       aicteCategory: category,
       activitySummary: activitySummary || '',
+      registrationDeadline: parsedDeadline,
       registeredStudents: coreRegistrations
     });
 
@@ -93,10 +104,112 @@ router.post('/', authMiddleware, clubMiddleware, async (req, res) => {
   }
 });
 
+// Edit Event (Club only)
+router.put('/:eventId', authMiddleware, clubMiddleware, async (req, res) => {
+  try {
+    const { 
+      title, 
+      description, 
+      posterImage, 
+      contactPerson, 
+      date, 
+      time, 
+      venue,
+      durationHours,
+      aicteCategory,
+      activitySummary,
+      registrationDeadline
+    } = req.body;
+    
+    if (!title || !date || !time) {
+      return res.status(400).json({ message: 'Title, date, and time are required' });
+    }
+
+    const event = await Event.findById(req.params.eventId);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    
+    if (event.clubId.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized for this event' });
+    }
+
+    if (event.certificatesIssued) {
+      // If certificates are issued, block core metadata edits to prevent mismatch
+      if (
+        new Date(date).toISOString() !== event.date.toISOString() ||
+        time !== event.time ||
+        title !== event.title ||
+        Number(durationHours || 2) !== event.durationHours ||
+        Number(aicteCategory || 5) !== event.aicteCategory
+      ) {
+        return res.status(400).json({ 
+          message: 'Certificates have already been issued for this event. Core details (Title, Date, Time, Duration, Category) cannot be modified.' 
+        });
+      }
+    }
+
+    const eventStartDateTime = new Date(date);
+    const [hours, minutes] = time.split(':');
+    eventStartDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+    let parsedDeadline = event.registrationDeadline;
+    if (registrationDeadline) {
+      parsedDeadline = new Date(registrationDeadline);
+      if (parsedDeadline > eventStartDateTime) {
+        return res.status(400).json({ message: 'Registration deadline cannot be after the event starts' });
+      }
+    } else {
+      parsedDeadline = eventStartDateTime;
+    }
+
+    // Reset status to upcoming if pushed to the future and currently completed/ongoing
+    if (eventStartDateTime > new Date() && event.status !== 'upcoming') {
+      event.status = 'upcoming';
+    }
+
+    // Check if AICTE recalculation is needed
+    const newDuration = Number(durationHours) || 2;
+    const newCategory = Number(aicteCategory) || 5;
+    const needsAicteRecalc = (
+      event.registeredStudents.length > 0 &&
+      (newDuration !== event.durationHours || newCategory !== event.aicteCategory)
+    );
+
+    // Update fields
+    event.title = title;
+    event.description = description;
+    event.posterImage = posterImage;
+    event.contactPerson = contactPerson;
+    event.date = date;
+    event.time = time;
+    event.venue = venue;
+    event.durationHours = newDuration;
+    event.aicteCategory = newCategory;
+    event.activitySummary = activitySummary || '';
+    event.registrationDeadline = parsedDeadline;
+
+    if (needsAicteRecalc) {
+      event.registeredStudents.forEach(student => {
+        if (student.attendanceStatus === 'present') {
+          // Recalculate based on new duration/tier
+          const pointCalc = calculateAictePoints(event.durationHours, student.tier || 'Member');
+          student.aicteHours = pointCalc.recordedHours;
+          student.aictePoints = pointCalc.points;
+        }
+      });
+    }
+
+    await event.save();
+    res.json({ message: 'Event updated successfully', event });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get club's own events (Club only)
 router.get('/club', authMiddleware, clubMiddleware, async (req, res) => {
   try {
-    const events = await Event.find({ clubId: req.user.id }).sort({ date: 1 });
+    const events = await Event.find({ clubId: req.user.id }).sort({ date: -1 });
     res.json(events);
   } catch (error) {
     console.error(error);
@@ -108,6 +221,13 @@ router.get('/club', authMiddleware, clubMiddleware, async (req, res) => {
 router.get('/public', authMiddleware, async (req, res) => {
   try {
     const query = { status: 'upcoming' };
+    if (req.query.status) {
+      if (req.query.status === 'all') {
+        delete query.status;
+      } else {
+        query.status = req.query.status;
+      }
+    }
     if (req.query.clubId) {
       query.clubId = req.query.clubId;
     }
@@ -171,8 +291,22 @@ router.post('/:eventId/register', authMiddleware, async (req, res) => {
     const event = await Event.findById(req.params.eventId);
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    if (event.status !== 'upcoming') {
-      return res.status(400).json({ message: 'Can only register for upcoming events' });
+    if (event.status === 'completed') {
+      return res.status(400).json({ message: 'Cannot register for completed events' });
+    }
+
+    const now = new Date();
+    let deadline = event.registrationDeadline;
+    
+    // Fallback for older events that don't have a registrationDeadline set
+    if (!deadline) {
+      deadline = new Date(event.date);
+      const [h, m] = event.time.split(':');
+      deadline.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+    }
+
+    if (now > new Date(deadline)) {
+      return res.status(400).json({ message: 'Registration for this event has closed' });
     }
 
     const alreadyRegistered = event.registeredStudents.some(

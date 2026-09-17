@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
 import ImageCropperModal from '../components/ImageCropperModal';
 import PdfViewerModal from '../components/PdfViewerModal';
 import { AuthContext } from '../context/AuthContext';
@@ -991,10 +989,10 @@ export default function StudentProfile() {
   const [linkingOtp, setLinkingOtp] = useState('');
 
   const handleLinkAccount = async () => {
-    if (!linkingInput) return;
+    if (!linkingInput || !linkingInput.trim()) return;
     setLinkingLoading(true);
     try {
-      const resp = await axios.post('/auth/link-account', { identifier: linkingInput });
+      const resp = await axios.post('/auth/link-account', { identifier: linkingInput.trim() });
       if (resp.data.requiresOtp) {
         setLinkingOtpRequired(true);
         showToast('OTP sent to your email', 'success');
@@ -1013,10 +1011,10 @@ export default function StudentProfile() {
   };
 
   const handleVerifyOtp = async () => {
-    if (!linkingOtp) return;
+    if (!linkingOtp || !linkingOtp.trim()) return;
     setLinkingLoading(true);
     try {
-      await axios.post('/auth/verify-link-otp', { otp: linkingOtp });
+      await axios.post('/auth/verify-link-otp', { otp: linkingOtp.trim() });
       const res = await axios.get('/user/profile');
       setProfile(res.data);
       setLinkingAccount(null);
@@ -1143,28 +1141,22 @@ export default function StudentProfile() {
 
   if (loading) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans">
-        <Sidebar />
-        <main className="flex-1 relative">
-          <div className="hidden md:flex bg-background-100 border-b border-gray-400 h-14 w-full" />
-          <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
-            <div className="h-8 w-48 bg-gray-200 animate-pulse rounded-md" />
-            <div className="h-36 w-full bg-gray-200 animate-pulse rounded-xl" />
-            <div className="h-64 w-full bg-gray-200 animate-pulse rounded-xl" />
-          </div>
-        </main>
+      <div className="flex-1 relative">
+        <div className="hidden md:flex bg-background-100 border-b border-gray-400 h-14 w-full" />
+        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
+          <div className="h-8 w-48 bg-gray-200 animate-pulse rounded-md" />
+          <div className="h-36 w-full bg-gray-200 animate-pulse rounded-xl" />
+          <div className="h-64 w-full bg-gray-200 animate-pulse rounded-xl" />
+        </div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans">
-        <Sidebar />
-        <main className="flex-1 flex justify-center items-center p-8 text-xs font-mono text-gray-600">
-          Profile not found or error loading data.
-        </main>
-      </div>
+      <main className="flex-1 flex justify-center items-center p-8 text-xs font-mono text-gray-600">
+        Profile not found or error loading data.
+      </main>
     );
   }
 
@@ -1220,8 +1212,7 @@ export default function StudentProfile() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
-      <Sidebar />
+    <>
       
       {/* Onboarding Overlay if profile incomplete */}
       {(!profile.isProfileComplete || !profile.email || !profile.uid) && (
@@ -1480,7 +1471,6 @@ export default function StudentProfile() {
 
       {/* Main Container */}
       <main className="flex-1 min-w-0">
-        <Topbar />
 
         <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8">
           
@@ -2058,8 +2048,26 @@ export default function StudentProfile() {
                       <div className="space-y-2">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center font-bold text-xs text-gray-1000 shrink-0">
-                              {post.company?.name?.charAt(0) || 'C'}
+                            <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 p-1 flex items-center justify-center font-bold text-xs text-gray-1000 shrink-0 overflow-hidden shadow-2xs">
+                              {post.company?.logoUrl || post.company?.name ? (
+                                <>
+                                  <img 
+                                    src={post.company?.logoUrl || `https://logo.clearbit.com/${post.company.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`} 
+                                    alt={post.company?.name} 
+                                    className="w-full h-full object-contain" 
+                                    onError={(e) => {
+                                      e.target.onerror = null;
+                                      e.target.style.display = 'none';
+                                      if (e.target.nextSibling) e.target.nextSibling.style.display = 'inline';
+                                    }}
+                                  />
+                                  <span className="hidden">
+                                    {post.company?.name?.charAt(0)?.toUpperCase() || 'C'}
+                                  </span>
+                                </>
+                              ) : (
+                                post.company?.name?.charAt(0)?.toUpperCase() || 'C'
+                              )}
                             </div>
                             <div className="truncate">
                               <h3 className="text-xs font-semibold text-gray-1000 truncate">{post.company?.name}</h3>
@@ -2268,6 +2276,6 @@ export default function StudentProfile() {
 
         </div>
       </main>
-    </div>
+    </>
   );
 }

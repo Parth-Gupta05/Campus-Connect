@@ -4,8 +4,13 @@ import { Search, Bell, Loader2 } from 'lucide-react';
 import ThemeSwitcher from './ui/ThemeSwitcher';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { useContext } from 'react';
 
 export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
+  const { user } = useContext(AuthContext);
+  const isAuthenticated = !!user;
+
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   
@@ -123,25 +128,29 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
         <div className="flex items-center gap-2 sm:gap-3">
           <ThemeSwitcher small={true} />
 
-          <button 
-            onClick={() => setIsNotificationOpen(true)} 
-            aria-label="View notifications"
-            className="relative flex items-center justify-center p-2 hover:bg-gray-200 rounded-md transition-colors text-gray-900 hover:text-gray-1000 cursor-pointer"
-          >
-            <Bell className="w-4 h-4" strokeWidth={1.5} />
-            {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-background-100" />
-            )}
-          </button>
+          {isAuthenticated && (
+            <button 
+              onClick={() => setIsNotificationOpen(true)} 
+              aria-label="View notifications"
+              className="relative flex items-center justify-center p-2 hover:bg-gray-200 rounded-md transition-colors text-gray-900 hover:text-gray-1000 cursor-pointer"
+            >
+              <Bell className="w-4 h-4" strokeWidth={1.5} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-background-100" />
+              )}
+            </button>
+          )}
         </div>
       </header>
 
-      <NotificationSidebar 
-        isOpen={isNotificationOpen} 
-        onClose={() => setIsNotificationOpen(false)}
-        unreadCount={unreadCount}
-        setUnreadCount={setUnreadCount}
-      />
+      {isAuthenticated && (
+        <NotificationSidebar 
+          isOpen={isNotificationOpen} 
+          onClose={() => setIsNotificationOpen(false)}
+          unreadCount={unreadCount}
+          setUnreadCount={setUnreadCount}
+        />
+      )}
     </>
   );
 }

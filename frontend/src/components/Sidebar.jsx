@@ -15,7 +15,8 @@ import {
   BarChart3, 
   LogOut, 
   PanelLeft,
-  Loader2
+  Loader2,
+  Palette
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -127,6 +128,7 @@ export default function Sidebar() {
   const studentLinks = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { name: 'Profile', icon: User, path: '/profile' },
+    { name: 'Appearance', icon: Palette, path: '/appearance' },
     { name: 'Placements', icon: Award, path: '/placements' },
     { name: 'Clubs', icon: Users, path: '/clubs' },
     { name: 'Opportunities', icon: Compass, path: '/opportunities' },

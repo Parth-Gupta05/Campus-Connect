@@ -36,13 +36,15 @@ export default function SignUp() {
     e.preventDefault();
     setError('');
 
+    const trimmedIdentifier = identifier.trim();
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    if (!identifier.includes('@')) {
-      const match = identifier.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
+    if (!trimmedIdentifier.includes('@')) {
+      const match = trimmedIdentifier.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
       if (!match) {
         setError('Invalid UID format. Expected format: 23-COMPA10-27');
         return;
@@ -53,12 +55,12 @@ export default function SignUp() {
 
     try {
       await axios.post('/auth/register', {
-        identifier,
+        identifier: trimmedIdentifier,
         password,
         role: 'student'
       });
 
-      await login(identifier, password, false);
+      await login(trimmedIdentifier, password, false);
       showToast('Account created successfully!', 'success');
       navigate('/dashboard');
     } catch (err) {

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
 import PageHeader from '../components/ui/PageHeader';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -15,6 +13,7 @@ import {
   Megaphone,
   Search,
   X,
+  AlertCircle,
   RotateCw,
   ShieldCheck,
   ArrowRight,
@@ -26,6 +25,7 @@ import {
   ExternalLink,
   ChevronRight
 } from 'lucide-react';
+import { isRegistrationOpen, getEventStatus, formatTime12h } from '../utils/eventUtils';
 
 export default function Events() {
   const { user } = useContext(AuthContext);
@@ -257,11 +257,8 @@ export default function Events() {
   }, [selectedEventForPass, selectedEventForDetail]);
 
   return (
-    <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
-      <Sidebar />
-      <main className={`flex-1 min-w-0 bg-background-100 ${selectedEventForPass || selectedEventForDetail ? 'overflow-hidden' : ''}`}>
-        <Topbar />
-
+    <>
+      <div className={`flex-1 min-w-0 bg-background-100 ${selectedEventForPass || selectedEventForDetail ? 'overflow-hidden' : ''}`}>
         <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
           {/* Standardized Level 1 & 2 Page Header with Scope Tabs */}
           <PageHeader
@@ -468,8 +465,8 @@ export default function Events() {
                           )}
 
                           {/* Floating Top-Left Date Pill */}
-                          <div className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background-100/90 backdrop-blur-xs border border-gray-400 shadow-2xs flex items-center gap-1.5 text-[11px] font-mono font-medium text-gray-1000">
-                            <Calendar className="w-3 h-3 text-gray-700" />
+                          <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-1.5 text-[11px] font-mono font-semibold text-white">
+                            <Calendar className="w-3 h-3 text-white/80" />
                             <span>{eventDateStr}</span>
                           </div>
 
@@ -525,12 +522,20 @@ export default function Events() {
                           <div className="space-y-1 text-xs text-gray-600 font-sans">
                             <div className="flex items-center gap-1.5">
                               <Clock className="w-3.5 h-3.5 text-gray-600 shrink-0" />
-                              <span className="font-mono text-[11px] text-gray-700">{ev.time}</span>
+                              <span className="font-mono text-[11px] text-gray-700">{formatTime12h(ev.time)}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                               <MapPin className="w-3.5 h-3.5 text-gray-600 shrink-0" />
                               <span className="line-clamp-1">{ev.venue || 'Campus Venue TBA'}</span>
                             </div>
+                            {ev.registrationDeadline && (
+                              <div className="flex items-center gap-1.5">
+                                <AlertCircle className="w-3.5 h-3.5 text-orange-600 shrink-0" />
+                                <span className="font-mono text-[11px] text-gray-700">
+                                  Reg. Deadline: {new Date(ev.registrationDeadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           {/* Description Snippet */}
@@ -563,14 +568,20 @@ export default function Events() {
                             <button
                               type="button"
                               onClick={() => handleRegister(ev)}
-                              disabled={isRegistering}
-                              className="flex-1 h-9 px-3 rounded-lg bg-gray-1000 text-background-100 hover:opacity-90 disabled:opacity-50 text-xs font-medium shadow-2xs flex items-center justify-center gap-1.5 transition-opacity cursor-pointer"
+                              disabled={isRegistering || !isRegistrationOpen(ev)}
+                              className={`flex-1 h-9 px-3 rounded-lg text-xs font-medium shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                isRegistrationOpen(ev) 
+                                  ? 'bg-gray-1000 text-background-100 hover:opacity-90 disabled:opacity-50'
+                                  : 'bg-background-200 text-gray-500 border border-gray-400 cursor-not-allowed opacity-70'
+                              }`}
                             >
                               {isRegistering ? (
                                 <>
                                   <RotateCw className="w-3.5 h-3.5 animate-spin" />
                                   <span>Registering...</span>
                                 </>
+                              ) : !isRegistrationOpen(ev) ? (
+                                <span>Registration Closed</span>
                               ) : (
                                 <>
                                   <span>Register Now</span>
@@ -631,7 +642,7 @@ export default function Events() {
             )
           )}
         </div>
-      </main>
+      </div>
 
       {/* ======================================================== */}
       {/* 1. DIGITAL PASS & QR CODE MODAL                          */}
@@ -723,7 +734,7 @@ export default function Events() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Time & Venue:</span>
                   <span className="text-gray-1000">
-                    {selectedEventForPass.time} • {selectedEventForPass.venue}
+                    {formatTime12h(selectedEventForPass.time)} • {selectedEventForPass.venue}
                   </span>
                 </div>
               </div>
@@ -820,7 +831,7 @@ export default function Events() {
                     <Clock className="w-3 h-3" /> Time
                   </span>
                   <p className="font-semibold text-gray-1000 font-mono">
-                    {selectedEventForDetail.time}
+                    {formatTime12h(selectedEventForDetail.time)}
                   </p>
                 </div>
 
@@ -896,11 +907,21 @@ export default function Events() {
                       handleRegister(selectedEventForDetail);
                       setSelectedEventForDetail(null);
                     }}
-                    disabled={registeringEventId === selectedEventForDetail._id}
-                    className="h-9 px-4 rounded-lg bg-gray-1000 text-background-100 text-xs font-semibold hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5 shadow-2xs transition-opacity cursor-pointer"
+                    disabled={registeringEventId === selectedEventForDetail._id || !isRegistrationOpen(selectedEventForDetail)}
+                    className={`h-9 px-4 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
+                      isRegistrationOpen(selectedEventForDetail)
+                        ? 'bg-gray-1000 text-background-100 hover:opacity-90 disabled:opacity-50'
+                        : 'bg-background-200 text-gray-500 border border-gray-400 cursor-not-allowed opacity-70'
+                    }`}
                   >
-                    <span>Register for Event</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    {!isRegistrationOpen(selectedEventForDetail) ? (
+                      <span>Registration Closed</span>
+                    ) : (
+                      <>
+                        <span>Register for Event</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </button>
                 );
               })()}
@@ -908,6 +929,6 @@ export default function Events() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

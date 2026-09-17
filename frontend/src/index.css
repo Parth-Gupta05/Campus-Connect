@@ -483,6 +483,129 @@ body {
   .reveal-init {
     opacity: 1 !important;
     transform: none !important;
-    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   V1 Profile Preset Architecture
+   ========================================================================== */
+
+.profile-theme-root {
+  background-color: var(--profile-bg);
+  color: var(--profile-text);
+  min-height: 100vh;
+  position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.profile-card {
+  background-color: var(--profile-card-bg);
+  border: 1px solid var(--profile-card-border);
+  box-shadow: var(--profile-shadow);
+  border-radius: var(--profile-radius);
+  color: var(--profile-text);
+  backdrop-filter: var(--profile-backdrop-filter, none);
+  -webkit-backdrop-filter: var(--profile-backdrop-filter, none);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-text-muted {
+  color: var(--profile-muted-text);
+}
+
+.profile-accent-text {
+  color: var(--profile-accent);
+}
+
+.profile-accent-bg {
+  background-color: var(--profile-accent);
+}
+
+.profile-pattern-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--profile-pattern-opacity, 0);
+  background-image: var(--profile-pattern-url, none);
+  background-size: var(--profile-pattern-size, auto);
+  background-repeat: repeat;
+  transition: opacity 0.3s ease;
+}
+
+/* --- Motion Rules --- */
+.motion-subtle .profile-card,
+.motion-interactive .profile-card {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.motion-subtle .profile-card:hover {
+  transform: translateY(-2px);
+}
+
+.motion-interactive .profile-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--profile-accent) 40%, transparent);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--profile-accent) 15%, transparent);
+}
+
+/* Preset Specific Overrides for Interactive Hover */
+.preset-brutalist.motion-interactive .profile-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 8px 8px 0px #000000;
+  border-color: #000000;
+}
+
+.preset-cyber.motion-interactive .profile-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--profile-accent);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--profile-accent) 40%, transparent);
+}
+
+.preset-research.motion-interactive .profile-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--profile-accent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--profile-accent) 10%, transparent);
+}
+
+.motion-interactive .profile-card:active {
+  transform: translateY(0) scale(0.99);
+  transition: transform 0.1s ease;
+}
+
+/* Preset Specific Overrides for Interactive Active (Click) */
+.preset-brutalist.motion-interactive .profile-card:active {
+  transform: translate(0, 0) scale(0.995);
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.motion-subtle .profile-theme-root a:hover,
+.motion-subtle .profile-theme-root button:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+.motion-interactive .profile-theme-root a:hover,
+.motion-interactive .profile-theme-root button:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.motion-interactive .profile-theme-root a:active,
+.motion-interactive .profile-theme-root button:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-subtle .profile-card:hover,
+  .motion-interactive .profile-card:hover,
+  .motion-subtle .profile-theme-root a:hover,
+  .motion-subtle .profile-theme-root button:hover,
+  .motion-interactive .profile-theme-root a:hover,
+  .motion-interactive .profile-theme-root button:hover,
+  .motion-interactive .profile-theme-root a:active,
+  .motion-interactive .profile-theme-root button:active {
+    transform: none !important;
   }
 }

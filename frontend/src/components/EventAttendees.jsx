@@ -749,7 +749,7 @@ export default function EventAttendees({ eventId, onClose, isEventCompleted }) {
                             <Award className="w-3.5 h-3.5 text-amber-500" />
                             <span>Issued ✓</span>
                           </button>
-                        ) : (
+                        ) : s.attendanceStatus === 'present' ? (
                           <label 
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono text-gray-600 hover:text-gray-1000 border border-dashed border-gray-400 hover:border-gray-600 transition-colors cursor-pointer ${
                               singleUploadingId === (s.studentId?._id || s.studentId) ? 'opacity-50 pointer-events-none' : ''
@@ -769,6 +769,8 @@ export default function EventAttendees({ eventId, onClose, isEventCompleted }) {
                               onChange={(e) => e.target.files[0] && handleSingleCertUpload(s.studentId?._id || s.studentId, e.target.files[0])}
                             />
                           </label>
+                        ) : (
+                          <span className="text-gray-400 font-mono text-xs" title="Student must be present to receive a certificate">—</span>
                         )}
                       </td>
 

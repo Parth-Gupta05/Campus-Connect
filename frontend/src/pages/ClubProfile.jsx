@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
 import { useToast } from '../context/ToastContext';
 import { AuthContext } from '../context/AuthContext';
 import {
@@ -23,6 +21,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { FiInstagram, FiLinkedin, FiFacebook } from 'react-icons/fi';
+import { getEventStatus, isRegistrationOpen, formatTime12h } from '../utils/eventUtils';
 
 export default function ClubProfile() {
   const { user } = useContext(AuthContext);
@@ -36,6 +35,14 @@ export default function ClubProfile() {
 
   // Registration Modal State
   const [selectedEvent, setSelectedEvent] = useState(null);
+  
+  // Events Tab State
+  const [activeEventTab, setActiveEventTab] = useState('upcoming');
+
+  // Derived Events
+  const upcomingEvents = events.filter(e => e.status === 'upcoming' || e.status === 'ongoing');
+  const pastEvents = events.filter(e => e.status === 'completed');
+  const displayEvents = activeEventTab === 'upcoming' ? upcomingEvents : pastEvents;
 
   useEffect(() => {
     const fetchClubData = async () => {
@@ -43,7 +50,7 @@ export default function ClubProfile() {
         setLoading(true);
         const [clubRes, eventsRes, announcementsRes] = await Promise.all([
           axios.get(`/clubs/${id}`),
-          axios.get(`/events/public?clubId=${id}`),
+          axios.get(`/events/public?clubId=${id}&status=all`),
           axios.get('/clubs/announcements/public')
         ]);
         setClub(clubRes.data);
@@ -124,15 +131,11 @@ export default function ClubProfile() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <Topbar />
-          <div className="flex-1 flex items-center justify-center p-12">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-gray-800" />
-              <p className="text-xs font-mono text-gray-600">Loading organization details...</p>
-            </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex items-center justify-center p-12">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-800" />
+            <p className="text-xs font-mono text-gray-600">Loading organization details...</p>
           </div>
         </div>
       </div>
@@ -141,27 +144,23 @@ export default function ClubProfile() {
 
   if (!club) {
     return (
-      <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <Topbar />
-          <div className="flex-1 flex items-center justify-center p-12">
-            <div className="bg-background-100 border border-dashed border-gray-400 rounded-2xl p-12 text-center max-w-md shadow-2xs space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-background-200 border border-gray-400 text-gray-700 mx-auto flex items-center justify-center">
-                <Building2 className="w-5 h-5" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-gray-1000">Club Not Found</h3>
-                <p className="text-xs text-gray-700">The organization you are looking for does not exist or has been removed.</p>
-              </div>
-              <Link
-                to="/clubs"
-                className="inline-flex items-center gap-2 h-8 px-4 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Return to Clubs</span>
-              </Link>
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex items-center justify-center p-12">
+          <div className="bg-background-100 border border-dashed border-gray-400 rounded-2xl p-12 text-center max-w-md shadow-2xs space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-background-200 border border-gray-400 text-gray-700 mx-auto flex items-center justify-center">
+              <Building2 className="w-5 h-5" />
             </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-gray-1000">Club Not Found</h3>
+              <p className="text-xs text-gray-700">The organization you are looking for does not exist or has been removed.</p>
+            </div>
+            <Link
+              to="/clubs"
+              className="inline-flex items-center gap-2 h-8 px-4 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Clubs</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -169,10 +168,7 @@ export default function ClubProfile() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
-      <Sidebar />
-      <main className={`flex-1 min-w-0 bg-background-100 pb-16 ${selectedEvent ? 'overflow-hidden' : ''}`}>
-        <Topbar />
+      <div className={`flex-1 min-w-0 bg-background-100 pb-16 ${selectedEvent ? 'overflow-hidden' : ''}`}>
 
         {/* Top Breadcrumb & Actions Bar */}
         <div className="border-b border-gray-400 bg-background-100/80 backdrop-blur-xs sticky top-14 z-30 px-4 sm:px-8 py-2.5">
@@ -328,36 +324,66 @@ export default function ClubProfile() {
 
             {/* 2-Column Content Grid: Events & Announcements / Members */}
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Left Column: Upcoming Events (7 cols) */}
+              {/* Left Column: Events (7 cols) */}
               <div className="lg:col-span-7 space-y-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-600" />
-                    <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-gray-1000">
-                      Upcoming Events
-                    </h2>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-600" />
+                      <h2 className="text-sm font-bold uppercase tracking-wider font-mono text-gray-1000">
+                        Events
+                      </h2>
+                    </div>
+                    
+                    {/* Tab Switcher */}
+                    <div className="flex items-center bg-background-200 border border-gray-400 rounded-md p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setActiveEventTab('upcoming')}
+                        className={`px-3 py-1 text-[11px] font-medium font-mono rounded-sm transition-colors cursor-pointer ${
+                          activeEventTab === 'upcoming'
+                            ? 'bg-background-100 shadow-xs text-gray-1000'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        Upcoming
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveEventTab('past')}
+                        className={`px-3 py-1 text-[11px] font-medium font-mono rounded-sm transition-colors cursor-pointer ${
+                          activeEventTab === 'past'
+                            ? 'bg-background-100 shadow-xs text-gray-1000'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        Past
+                      </button>
+                    </div>
                   </div>
+                  
                   <span className="text-xs font-mono text-gray-600">
-                    {events.length} {events.length === 1 ? 'Event' : 'Events'}
+                    {displayEvents.length} {displayEvents.length === 1 ? 'Event' : 'Events'}
                   </span>
                 </div>
 
-                {events.length === 0 ? (
+                {displayEvents.length === 0 ? (
                   <div className="bg-background-100 border border-dashed border-gray-400 rounded-xl p-8 text-center space-y-2 shadow-2xs">
                     <Calendar className="w-8 h-8 text-gray-500 mx-auto" />
                     <p className="text-xs text-gray-700 font-sans">
-                      No upcoming events scheduled right now. Check back soon!
+                      {activeEventTab === 'upcoming' 
+                        ? 'No upcoming events scheduled right now. Check back soon!' 
+                        : 'No past events found.'}
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {events.map((ev) => {
-                      const isRegistered = ev.registeredStudents?.some(
-                        (s) =>
-                          s.studentId === user?._id ||
-                          s.studentId?._id === user?._id ||
-                          s.studentId === user?.id
-                      );
+                    {displayEvents.map((ev) => {
+                      const isRegistered = ev.registeredStudents?.some((s) => {
+                        const sId = typeof s.studentId === 'object' ? s.studentId?._id : s.studentId;
+                        const uId = user?._id || user?.id;
+                        return sId && uId && sId === uId;
+                      });
 
                       return (
                         <div
@@ -388,7 +414,7 @@ export default function ClubProfile() {
                                 {ev.time && (
                                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-gray-700 bg-background-200 border border-gray-400 px-2 py-0.5 rounded">
                                     <Clock className="w-3 h-3 text-gray-600" />
-                                    {ev.time}
+                                    {formatTime12h(ev.time)}
                                   </span>
                                 )}
                                 {ev.venue && (
@@ -407,13 +433,17 @@ export default function ClubProfile() {
                               </p>
                             </div>
 
-                            {/* Registration Button */}
+                            {/* Registration Button / Status */}
                             <div className="pt-2 border-t border-gray-400 flex items-center justify-between">
                               <span className="text-[11px] font-mono text-gray-600">
                                 {ev.registeredStudents?.length || 0} Attendees
                               </span>
 
-                              {isRegistered ? (
+                              {getEventStatus(ev) === 'COMPLETED' ? (
+                                <span className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-md bg-background-200 border border-gray-400 text-xs font-medium text-gray-600">
+                                  <span>Completed</span>
+                                </span>
+                              ) : isRegistered ? (
                                 <span className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-md bg-background-200 border border-gray-400 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   <span>Registered</span>
@@ -422,9 +452,14 @@ export default function ClubProfile() {
                                 <button
                                   type="button"
                                   onClick={() => setSelectedEvent(ev)}
-                                  className="h-8 px-4 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity shadow-xs cursor-pointer flex items-center gap-1.5"
+                                  disabled={!isRegistrationOpen(ev)}
+                                  className={`h-8 px-4 rounded-md text-xs font-medium transition-opacity shadow-xs flex items-center gap-1.5 ${
+                                    isRegistrationOpen(ev)
+                                      ? 'bg-gray-1000 text-background-100 hover:opacity-90 cursor-pointer'
+                                      : 'bg-background-200 text-gray-500 border border-gray-400 cursor-not-allowed opacity-70'
+                                  }`}
                                 >
-                                  <span>Register Now</span>
+                                  {!isRegistrationOpen(ev) ? <span>Registration Closed</span> : <span>Register Now</span>}
                                 </button>
                               )}
                             </div>
@@ -594,7 +629,7 @@ export default function ClubProfile() {
                     {selectedEvent.time && (
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3 text-gray-600" />
-                        {selectedEvent.time}
+                        {formatTime12h(selectedEvent.time)}
                       </span>
                     )}
                     {selectedEvent.venue && (
@@ -619,23 +654,31 @@ export default function ClubProfile() {
                   <button
                     type="button"
                     onClick={handleRegister}
-                    disabled={registering}
-                    className="h-9 px-5 rounded-lg bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity flex items-center justify-center gap-1.5 shadow-2xs disabled:opacity-50 cursor-pointer"
+                    disabled={registering || !isRegistrationOpen(selectedEvent)}
+                    className={`h-9 px-5 rounded-lg text-xs font-medium transition-opacity flex items-center justify-center gap-1.5 shadow-2xs disabled:opacity-50 ${
+                      isRegistrationOpen(selectedEvent)
+                        ? 'bg-gray-1000 text-background-100 hover:opacity-90 cursor-pointer'
+                        : 'bg-background-200 text-gray-500 border border-gray-400 cursor-not-allowed opacity-70'
+                    }`}
                   >
                     {registering ? (
                       <>
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         <span>Registering...</span>
                       </>
+                    ) : !isRegistrationOpen(selectedEvent) ? (
+                      <span>Registration Closed</span>
                     ) : (
-                      <span>Confirm Registration</span>
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Confirm Registration</span>
+                      </>
                     )}
                   </button>
                 </div>
               </div>
             </div>
           )}
-        </main>
-    </div>
+      </div>
   );
 }

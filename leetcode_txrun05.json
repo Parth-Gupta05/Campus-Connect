@@ -1,0 +1,339 @@
+{
+  "data": {
+    "allQuestionsCount": [
+      {
+        "difficulty": "All",
+        "count": 4055
+      },
+      {
+        "difficulty": "Easy",
+        "count": 965
+      },
+      {
+        "difficulty": "Medium",
+        "count": 2115
+      },
+      {
+        "difficulty": "Hard",
+        "count": 975
+      }
+    ],
+    "matchedUser": {
+      "username": "txrun05",
+      "githubUrl": "https://github.com/T4RuN05",
+      "linkedinUrl": "https://linkedin.com/in/tarun-asthana",
+      "profile": {
+        "realName": "Tarun Asthana",
+        "aboutMe": "",
+        "userAvatar": "https://assets.leetcode.com/users/Tarun_Asthana/avatar_1768763487.png",
+        "reputation": 0,
+        "ranking": 2150652,
+        "school": null,
+        "countryName": "India",
+        "company": null,
+        "skillTags": [],
+        "postViewCount": 0,
+        "postViewCountDiff": 0,
+        "reputationDiff": 0,
+        "solutionCount": 0,
+        "categoryDiscussCount": 0
+      },
+      "submitStats": {
+        "acSubmissionNum": [
+          {
+            "difficulty": "All",
+            "count": 71,
+            "submissions": 96
+          },
+          {
+            "difficulty": "Easy",
+            "count": 48,
+            "submissions": 63
+          },
+          {
+            "difficulty": "Medium",
+            "count": 21,
+            "submissions": 31
+          },
+          {
+            "difficulty": "Hard",
+            "count": 2,
+            "submissions": 2
+          }
+        ],
+        "totalSubmissionNum": [
+          {
+            "difficulty": "All",
+            "count": 72,
+            "submissions": 143
+          },
+          {
+            "difficulty": "Easy",
+            "count": 48,
+            "submissions": 85
+          },
+          {
+            "difficulty": "Medium",
+            "count": 22,
+            "submissions": 54
+          },
+          {
+            "difficulty": "Hard",
+            "count": 2,
+            "submissions": 4
+          }
+        ]
+      },
+      "badges": [],
+      "userCalendar": {
+        "streak": 3,
+        "totalActiveDays": 32,
+        "submissionCalendar": "{\"1770076800\": 1, \"1771632000\": 1, \"1774310400\": 4, \"1775260800\": 1, \"1775779200\": 3, \"1775865600\": 2, \"1776902400\": 2, \"1778544000\": 7, \"1780876800\": 1, \"1781049600\": 7, \"1781308800\": 8, \"1784160000\": 4, \"1784332800\": 3, \"1784505600\": 7, \"1784678400\": 5, \"1784764800\": 5, \"1784937600\": 6, \"1785024000\": 3, \"1785110400\": 1, \"1785283200\": 7, \"1785369600\": 4, \"1785542400\": 10, \"1785888000\": 1, \"1785974400\": 5, \"1786060800\": 2, \"1786320000\": 12, \"1786406400\": 3, \"1786752000\": 5, \"1787184000\": 2, \"1787270400\": 6, \"1788739200\": 8, \"1788825600\": 7}"
+      },
+      "languageProblemCount": [
+        {
+          "languageName": "C++",
+          "problemsSolved": 58
+        },
+        {
+          "languageName": "MySQL",
+          "problemsSolved": 13
+        }
+      ]
+    },
+    "userContestRanking": null,
+    "userContestRankingHistory": [],
+    "recentSubmissionList": [
+      {
+        "title": "Binary Tree Postorder Traversal",
+        "titleSlug": "binary-tree-postorder-traversal",
+        "timestamp": "1788901371",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Preorder Traversal",
+        "titleSlug": "binary-tree-preorder-traversal",
+        "timestamp": "1788901218",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Symmetric Tree",
+        "titleSlug": "symmetric-tree",
+        "timestamp": "1788900106",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Binary Tree Inorder Traversal",
+        "titleSlug": "binary-tree-inorder-traversal",
+        "timestamp": "1788893859",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Minimum Depth of Binary Tree",
+        "titleSlug": "minimum-depth-of-binary-tree",
+        "timestamp": "1788892854",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Count Commas in Range",
+        "titleSlug": "count-commas-in-range",
+        "timestamp": "1788881416",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Count Commas in Range",
+        "titleSlug": "count-commas-in-range",
+        "timestamp": "1788881321",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Majority Element",
+        "titleSlug": "majority-element",
+        "timestamp": "1788811132",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Majority Element",
+        "titleSlug": "majority-element",
+        "timestamp": "1788810685",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Majority Element",
+        "titleSlug": "majority-element",
+        "timestamp": "1788808733",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Majority Element",
+        "titleSlug": "majority-element",
+        "timestamp": "1788808572",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Majority Element",
+        "titleSlug": "majority-element",
+        "timestamp": "1788808518",
+        "statusDisplay": "Wrong Answer",
+        "lang": "cpp"
+      },
+      {
+        "title": "Sort Colors",
+        "titleSlug": "sort-colors",
+        "timestamp": "1788803387",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Sort Colors",
+        "titleSlug": "sort-colors",
+        "timestamp": "1788796301",
+        "statusDisplay": "Accepted",
+        "lang": "cpp"
+      },
+      {
+        "title": "Sort Colors",
+        "titleSlug": "sort-colors",
+        "timestamp": "1788794962",
+        "statusDisplay": "Restrictions Failed",
+        "lang": "cpp"
+      }
+    ],
+    "matchedUserSkill": {
+      "tagProblemCounts": {
+        "advanced": [
+          {
+            "tagName": "Game Theory",
+            "tagSlug": "game-theory",
+            "problemsSolved": 1
+          },
+          {
+            "tagName": "Quickselect",
+            "tagSlug": "quickselect",
+            "problemsSolved": 1
+          },
+          {
+            "tagName": "Dynamic Programming",
+            "tagSlug": "dynamic-programming",
+            "problemsSolved": 3
+          },
+          {
+            "tagName": "Divide and Conquer",
+            "tagSlug": "divide-and-conquer",
+            "problemsSolved": 2
+          },
+          {
+            "tagName": "Monotonic Stack",
+            "tagSlug": "monotonic-stack",
+            "problemsSolved": 1
+          }
+        ],
+        "intermediate": [
+          {
+            "tagName": "Tree",
+            "tagSlug": "tree",
+            "problemsSolved": 11
+          },
+          {
+            "tagName": "Binary Tree",
+            "tagSlug": "binary-tree",
+            "problemsSolved": 11
+          },
+          {
+            "tagName": "Hash Table",
+            "tagSlug": "hash-table",
+            "problemsSolved": 9
+          },
+          {
+            "tagName": "Binary Search",
+            "tagSlug": "binary-search",
+            "problemsSolved": 18
+          },
+          {
+            "tagName": "Depth-First Search",
+            "tagSlug": "depth-first-search",
+            "problemsSolved": 10
+          },
+          {
+            "tagName": "Breadth-First Search",
+            "tagSlug": "breadth-first-search",
+            "problemsSolved": 5
+          },
+          {
+            "tagName": "Recursion",
+            "tagSlug": "recursion",
+            "problemsSolved": 1
+          },
+          {
+            "tagName": "Sliding Window",
+            "tagSlug": "sliding-window",
+            "problemsSolved": 1
+          },
+          {
+            "tagName": "Math",
+            "tagSlug": "math",
+            "problemsSolved": 11
+          },
+          {
+            "tagName": "Design",
+            "tagSlug": "design",
+            "problemsSolved": 1
+          },
+          {
+            "tagName": "Database",
+            "tagSlug": "database",
+            "problemsSolved": 13
+          }
+        ],
+        "fundamental": [
+          {
+            "tagName": "Array",
+            "tagSlug": "array",
+            "problemsSolved": 34
+          },
+          {
+            "tagName": "String",
+            "tagSlug": "string",
+            "problemsSolved": 4
+          },
+          {
+            "tagName": "Simulation",
+            "tagSlug": "simulation",
+            "problemsSolved": 1
+          },
+          {
+            "tagName": "Enumeration",
+            "tagSlug": "enumeration",
+            "problemsSolved": 1
+          },
+          {
+            "tagName": "Sorting",
+            "tagSlug": "sorting",
+            "problemsSolved": 7
+          },
+          {
+            "tagName": "Stack",
+            "tagSlug": "stack",
+            "problemsSolved": 5
+          },
+          {
+            "tagName": "Two Pointers",
+            "tagSlug": "two-pointers",
+            "problemsSolved": 6
+          }
+        ]
+      }
+    }
+  }
+}

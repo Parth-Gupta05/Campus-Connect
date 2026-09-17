@@ -16,7 +16,8 @@ const {
   getGithubHeatmap, 
   verifyPlatform, 
   generateVerificationCode,
-  searchUsers
+  searchUsers,
+  updateProfileCustomization
 } = require('../controllers/userController');
 const { 
   uploadAndParseResume,
@@ -51,11 +52,13 @@ const uploadResumeMiddleware = (req, res, next) => {
 
 // Public Route (No Auth Required)
 router.get('/public/:uid', getPublicProfile);
+router.get('/portfolio/resume/pdf', getResumePdf);
 
 // Apply auth middleware to all other routes in this file
 router.use(authMiddleware);
 
 router.get('/profile', getProfile);
+router.patch('/profile/customization', updateProfileCustomization);
 router.get('/search', searchUsers);
 router.get('/github-heatmap', getGithubHeatmap);
 router.put('/profile', updateProfile);
@@ -64,7 +67,6 @@ router.put('/portfolio', updatePortfolio);
 router.post('/parse-resume', uploadResumeMiddleware, uploadAndParseResume);
 router.post('/upload-avatar', upload.single('avatar'), uploadAvatar);
 router.post('/upload-cert-file', upload.single('file'), uploadCertFile);
-router.get('/portfolio/resume/pdf', getResumePdf);
 router.post('/achievements/approve', approveAchievement);
 router.post('/achievements/discard', discardAchievement);
 router.post('/achievements/manual', addManualAchievement);

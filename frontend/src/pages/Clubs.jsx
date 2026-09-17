@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
 import PageHeader from '../components/ui/PageHeader';
 import { AuthContext } from '../context/AuthContext';
 import {
@@ -145,11 +143,7 @@ export default function Clubs() {
   );
 
   return (
-    <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100">
-      <Sidebar />
-      <main className="flex-1 min-w-0 bg-background-100">
-        <Topbar />
-
+    <div className="flex-1 min-w-0 bg-background-100">
         <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
           {/* Standardized Level 1 & 2 Page Header with Scope Tabs */}
           <PageHeader
@@ -389,8 +383,7 @@ export default function Clubs() {
             )}
           </>
         )}
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
