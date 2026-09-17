@@ -3,8 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
 import RichContentRenderer from '../components/RichContentRenderer';
 import ReactionButtons from '../components/ReactionButtons';
 import PlacementCommentSection from '../components/PlacementCommentSection';
@@ -95,11 +93,8 @@ export default function PlacementPostDetail() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-background-100">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-gray-1000 border-t-transparent rounded-full animate-spin"></div>
-        </div>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-gray-1000 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -183,12 +178,8 @@ export default function PlacementPostDetail() {
   const fallbackInitial = (post.company?.name || 'C').charAt(0).toUpperCase();
 
   return (
-    <div className="flex min-h-screen bg-background-100 text-gray-1000 font-sans">
-      <Sidebar />
-
-      <main className="flex-1 min-w-0 bg-background-100">
-        <Topbar />
-
+    <>
+      <div className="flex-1 min-w-0 bg-background-100">
         <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
           {/* Top Bar: Back & Author Controls */}
           <div className="flex items-center justify-between gap-4">
@@ -549,7 +540,7 @@ export default function PlacementPostDetail() {
             />
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Custom Delete Post Modal */}
       {showDeleteModal && (
@@ -612,6 +603,6 @@ export default function PlacementPostDetail() {
           />
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -119,13 +119,13 @@ export default function PlacementPostCard({ post }) {
       {/* Top Left Color Leak Effect from Logo */}
       {post.company?.logoUrl ? (
         <div 
-          className="absolute -top-24 -left-24 w-72 h-72 pointer-events-none z-0 transition-all duration-500 opacity-30 dark:opacity-15 group-hover:opacity-50 dark:group-hover:opacity-30 group-hover:scale-125 mix-blend-multiply dark:mix-blend-plus-lighter"
+          className="absolute -top-24 -left-24 w-72 h-72 pointer-events-none z-0 transition-all duration-500 opacity-30 dark:opacity-15 group-hover:opacity-40 dark:group-hover:opacity-20 group-hover:scale-125 mix-blend-multiply dark:mix-blend-plus-lighter"
           style={{
             backgroundImage: `url(${post.company.logoUrl})`,
             backgroundSize: 'contain',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            filter: 'blur(55px) saturate(250%)'
+            filter: 'blur(55px) saturate(200%)'
           }}
         />
       ) : (
@@ -134,7 +134,7 @@ export default function PlacementPostCard({ post }) {
 
       {/* Fading Border Glow on Top Left */}
       <div 
-        className="absolute inset-0 rounded-xl pointer-events-none z-20 transition-opacity duration-500 opacity-60 dark:opacity-40 group-hover:opacity-100 border-t-[1.5px] border-l-[1.5px] border-gray-400 dark:border-white/40"
+        className="absolute inset-0 rounded-xl pointer-events-none z-20 transition-opacity duration-500 opacity-60 dark:opacity-40 group-hover:opacity-80 border-t-[1.5px] border-l-[1.5px] border-gray-400 dark:border-white/40"
         style={{
           WebkitMaskImage: 'radial-gradient(circle at top left, black 0%, transparent 60%)',
           maskImage: 'radial-gradient(circle at top left, black 0%, transparent 60%)'
