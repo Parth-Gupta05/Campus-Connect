@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
+import { BRANCHES, BRANCH_MAPPING } from '../../utils/uidUtils';
 
 export default function AdminStudents() {
   const { showToast } = useToast();
@@ -142,16 +143,19 @@ export default function AdminStudents() {
                 
                 <div>
                   <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">
-                    Department / Branch
+                    Branch
                   </label>
-                  <input 
-                    type="text" 
-                    name="department" 
-                    value={filters.department} 
-                    onChange={handleChange} 
-                    placeholder="e.g. COMP, IT, AIDS, EXTC" 
-                    className="w-full bg-background-200 border border-gray-400 rounded-lg px-3.5 py-2 text-xs sm:text-sm text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 dark:focus:border-gray-100 transition-colors font-mono uppercase" 
-                  />
+                  <select
+                    name="department"
+                    value={filters.department}
+                    onChange={handleChange}
+                    className="w-full bg-background-200 border border-gray-400 rounded-lg px-3.5 py-2 text-xs sm:text-sm text-gray-1000 focus:outline-none focus:border-gray-900 dark:focus:border-gray-100 transition-colors"
+                  >
+                    <option value="">All Branches</option>
+                    {BRANCHES.map(branch => (
+                      <option key={branch} value={branch}>{branch}</option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
@@ -175,21 +179,21 @@ export default function AdminStudents() {
                   <span className="font-mono text-[11px] uppercase mr-1">Quick Presets:</span>
                   <button
                     type="button"
-                    onClick={() => applyPreset({ passingYear: '2027', department: 'COMP', division: '' })}
+                    onClick={() => applyPreset({ passingYear: '2027', department: BRANCH_MAPPING.COMP, division: '' })}
                     className="px-2.5 py-1 rounded bg-background-200 hover:bg-gray-200 border border-gray-400 font-mono text-[11px] text-gray-800 transition-colors cursor-pointer"
                   >
                     COMP '27
                   </button>
                   <button
                     type="button"
-                    onClick={() => applyPreset({ passingYear: '2027', department: 'IT', division: '' })}
+                    onClick={() => applyPreset({ passingYear: '2027', department: BRANCH_MAPPING.IT, division: '' })}
                     className="px-2.5 py-1 rounded bg-background-200 hover:bg-gray-200 border border-gray-400 font-mono text-[11px] text-gray-800 transition-colors cursor-pointer"
                   >
                     IT '27
                   </button>
                   <button
                     type="button"
-                    onClick={() => applyPreset({ passingYear: '2026', department: 'COMP', division: '' })}
+                    onClick={() => applyPreset({ passingYear: '2026', department: BRANCH_MAPPING.COMP, division: '' })}
                     className="px-2.5 py-1 rounded bg-background-200 hover:bg-gray-200 border border-gray-400 font-mono text-[11px] text-gray-800 transition-colors cursor-pointer"
                   >
                     COMP '26

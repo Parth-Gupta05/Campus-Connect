@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Briefcase, Users, LogOut, PanelLeft, ShieldAlert, Building2 } from 'lucide-react';
+import { Briefcase, Users, LogOut, PanelLeft, ShieldAlert, Building2, Loader2 } from 'lucide-react';
+import { AuthContext } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 
 export default function AdminSidebar() {
+  const { logout } = useContext(AuthContext);
+  const { showToast } = useToast();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('cc_admin_sidebar_open');
     return saved !== null ? saved === 'true' : true;
@@ -43,9 +48,16 @@ export default function AdminSidebar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    window.location.href = '/signin';
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      showToast('Logged out successfully', 'success');
+      // AuthContext handles redirect to /signin
+    } catch (err) {
+      setIsLoggingOut(false);
+      showToast('Failed to log out', 'error');
+    }
   };
 
   const navItems = [
@@ -155,7 +167,11 @@ export default function AdminSidebar() {
           }`}
         >
           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-            <LogOut className="w-4 h-4" strokeWidth={1.5} />
+            {isLoggingOut ? (
+              <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
+            ) : (
+              <LogOut className="w-4 h-4" strokeWidth={1.5} />
+            )}
           </div>
           <span 
             className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
