@@ -418,9 +418,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
   const [linkedInUrl, setLinkedInUrl] = useState(profile?.linkedInUrl || '');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const defaultEducation = [
-    { level: 'High School (10th Std)', degree: '', institution: '', duration: '', score: '' },
-    { level: '11th and 12th or Diploma', degree: '', institution: '', duration: '', score: '' },
-    { level: 'Undergrad Degree', degree: '', institution: '', duration: '', score: '' }
+    { level: 'High School (10th Std)', degree: '', institution: '', startYear: '', endYear: '' },
+    { level: '11th and 12th or Diploma', degree: '', institution: '', startYear: '', endYear: '' },
+    { level: 'Undergrad Degree', degree: '', institution: '', startYear: '', endYear: '' }
   ];
   const [education, setEducation] = useState(() => {
     const existing = profile?.resumeDetails?.education;

@@ -28,7 +28,8 @@ const calculateProfileCompleteness = (profile) => {
     const found = education.find(e => 
       e.level === requiredLevel && 
       e.institution && e.institution.trim() !== '' && 
-      e.duration && e.duration.trim() !== ''
+      e.startYear && e.startYear.trim() !== '' &&
+      e.endYear && e.endYear.trim() !== ''
     );
     if (!found) {
       hasAllRequiredEducation = false;
@@ -59,7 +60,8 @@ const calculateProfileCompleteness = (profile) => {
     const validEduCount = education.filter(e => 
       requiredLevels.includes(e.level) && 
       e.institution && e.institution.trim() !== '' && 
-      e.duration && e.duration.trim() !== ''
+      e.startYear && e.startYear.trim() !== '' &&
+      e.endYear && e.endYear.trim() !== ''
     ).length;
     profileStrength += (validEduCount * 8); // e.g. 8 + 8 + 8 = 24 roughly
   }
