@@ -192,7 +192,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login Route
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', /* loginLimiter, */ async (req, res) => {
   try {
     let { identifier, password, remember } = req.body;
     identifier = identifier?.trim();
