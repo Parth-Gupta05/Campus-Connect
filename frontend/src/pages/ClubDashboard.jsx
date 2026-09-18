@@ -1055,10 +1055,10 @@ export default function ClubDashboard() {
                           <div className="absolute top-3 left-3">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold border backdrop-blur-md shadow-md ${
                               status === 'COMPLETED' 
-                                ? 'bg-black/85 text-gray-100 border-gray-600/50' 
+                                ? 'bg-background-100 text-gray-900 border-gray-400 shadow-[0_2px_10px_rgba(0,0,0,0.3)]' 
                                 : status === 'ONGOING'
-                                ? 'bg-green-600 text-white border-green-500 animate-pulse'
-                                : 'bg-blue-600 text-white border-blue-500'
+                                ? 'bg-green-600 text-white border-green-500 animate-pulse shadow-[0_2px_10px_rgba(0,0,0,0.3)]'
+                                : 'bg-blue-600 text-white border-blue-500 shadow-[0_2px_10px_rgba(0,0,0,0.3)]'
                             }`}>
                               {status}
                             </span>
