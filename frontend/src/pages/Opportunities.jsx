@@ -740,31 +740,38 @@ export default function Opportunities() {
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setIsApplyModalOpen(true)}
-                      disabled={isApplied || applying || profileStrength < 100}
-                      className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-2xs ${
-                        isApplied
-                          ? 'bg-green-500/10 text-green-600 border border-green-500/20 cursor-not-allowed'
-                          : profileStrength < 100
-                          ? 'bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed'
-                          : 'bg-gray-1000 text-background-100 hover:opacity-90 active:scale-95'
-                      }`}
-                      title={profileStrength < 100 ? 'Complete your profile to 100% to apply' : ''}
-                    >
-                      {isApplied ? (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Applied</span>
-                        </>
-                      ) : (
-                        <>
-                          <Briefcase className="w-3.5 h-3.5" />
-                          <span>Apply Now</span>
-                        </>
+                    <div className="flex flex-col gap-2 w-full sm:w-auto">
+                      <button
+                        type="button"
+                        onClick={() => setIsApplyModalOpen(true)}
+                        disabled={isApplied || applying || profileStrength < 100}
+                        className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-2xs ${
+                          isApplied
+                            ? 'bg-green-500/10 text-green-600 border border-green-500/20 cursor-not-allowed'
+                            : profileStrength < 100
+                            ? 'bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed'
+                            : 'bg-gray-1000 text-background-100 hover:opacity-90 active:scale-95'
+                        }`}
+                        title={profileStrength < 100 ? 'Complete your profile to 100% to apply' : ''}
+                      >
+                        {isApplied ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Applied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Briefcase className="w-3.5 h-3.5" />
+                            <span>Apply Now</span>
+                          </>
+                        )}
+                      </button>
+                      {profileStrength < 100 && (
+                        <p className="text-[11px] text-red-500 font-medium text-center sm:text-right max-w-[200px] ml-auto">
+                          * Complete your profile to 100% in order to apply for companies.
+                        </p>
                       )}
-                    </button>
+                    </div>
                   </div>
 
                   {/* AI Match Feature Banner (AI Powered Purple Tint & Live Compatibility Engine) */}
