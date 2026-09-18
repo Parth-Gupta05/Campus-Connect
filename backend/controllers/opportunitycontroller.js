@@ -1,9 +1,14 @@
 const Opportunity = require('../models/Opportunities');
 const Applicant = require('../models/Applicants');
 const User = require('../models/User');
-const { analyzeResumeCompatibility } = require('../utils/gemini');
 const { calculateProfileCompleteness } = require('../utils/profileUtils');
-const cloudinary = require('../config/cloudinary');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 /**
  * @desc    Get all active opportunities with optional filtering, search & pagination
