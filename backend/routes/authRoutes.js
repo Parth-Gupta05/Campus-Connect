@@ -21,13 +21,28 @@ const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
+const BRANCH_MAPPING = {
+  COMP: "B.E. Computer Engineering",
+  IT: "B.E. Information Technology",
+  AIDS: "B.Tech Artificial Intelligence and Data Science",
+  AIML: "B.Tech Artificial Intelligence and Machine Learning",
+  MECH: "B.E. Mechanical Engineering",
+  MME: "B.E - Mechanical and Mechatronics Engineering (Additive Manufacturing)",
+  IOT: "B.Tech Computer Science & Engineering(IoT)",
+  CIVIL: "B.E. Civil Engineering",
+  EXTC: "B.E. Electronics and Telecommunication Engineering",
+  ECS: "B.E. Electronics and Computer Science",
+  CSE: "B.E. Computer Science and Engineering (Cyber Security)"
+};
+
 // Helper to parse UID
 const parseUID = (uid) => {
   const match = uid.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
   if (!match) return null;
 
   const admissionYear = '20' + match[1];
-  const branch = match[2].toUpperCase();
+  const shortCode = match[2].toUpperCase();
+  const branch = BRANCH_MAPPING[shortCode] || shortCode;
   const division = match[3].toUpperCase();
   const rollNo = match[4];
   const graduationYear = '20' + match[5];
@@ -43,6 +58,9 @@ const parseUID = (uid) => {
   } else {
     currentSem = (yearsDiff * 2);
   }
+
+  if (currentSem > 8) currentSem = 8;
+  if (currentSem < 1) currentSem = 1;
 
   let currentYear = 'FE';
   if (currentSem <= 2) currentYear = 'FE';
@@ -102,6 +120,15 @@ router.post('/register', async (req, res) => {
       if (parsed) {
         profileData = parsed;
       }
+    }
+    
+    // Override with any explicit profile data provided by the frontend (e.g. from UID verification modal)
+    if (req.body.profileData) {
+      profileData = { ...profileData, ...req.body.profileData };
+    }
+
+    if (profileData.division) {
+      profileData.division = profileData.division.toUpperCase().charAt(0);
     }
 
     // Create new user
@@ -314,15 +341,19 @@ router.post('/link-account', async (req, res) => {
       user.uid = uid;
       
       // Auto-fill details if missing
-      const parsed = parseUID(uid);
-      if (parsed) {
-        if (!user.admissionYear) user.admissionYear = parsed.admissionYear;
-        if (!user.graduationYear) user.graduationYear = parsed.graduationYear;
-        if (!user.branch) user.branch = parsed.branch;
-        if (!user.division) user.division = parsed.division;
-        if (!user.rollNo) user.rollNo = parsed.rollNo;
-        if (!user.currentYear) user.currentYear = parsed.currentYear;
-        if (!user.currentSem) user.currentSem = parsed.currentSem;
+      let profileData = parseUID(uid) || {};
+      if (req.body.profileData) {
+        profileData = { ...profileData, ...req.body.profileData };
+      }
+
+      if (Object.keys(profileData).length > 0) {
+        if (!user.admissionYear) user.admissionYear = profileData.admissionYear;
+        if (!user.graduationYear) user.graduationYear = profileData.graduationYear;
+        if (!user.branch) user.branch = profileData.branch;
+        if (!user.division && profileData.division) user.division = profileData.division.toUpperCase().charAt(0);
+        if (!user.rollNo) user.rollNo = profileData.rollNo;
+        if (!user.currentYear) user.currentYear = profileData.currentYear;
+        if (!user.currentSem) user.currentSem = profileData.currentSem;
       }
     }
 
