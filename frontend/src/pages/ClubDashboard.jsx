@@ -413,7 +413,7 @@ export default function ClubDashboard() {
     const uid = m.studentId?.uid || '';
     const query = memberSearchQuery.toLowerCase();
     const matchesSearch = name.toLowerCase().includes(query) || uid.toLowerCase().includes(query);
-    const matchesRole = memberRoleFilter === 'all' || m.role?.toLowerCase() === memberRoleFilter.toLowerCase();
+    const matchesRole = memberRoleFilter === 'all' || m.tier?.toLowerCase() === memberRoleFilter.toLowerCase() || m.role?.toLowerCase() === memberRoleFilter.toLowerCase();
     return matchesSearch && matchesRole;
   });
 
@@ -864,7 +864,7 @@ export default function ClubDashboard() {
                   >
                     <option value="all">All Roles</option>
                     <option value="Lead">Leads &amp; Heads</option>
-                    <option value="Core Member">Core Members</option>
+                    <option value="WC">Core Members</option>
                     <option value="Member">General Members</option>
                   </select>
 
