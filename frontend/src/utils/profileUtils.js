@@ -21,18 +21,18 @@ export const calculateProfileCompleteness = (profile) => {
   }
 
   // Education constraint: must have the 3 default levels filled
-  const requiredDegrees = ['High School (10th Std)', '11th and 12th or Diploma', 'Undergrad Degree'];
+  const requiredLevels = ['High School (10th Std)', '11th and 12th or Diploma', 'Undergrad Degree'];
   let hasAllRequiredEducation = true;
   
-  for (const requiredDegree of requiredDegrees) {
+  for (const requiredLevel of requiredLevels) {
     const found = education.find(e => 
-      e.degree === requiredDegree && 
+      e.level === requiredLevel && 
       e.institution && e.institution.trim() !== '' && 
       e.duration && e.duration.trim() !== ''
     );
     if (!found) {
       hasAllRequiredEducation = false;
-      missingSections.push(`Education: ${requiredDegree}`);
+      missingSections.push(`Education: ${requiredLevel}`);
     }
   }
 
@@ -57,7 +57,7 @@ export const calculateProfileCompleteness = (profile) => {
   } else {
     // Partial points for education fields filled
     const validEduCount = education.filter(e => 
-      requiredDegrees.includes(e.degree) && 
+      requiredLevels.includes(e.level) && 
       e.institution && e.institution.trim() !== '' && 
       e.duration && e.duration.trim() !== ''
     ).length;

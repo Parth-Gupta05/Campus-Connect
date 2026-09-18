@@ -418,9 +418,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
   const [linkedInUrl, setLinkedInUrl] = useState(profile?.linkedInUrl || '');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const defaultEducation = [
-    { degree: 'High School (10th Std)', institution: '', duration: '', score: '' },
-    { degree: '11th and 12th or Diploma', institution: '', duration: '', score: '' },
-    { degree: 'Undergrad Degree', institution: '', duration: '', score: '' }
+    { level: 'High School (10th Std)', degree: '', institution: '', duration: '', score: '' },
+    { level: '11th and 12th or Diploma', degree: '', institution: '', duration: '', score: '' },
+    { level: 'Undergrad Degree', degree: '', institution: '', duration: '', score: '' }
   ];
   const [education, setEducation] = useState(() => {
     const existing = profile?.resumeDetails?.education;
@@ -514,7 +514,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
     }
   };
 
-  const addEdu = () => setEducation([...education, { institution: '', degree: '', startYear: '', endYear: '' }]);
+  const addEdu = () => setEducation([...education, { level: 'Other', institution: '', degree: '', startYear: '', endYear: '' }]);
   const addExp = () => setExperience([...experience, { company: '', role: '', startDate: '', endDate: '', description: '' }]);
   const addProj = () => setProjects([...projects, { title: '', link: '', description: '' }]);
   const addAchieve = () => setAchievements([...achievements, { title: '', description: '', imageUrl: '', date: '' }]);
@@ -782,6 +782,22 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                               value={edu.institution} 
                               onChange={e => updateEdu(idx, 'institution', e.target.value)} 
                             />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-gray-800">Education Level</label>
+                            <select
+                              required
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 appearance-none"
+                              value={edu.level || ''}
+                              onChange={e => updateEdu(idx, 'level', e.target.value)}
+                            >
+                              <option value="" disabled>Select Level</option>
+                              <option value="High School (10th Std)">High School (10th Std)</option>
+                              <option value="11th and 12th or Diploma">11th and 12th or Diploma</option>
+                              <option value="Undergrad Degree">Undergrad Degree</option>
+                              <option value="Postgrad Degree">Postgrad Degree</option>
+                              <option value="Other">Other</option>
+                            </select>
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Degree / Major</label>
