@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   AlertCircle,
   UploadCloud,
+  Upload,
   UserPlus,
   ChevronRight,
   TrendingUp
@@ -38,6 +39,7 @@ import {
 import EventAttendees from '../components/EventAttendees';
 import ImageCropperModal from '../components/ImageCropperModal';
 import { getEventStatus, formatTime12h } from '../utils/eventUtils';
+import { BRANCHES } from '../utils/uidUtils';
 
 export default function ClubDashboard() {
   const { user } = useContext(AuthContext);
@@ -78,6 +80,12 @@ export default function ClubDashboard() {
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
   const [memberRoleFilter, setMemberRoleFilter] = useState('all');
 
+  // Batch Import State
+  const [showBatchImportModal, setShowBatchImportModal] = useState(false);
+  const [batchImportText, setBatchImportText] = useState('');
+  const [isBatchImporting, setIsBatchImporting] = useState(false);
+  const [batchImportResults, setBatchImportResults] = useState(null);
+
   // Event Management State
   const [newEvent, setNewEvent] = useState({ 
     title: '', 
@@ -89,7 +97,9 @@ export default function ClubDashboard() {
     posterImage: '',
     durationHours: 2,
     aicteCategory: 5,
-    activitySummary: ''
+    activitySummary: '',
+    audience: 'All',
+    targetAudienceBranch: ''
   });
   const [editingEventId, setEditingEventId] = useState(null);
   const [eventFilter, setEventFilter] = useState('all'); // 'all' | 'upcoming' | 'completed'
@@ -243,7 +253,7 @@ export default function ClubDashboard() {
     try {
       const res = await axios.post('/clubs/members', { 
         uid: newMemberUid.trim().toUpperCase(),
-        role: newMemberRole,
+        role: newMemberTier === 'Member' ? 'Member' : newMemberRole,
         tier: newMemberTier
       });
       // Update local assigned students
@@ -260,6 +270,52 @@ export default function ClubDashboard() {
       showToast('Team member added successfully', 'success');
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to add team member', 'error');
+    }
+  };
+
+  const handleBatchImport = async (e) => {
+    e.preventDefault();
+    if (!batchImportText.trim()) return;
+    
+    setIsBatchImporting(true);
+    setBatchImportResults(null);
+    
+    try {
+      const lines = batchImportText.split('\n').filter(l => l.trim());
+      const membersData = lines.map(line => {
+        const parts = line.split(/[\t,]/).map(p => p.trim());
+        if (parts.length >= 2) {
+          return { name: parts[0], uid: parts[1] };
+        } else if (parts.length === 1) {
+          return { uid: parts[0] };
+        }
+        return null;
+      }).filter(Boolean);
+
+      const res = await axios.post('/clubs/members/batch', { membersData });
+      
+      if (res.data.assignedStudents) {
+        setClub({ ...club, assignedStudents: res.data.assignedStudents });
+        fetchClubData(); // refresh counts
+      } else {
+        await fetchClubData();
+      }
+      
+      setBatchImportResults({
+        success: res.data.successCount,
+        failed: res.data.failedCount,
+        errors: res.data.errors
+      });
+      
+      if (res.data.successCount > 0) {
+        showToast(`Successfully imported ${res.data.successCount} members`, 'success');
+      }
+      
+    } catch (err) {
+      console.error('Failed to batch import members:', err);
+      showToast(err.response?.data?.message || 'Failed to batch import members', 'error');
+    } finally {
+      setIsBatchImporting(false);
     }
   };
 
@@ -319,7 +375,7 @@ export default function ClubDashboard() {
       }
       
       setNewEvent({ 
-        title: '', date: '', time: '', registrationDeadline: '', venue: '', description: '', posterImage: '', durationHours: 2, aicteCategory: 5, activitySummary: ''
+        title: '', date: '', time: '', registrationDeadline: '', venue: '', description: '', posterImage: '', durationHours: 2, aicteCategory: 5, activitySummary: '', audience: 'All', targetAudienceBranch: ''
       });
       setEditingEventId(null);
       setShowCreateEventModal(false);
@@ -812,6 +868,19 @@ export default function ClubDashboard() {
                     <option value="Member">General Members</option>
                   </select>
 
+                  {club?.hasMembershipSystem && (
+                    <button 
+                      onClick={() => {
+                        setBatchImportText('');
+                        setBatchImportResults(null);
+                        setShowBatchImportModal(true);
+                      }}
+                      className="h-8 px-3.5 rounded-md border border-gray-400 bg-background-200 text-gray-800 text-xs font-medium hover:bg-gray-300 hover:text-gray-1000 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Batch Import</span>
+                    </button>
+                  )}
                   <button 
                     onClick={() => setShowAddMemberModal(true)} 
                     className="h-8 px-3.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-xs cursor-pointer"
@@ -984,9 +1053,9 @@ export default function ClubDashboard() {
                           
                           {/* Status Pill Badge */}
                           <div className="absolute top-3 left-3">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold border backdrop-blur-md shadow-xs ${
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold border backdrop-blur-md shadow-md ${
                               status === 'COMPLETED' 
-                                ? 'bg-background-100/90 text-gray-700 border-gray-400' 
+                                ? 'bg-black/85 text-gray-100 border-gray-600/50' 
                                 : status === 'ONGOING'
                                 ? 'bg-green-600 text-white border-green-500 animate-pulse'
                                 : 'bg-blue-600 text-white border-blue-500'
@@ -1250,45 +1319,63 @@ export default function ClubDashboard() {
                   <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">
                     Designated Club Position Title
                   </label>
-                  <input
-                    list="role-presets"
-                    placeholder="e.g. President, Creative WC, Technical Head, Member"
-                    value={newMemberRole}
-                    onChange={e => handleRoleChange(e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs bg-background-200 border border-gray-400 rounded-md text-gray-1000 font-mono focus:outline-none focus:border-gray-900"
-                  />
-                  <datalist id="role-presets">
-                    <option value="President" />
-                    <option value="Vice President" />
-                    <option value="General Secretary" />
-                    <option value="Technical Head" />
-                    <option value="Creative WC" />
-                    <option value="Technical WC" />
-                    <option value="PR & Outreach WC" />
-                    <option value="Event Coordinator" />
-                    <option value="Core Member" />
-                    <option value="Member" />
-                  </datalist>
+                  {newMemberTier === 'Member' ? (
+                    <input
+                      disabled
+                      value="Member"
+                      className="w-full px-3.5 py-2 text-xs bg-background-200 border border-gray-400 rounded-md text-gray-700 font-mono focus:outline-none opacity-80 cursor-not-allowed"
+                    />
+                  ) : newMemberTier === 'WC' ? (
+                    club?.wcRoles && club.wcRoles.length > 0 ? (
+                      <select
+                        value={newMemberRole}
+                        onChange={e => handleRoleChange(e.target.value)}
+                        className="w-full px-3.5 py-2 text-xs bg-background-200 border border-gray-400 rounded-md text-gray-1000 font-mono focus:outline-none focus:border-gray-900 cursor-pointer"
+                        required
+                      >
+                        <option value="" disabled>Select a Working Committee role</option>
+                        {club.wcRoles.map(role => (
+                          <option key={role} value={role}>{role}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        disabled
+                        className="w-full px-3.5 py-2 text-xs bg-red-500/10 border border-red-500/30 rounded-md text-red-700 font-mono focus:outline-none opacity-80 cursor-not-allowed"
+                      >
+                        <option value="">No WC Roles configured. Contact Root Admin.</option>
+                      </select>
+                    )
+                  ) : (
+                    <input
+                      list="role-presets"
+                      placeholder="e.g. President, Creative WC, Technical Head, Member"
+                      value={newMemberRole}
+                      onChange={e => handleRoleChange(e.target.value)}
+                      className="w-full px-3.5 py-2 text-xs bg-background-200 border border-gray-400 rounded-md text-gray-1000 font-mono focus:outline-none focus:border-gray-900"
+                    />
+                  )}
+                  {newMemberTier !== 'Member' && newMemberTier !== 'WC' && (
+                    <datalist id="role-presets">
+                      <option value="President" />
+                      <option value="Vice President" />
+                      <option value="General Secretary" />
+                      <option value="Technical Head" />
+                      <option value="Creative WC" />
+                      <option value="Technical WC" />
+                      <option value="PR & Outreach WC" />
+                      <option value="Event Coordinator" />
+                      <option value="Core Member" />
+                      <option value="Member" />
+                    </datalist>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">
                     Hierarchy Tier & AICTE Multiplier
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setNewMemberTier('Core')}
-                      className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
-                        newMemberTier === 'Core'
-                          ? 'bg-purple-500/15 border-purple-500 text-purple-900 dark:text-purple-200 font-semibold'
-                          : 'bg-background-200 border-gray-400 text-gray-700 hover:border-gray-600'
-                      }`}
-                    >
-                      <div className="text-[11px] font-bold">🌟 Core Team</div>
-                      <div className="text-[10px] opacity-80 mt-0.5">2x Pts & Auto-Present</div>
-                    </button>
-
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setNewMemberTier('WC')}
@@ -1320,8 +1407,9 @@ export default function ClubDashboard() {
 
               <div className="pt-2">
                 <button 
-                  type="submit" 
-                  className="w-full py-2.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                  type="submit"
+                  disabled={!newMemberUid.trim() || (newMemberTier === 'WC' && (!club?.wcRoles || club.wcRoles.length === 0 || !newMemberRole))}
+                  className="w-full py-2.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span>Assign to Club Roster</span>
@@ -1453,6 +1541,44 @@ export default function ClubDashboard() {
                     <option value={15}>#15. National Level Initiatives</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">
+                    Target Audience
+                  </label>
+                  <select
+                    value={newEvent.audience}
+                    onChange={e => setNewEvent({...newEvent, audience: e.target.value})}
+                    className="w-full px-2.5 py-2 text-xs bg-background-200 border border-gray-400 rounded-md text-gray-1000 font-mono focus:outline-none focus:border-gray-900 cursor-pointer"
+                  >
+                    <option value="All">All Students</option>
+                    {club?.hasMembershipSystem && (
+                      <option value="Members Only">Club Members Only</option>
+                    )}
+                    <option value="Department Only">Department / Branch Only</option>
+                  </select>
+                </div>
+
+                {newEvent.audience === 'Department Only' && (
+                  <div>
+                    <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">
+                      Target Branch
+                    </label>
+                    <select
+                      value={newEvent.targetAudienceBranch}
+                      onChange={e => setNewEvent({...newEvent, targetAudienceBranch: e.target.value})}
+                      required
+                      className="w-full px-2.5 py-2 text-xs bg-background-200 border border-gray-400 rounded-md text-gray-1000 font-mono focus:outline-none focus:border-gray-900 cursor-pointer"
+                    >
+                      <option value="" disabled>Select Branch</option>
+                      {BRANCHES.map(b => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1625,6 +1751,60 @@ export default function ClubDashboard() {
         </div>
       )}
 
+
+      {/* Batch Import Modal */}
+      {showBatchImportModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[150] flex justify-center items-center p-4">
+          <div className="bg-background-100 border border-gray-400 p-6 rounded-xl w-full max-w-lg shadow-2xl relative">
+            <button 
+              onClick={() => setShowBatchImportModal(false)}
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-1000 p-1 bg-background-200 hover:bg-gray-300 rounded-md transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-1000 flex items-center gap-2">
+                <Upload className="w-4 h-4 text-blue-500" />
+                Batch Import Members
+              </h3>
+              <p className="text-xs text-gray-700 mt-1">
+                Paste member names and UIDs from Excel. Separate name and UID with a tab or comma, one per line. Or just paste UIDs.
+              </p>
+            </div>
+            
+            <textarea
+              value={batchImportText}
+              onChange={(e) => setBatchImportText(e.target.value)}
+              placeholder={`Example:\nJohn Doe\t23-COMPA10-27\nJane Doe\t23-COMPB15-18\nOr just UIDs:\n23-COMPA10-27`}
+              className="w-full h-40 px-3.5 py-2 text-xs bg-background-200 border border-gray-400 rounded-md text-gray-1000 font-mono focus:outline-none focus:border-gray-900 resize-y mb-4"
+            />
+            
+            {batchImportResults && (
+              <div className="mb-4 p-3 rounded-md border border-gray-400 bg-background-200 text-xs font-mono">
+                <div className="flex gap-4">
+                  <span className="text-green-600 font-semibold">Success: {batchImportResults.success}</span>
+                  <span className="text-red-500 font-semibold">Failed: {batchImportResults.failed}</span>
+                </div>
+                {batchImportResults.errors?.length > 0 && (
+                  <div className="mt-2 text-red-500 max-h-24 overflow-y-auto">
+                    {batchImportResults.errors.map((err, i) => (
+                      <div key={i}>• {err}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <button
+              onClick={handleBatchImport}
+              disabled={isBatchImporting || !batchImportText.trim()}
+              className="w-full py-2.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isBatchImporting ? 'Importing...' : 'Start Import'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Media Image Cropper Integration */}
       {cropData && (
