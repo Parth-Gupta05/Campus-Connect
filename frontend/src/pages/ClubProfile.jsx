@@ -171,7 +171,7 @@ export default function ClubProfile() {
       <div className={`flex-1 min-w-0 bg-background-100 pb-16 ${selectedEvent ? 'overflow-hidden' : ''}`}>
 
         {/* Top Breadcrumb & Actions Bar */}
-        <div className="border-b border-gray-400 bg-background-100/80 backdrop-blur-xs sticky top-14 z-30 px-4 sm:px-8 py-2.5">
+        <div className="border-b border-gray-400 bg-background-100/80 backdrop-blur-xs sticky top-0 z-30 px-4 sm:px-8 py-2.5">
           <div className="max-w-6xl w-full mx-auto flex items-center justify-between gap-4">
               <Link
                 to="/clubs"
