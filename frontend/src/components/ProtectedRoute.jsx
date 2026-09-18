@@ -11,7 +11,8 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // Redirect to their default dashboard if they try to access something they shouldn't
-    return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />;
+    const fallbackRoute = user.role === 'admin' ? '/admin' : (user.role === 'club' ? '/club' : '/dashboard');
+    return <Navigate to={fallbackRoute} replace />;
   }
 
   return children;

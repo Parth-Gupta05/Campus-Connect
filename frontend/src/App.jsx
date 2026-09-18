@@ -145,7 +145,7 @@ function App() {
               } />
 
               <Route path="/clubs" element={
-                <ProtectedRoute allowedRoles={['student']}>
+                <ProtectedRoute allowedRoles={['student', 'club', 'admin']}>
                   <MainLayout>
                     <Clubs />
                   </MainLayout>
@@ -153,7 +153,7 @@ function App() {
               } />
 
               <Route path="/events" element={
-                <ProtectedRoute allowedRoles={['student']}>
+                <ProtectedRoute allowedRoles={['student', 'club', 'admin']}>
                   <MainLayout>
                     <Events />
                   </MainLayout>
@@ -161,7 +161,7 @@ function App() {
               } />
 
               <Route path="/clubs/:id" element={
-                <ProtectedRoute allowedRoles={['student']}>
+                <ProtectedRoute allowedRoles={['student', 'club', 'admin']}>
                   <MainLayout>
                     <ClubProfile />
                   </MainLayout>
