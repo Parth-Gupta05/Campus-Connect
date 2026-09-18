@@ -73,8 +73,9 @@ const CountUp = ({ end }) => {
         return (
           <span key={i} className="inline-block h-[1em] overflow-hidden leading-none align-text-bottom relative">
             <span
-              className="flex flex-col transition-transform duration-[1500ms] ease-[cubic-bezier(0.2,1,0.3,1)]"
+              className="flex flex-col transition-transform ease-[cubic-bezier(0.2,1,0.3,1)]"
               style={{ 
+                transitionDuration: '1500ms',
                 transform: `translateY(calc(-${mounted ? char : '0'} * 1em))`,
                 transitionDelay: `${i * 100}ms`
               }}

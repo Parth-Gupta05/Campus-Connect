@@ -35,12 +35,12 @@ import {
   LayoutDashboard,
   User,
   X,
-  ChevronRight,
   Upload,
   AlertTriangle,
   Code2,
   CheckCheck
 } from 'lucide-react';
+import { parseUID, generateUID, BRANCHES } from '../utils/uidUtils';
 
 const formatExternalUrl = (url) => {
   if (!url) return '#';
@@ -56,7 +56,6 @@ function ProfileSetupOverlay({ onComplete, user }) {
   const isMissingCredential = !user.email || !user.uid;
   const missingLabel = !user.email ? 'University Email' : 'UID (e.g. 23-COMPA10-27)';
   const missingField = !user.email ? 'email' : 'uid';
-
   const [formData, setFormData] = useState({
     name: user.name || '',
     githubUsername: user.githubUsername || '',
@@ -67,11 +66,37 @@ function ProfileSetupOverlay({ onComplete, user }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // UID Verification State
+  const [uidVerified, setUidVerified] = useState(false);
+  const [showUidModal, setShowUidModal] = useState(false);
+  const [isEditingUid, setIsEditingUid] = useState(false);
+  const [parsedProfileData, setParsedProfileData] = useState(null);
+
+  useEffect(() => {
+    if (uidVerified && missingField === 'uid') setUidVerified(false);
+  }, [formData.uid, missingField]);
+
+  const handleVerifyUID = () => {
+    const trimmedIdentifier = formData.uid?.trim() || '';
+    if (!trimmedIdentifier) return;
+    const match = trimmedIdentifier.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
+    if (!match) {
+      setError('Invalid UID format. Expected format: 23-COMPA10-27');
+      return;
+    }
+    const data = parseUID(trimmedIdentifier);
+    if (data) {
+      setParsedProfileData(data);
+      setIsEditingUid(false);
+      setShowUidModal(true);
+      setError('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     if (isMissingCredential && missingField === 'uid' && formData.uid) {
       const match = formData.uid.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
       if (!match) {
@@ -79,11 +104,19 @@ function ProfileSetupOverlay({ onComplete, user }) {
         setLoading(false);
         return;
       }
+      if (!uidVerified) {
+        setError('Please verify your UID to confirm your details before completing setup.');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
       if (isMissingCredential && formData[missingField]) {
-        await axios.post('/auth/link-account', { identifier: formData[missingField] });
+        await axios.post('/auth/link-account', { 
+          identifier: formData[missingField],
+          profileData: (missingField === 'uid' && uidVerified) ? parsedProfileData : null
+        });
       }
       const res = await axios.put('/user/profile', {
         name: formData.name,
@@ -141,14 +174,34 @@ function ProfileSetupOverlay({ onComplete, user }) {
                     <span className="text-[10px] font-mono text-gray-600">Format: 23-COMPA10-27</span>
                   )}
                 </div>
-                <input 
-                  required 
-                  type="text" 
-                  className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                  placeholder={!user.email ? "student@university.edu" : "23-COMPA10-27"} 
-                  value={formData[missingField]} 
-                  onChange={e => setFormData({...formData, [missingField]: e.target.value})} 
-                />
+                <div className="relative flex items-center">
+                  <input 
+                    required 
+                    type="text" 
+                    className="w-full px-3 py-2 pr-24 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
+                    placeholder={!user.email ? "student@university.edu" : "23-COMPA10-27"} 
+                    value={formData[missingField]} 
+                    onChange={e => setFormData({...formData, [missingField]: e.target.value})} 
+                  />
+                  {missingField === 'uid' && formData.uid && /^\d{2}-/.test(formData.uid) && (
+                    <div className="absolute right-1">
+                      {uidVerified ? (
+                        <div className="flex items-center text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded text-[10px] font-semibold gap-1 border border-emerald-500/20 whitespace-nowrap">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleVerifyUID}
+                          className="text-[10px] font-semibold bg-gray-1000 text-background-100 px-2.5 py-1 rounded hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer"
+                        >
+                          Verify UID
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             <div>
@@ -209,6 +262,138 @@ function ProfileSetupOverlay({ onComplete, user }) {
           </button>
         </div>
       </div>
+
+      {/* UID Verification Modal */}
+      {showUidModal && parsedProfileData && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[130] flex items-center justify-center p-4">
+          <div className="bg-background-100 border border-gray-400 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="flex justify-between items-start relative z-10">
+              <div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold bg-blue-500/10 text-blue-700 border border-blue-500/20">
+                  UID Verification
+                </span>
+                <h3 className="text-lg font-bold text-gray-1000 mt-1">Verify Your Details</h3>
+                <p className="text-xs text-gray-600 mt-1">We extracted this information from your UID. Is this correct?</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowUidModal(false)}
+                className="p-1 text-gray-600 hover:text-gray-1000 rounded hover:bg-gray-200 cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {isEditingUid ? (
+              <div className="space-y-4 pt-2 relative z-10">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-1000 mb-1">Branch</label>
+                  <select 
+                    value={parsedProfileData.branch}
+                    onChange={(e) => setParsedProfileData({...parsedProfileData, branch: e.target.value})}
+                    className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
+                  >
+                    {BRANCHES.map(branch => (
+                      <option key={branch} value={branch}>{branch}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-1000 mb-1">Semester</label>
+                    <select
+                      value={parsedProfileData.currentSem}
+                      onChange={(e) => setParsedProfileData({...parsedProfileData, currentSem: parseInt(e.target.value)})}
+                      className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
+                    >
+                      {[1,2,3,4,5,6,7,8].map(sem => (
+                        <option key={sem} value={sem}>Semester {sem}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-1000 mb-1">Division</label>
+                    <input
+                      type="text"
+                      maxLength={1}
+                      value={parsedProfileData.division}
+                      onChange={(e) => setParsedProfileData({...parsedProfileData, division: e.target.value.toUpperCase().replace(/[^A-Z]/g, '')})}
+                      className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 uppercase focus:outline-none focus:border-gray-900 transition-colors"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-1000 mb-1">Roll Number</label>
+                  <input
+                    type="number"
+                    value={parsedProfileData.rollNo}
+                    onChange={(e) => setParsedProfileData({...parsedProfileData, rollNo: e.target.value})}
+                    className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="bg-background-200 rounded-xl border border-gray-400 p-4 space-y-3 relative z-10 shadow-sm">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 font-semibold tracking-wider">Branch</span>
+                  <span className="text-sm font-semibold text-gray-1000">{parsedProfileData.branch}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 font-semibold tracking-wider">Semester</span>
+                    <span className="text-sm font-medium text-gray-1000">Sem {parsedProfileData.currentSem}</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 font-semibold tracking-wider">Division</span>
+                    <span className="text-sm font-medium text-gray-1000">Div {parsedProfileData.division}</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 font-semibold tracking-wider">Roll No</span>
+                    <span className="text-sm font-medium text-gray-1000">{parsedProfileData.rollNo}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-400 relative z-10">
+              {isEditingUid ? (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingUid(false)}
+                  className="px-4 py-2 text-xs font-semibold text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
+                >
+                  Cancel Edit
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingUid(true)}
+                  className="px-4 py-2 text-xs font-semibold text-gray-700 hover:text-gray-1000 hover:bg-gray-200 rounded-md transition-colors flex items-center gap-1.5 cursor-pointer border border-transparent hover:border-gray-400"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>No, let me edit</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const newUid = generateUID(parsedProfileData);
+                  if (missingField === 'uid') {
+                    setFormData(prev => ({ ...prev, uid: newUid }));
+                  }
+                  setUidVerified(true);
+                  setShowUidModal(false);
+                }}
+                className="px-5 py-2 text-xs font-semibold bg-gray-1000 text-background-100 hover:opacity-90 rounded-md transition-opacity flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                {isEditingUid ? 'Save & Confirm' : 'Yes, Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1386,10 +1571,10 @@ export default function StudentProfile() {
             <div className="flex justify-between items-center px-6 py-4 bg-background-200 border-b border-gray-400">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center shadow-2xs">
-                  {verifyingPlatform === 'github' ? <FaGithub className="w-4 h-4 text-gray-1000" /> : <SiLeetcode className="w-4 h-4 text-[#ffa116]" />}
+                  {verifyingPlatform === 'github' ? <FaGithub className="w-4 h-4 text-gray-1000" /> : verifyingPlatform === 'leetcode' ? <SiLeetcode className="w-4 h-4 text-[#ffa116]" /> : <FaLinkedin className="w-4 h-4 text-[#0A66C2]" />}
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold tracking-tight">Verify {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'}</h2>
+                  <h2 className="text-sm font-semibold tracking-tight">Verify {verifyingPlatform === 'github' ? 'GitHub' : verifyingPlatform === 'leetcode' ? 'LeetCode' : 'LinkedIn'}</h2>
                   <span className="text-[10px] font-mono text-gray-600">Cryptographic Identity Verification</span>
                 </div>
               </div>
@@ -1409,7 +1594,7 @@ export default function StudentProfile() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-1000">Verification Successful!</h3>
                   <p className="text-xs text-gray-700 font-sans mt-1 leading-relaxed">
-                    Your {verifyingPlatform === 'github' ? 'GitHub' : 'LeetCode'} identity is now cryptographically verified. You can safely remove the verification tag from your profile.
+                    Your {verifyingPlatform === 'github' ? 'GitHub' : verifyingPlatform === 'leetcode' ? 'LeetCode' : 'LinkedIn'} identity is now cryptographically verified. You can safely remove the verification tag from your profile.
                   </p>
                 </div>
                 <button 
@@ -1423,7 +1608,7 @@ export default function StudentProfile() {
               <div className="p-6 space-y-4 text-xs font-sans">
                 <div className="space-y-2">
                   <p className="text-gray-700 leading-relaxed">
-                    To verify ownership of <strong>{verifyingPlatform === 'github' ? profile.githubUsername : profile.leetcodeUsername}</strong>, copy the one-time token below and paste it temporarily into your <strong>{verifyingPlatform === 'github' ? 'GitHub Bio' : 'LeetCode About/Readme'}</strong>:
+                    To verify ownership of <strong>{verifyingPlatform === 'github' ? profile.githubUsername : verifyingPlatform === 'leetcode' ? profile.leetcodeUsername : 'LinkedIn Profile'}</strong>, copy the one-time token below and paste it temporarily into your <strong>{verifyingPlatform === 'github' ? 'GitHub Bio' : verifyingPlatform === 'leetcode' ? 'LeetCode About/Readme' : 'LinkedIn About Section'}</strong>:
                   </p>
 
                   <div className="bg-background-200 p-3.5 rounded-lg border border-gray-400 flex items-center justify-between gap-3">
@@ -1622,16 +1807,32 @@ export default function StudentProfile() {
               )}
 
               {profile.linkedInUrl && (
-                <a
-                  href={profile.linkedInUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-gray-800 flex items-center gap-1.5 text-xs font-mono hover:text-gray-1000 transition-colors"
-                >
-                  <FaLinkedin className="w-3.5 h-3.5 text-[#0A66C2]" />
-                  <span>LinkedIn</span>
-                  <ExternalLink className="w-3 h-3 text-gray-500" />
-                </a>
+                <div className="inline-flex items-center gap-1.5 text-xs font-mono">
+                  {profile.linkedInVerified ? (
+                    <a
+                      href={profile.linkedInUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                      title="Verified LinkedIn profile"
+                    >
+                      <FaLinkedin className="w-3.5 h-3.5 text-[#0A66C2]" />
+                      <span>LinkedIn</span>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleGenerateCodeAndVerify('linkedin')}
+                      className="px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                      title="Click to verify LinkedIn"
+                    >
+                      <FaLinkedin className="w-3.5 h-3.5 text-[#0A66C2]" />
+                      <span>LinkedIn</span>
+                      <span className="text-[10px] font-sans font-medium px-1 rounded bg-amber-500/20">Verify</span>
+                    </button>
+                  )}
+                </div>
               )}
 
               {profile.resumeDetails?.portfolioUrl && (
