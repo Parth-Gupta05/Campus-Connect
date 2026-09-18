@@ -859,9 +859,9 @@ export default function ClubDashboard() {
                     className="h-8 px-2.5 rounded-md border border-gray-400 bg-background-200 text-xs font-mono text-gray-1000 focus:outline-none focus:border-gray-900 cursor-pointer"
                   >
                     <option value="all">All Roles</option>
-                    <option value="Lead">Leads &amp; Heads</option>
-                    <option value="WC">Core Members</option>
-                    <option value="Member">General Members</option>
+                    <option value="Core">CORE</option>
+                    <option value="WC">WC</option>
+                    <option value="Member">Members</option>
                   </select>
 
                   {club?.hasMembershipSystem && (
