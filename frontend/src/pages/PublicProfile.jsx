@@ -15,6 +15,7 @@ import { StripedPattern } from '../components/backgrounds/striped-pattern';
 import { NoiseTexture } from '../components/backgrounds/noise-texture';
 import { LightRays } from '../components/backgrounds/light-rays';
 import { GlyphMatrix } from '../components/backgrounds/glyph-matrix';
+import ShapeWaves from '../components/ShapeWaves';
 import { cn } from '../lib/utils';
 import {
   ExternalLink,
@@ -320,6 +321,42 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       color="var(--profile-accent)"
                       className="opacity-100 [mask-image:linear-gradient(to_right,transparent_5%,white_60%)]"
                     />
+                  )}
+                  {activeCustomization.appearance.texture === 'shape-waves' && (
+                    <div 
+                      className="absolute inset-0 w-full h-full relative" 
+                      style={{ 
+                        maskImage: 'linear-gradient(to right, transparent 0%, transparent 15%, black 40%, black 100%)',
+                        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, transparent 15%, black 40%, black 100%)'
+                      }}
+                    >
+                      <ShapeWaves
+                        fontFamily='Geist, "Geist Sans", system-ui, sans-serif'
+                        fontWeight={500}
+                        textSize={0.45}
+                        textOffsetX={120}
+                        shapes="mixed"
+                        cellSize={10}
+                        dotSize={0.75}
+                        color="#929292"
+                        hoverColor="#ffffff"
+                        backgroundColor="#000000"
+                        speed={1}
+                        scale={1}
+                        contrast={1}
+                        brightness={0.4}
+                        flow={0}
+                        direction={0}
+                        fade={0.25}
+                        interactive={true}
+                        splashRadius={40}
+                        splashStrength={0.4}
+                        glow={0.35}
+                        intro={true}
+                        introDuration={1.6}
+                        paused={false}
+                      />
+                    </div>
                   )}
                 </div>
               )}

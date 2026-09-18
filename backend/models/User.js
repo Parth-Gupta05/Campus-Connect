@@ -169,7 +169,7 @@ const UserSchema = new mongoose.Schema({
       },
       texture: {
         type: String,
-        enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix'],
+        enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix', 'shape-waves'],
         default: 'none'
       }
     },

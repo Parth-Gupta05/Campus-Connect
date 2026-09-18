@@ -27,7 +27,8 @@ const TEXTURE_STYLES = [
   { id: 'striped', label: 'Striped Pattern', desc: 'Diagonal subtle lines' },
   { id: 'light-rays', label: 'Light Rays', desc: 'Smooth rotating gradients' },
   { id: 'noise', label: 'Noise Texture', desc: 'Subtle TV static overlay' },
-  { id: 'glyph-matrix', label: 'Glyph Matrix', desc: 'Falling digital letters' }
+  { id: 'glyph-matrix', label: 'Glyph Matrix', desc: 'Falling digital letters' },
+  { id: 'shape-waves', label: 'Shape Waves', desc: 'Interactive fluid waves' }
 ];
 
 const MOTION_STYLES = [
