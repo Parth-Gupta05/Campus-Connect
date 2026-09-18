@@ -513,10 +513,6 @@ export default function ClubDashboard() {
 
               <div className="pt-2 sm:pt-3">
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/20">
-                    <ShieldCheck className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-                    <span>Verified University Organization</span>
-                  </span>
                   <span className="text-xs font-mono text-gray-600">
                     ID: {club._id.slice(-6)}
                   </span>
