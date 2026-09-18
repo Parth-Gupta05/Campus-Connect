@@ -813,6 +813,8 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                             <label className="text-[11px] font-medium text-gray-800">Start Year</label>
                             <input 
                               placeholder="2021"
+                              pattern="^(19|20)[0-9]{2}$"
+                              title="Please enter a valid 4-digit year (e.g. 2021)"
                               className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
                               value={edu.startYear} 
                               onChange={e => updateEdu(idx, 'startYear', e.target.value)} 
@@ -822,6 +824,8 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                             <label className="text-[11px] font-medium text-gray-800">End Year</label>
                             <input 
                               placeholder="2025"
+                              pattern="^(19|20)[0-9]{2}$"
+                              title="Please enter a valid 4-digit year (e.g. 2025)"
                               className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
                               value={edu.endYear} 
                               onChange={e => updateEdu(idx, 'endYear', e.target.value)} 
@@ -833,6 +837,8 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                             </label>
                             <input 
                               placeholder={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? 'e.g. 85.5%' : 'e.g. 8.85'}
+                              pattern={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? "^(100(\\.0{1,2})?|[0-9]{1,2}(\\.[0-9]{1,2})?)%?$" : "^(10(\\.0{1,2})?|[0-9](\\.[0-9]{1,2})?)$"}
+                              title={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? "Please enter a valid percentage (0-100)" : "Please enter a valid CGPA (0-10)"}
                               className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
                               value={edu.grade || edu.cgpa || ''} 
                               onChange={e => {
