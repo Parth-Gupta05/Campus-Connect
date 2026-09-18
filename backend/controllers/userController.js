@@ -94,12 +94,22 @@ const getPublicProfile = async (req, res) => {
       }
     }
 
+    // If LinkedIn is not verified, completely hide it from the public profile
+    if (!user.linkedInVerified) {
+      delete user.linkedInUrl;
+      if (user.scrapedData) delete user.scrapedData.linkedin;
+    }
+
     // Resume details hiding
     if (user.resumeDetails) {
       if (!visibility.showExperience) delete user.resumeDetails.experience;
       if (!visibility.showEducation) delete user.resumeDetails.education;
       if (!visibility.showProjects) delete user.resumeDetails.projects;
-      if (!visibility.showCertificates) delete user.resumeDetails.certificates;
+      if (!visibility.showCertificates) {
+        delete user.resumeDetails.certificates;
+      } else if (user.resumeDetails.certificates) {
+        user.resumeDetails.certificates = user.resumeDetails.certificates.filter(c => !c.isHidden);
+      }
     }
 
     res.json(user);
@@ -357,10 +367,13 @@ const updatePortfolio = async (req, res) => {
         // If it matches an existing club-issued certificate, preserve the authentic verified record
         const matchingClubCert = existingClubCerts.find(ec => ec._id?.toString() === c._id?.toString());
         if (matchingClubCert) {
+          // Allow the user to toggle visibility even for club-issued certificates
+          matchingClubCert.isHidden = !!c.isHidden;
           return matchingClubCert;
         }
         // Self-added certificate: cannot forge club authorization or verification
         return {
+          _id: c._id,
           title: c.title || '',
           issuer: c.issuer || '',
           issueDate: c.issueDate || '',
@@ -368,7 +381,8 @@ const updatePortfolio = async (req, res) => {
           fileUrl: c.fileUrl || '',
           isComplete: !!c.fileUrl,
           isVerified: false,
-          issuedByClub: false
+          issuedByClub: false,
+          isHidden: !!c.isHidden
         };
       });
 
@@ -673,6 +687,13 @@ const verifyPlatform = async (req, res) => {
       const leetcodeData = await getleetcodedata(user.leetcodeUsername, true);
       if (leetcodeData?.profile && JSON.stringify(leetcodeData.profile).includes(user.verificationCode)) {
         user.leetcodeVerified = true;
+        isVerified = true;
+      }
+    } else if (platform === 'linkedin') {
+      if (!user.linkedInUrl) return res.status(400).json({ message: 'No LinkedIn URL linked' });
+      const linkedinData = await getLinkedInData(user.linkedInUrl);
+      if (linkedinData && ((linkedinData.about && linkedinData.about.includes(user.verificationCode)) || (linkedinData.headline && linkedinData.headline.includes(user.verificationCode)))) {
+        user.linkedInVerified = true;
         isVerified = true;
       }
     } else {
