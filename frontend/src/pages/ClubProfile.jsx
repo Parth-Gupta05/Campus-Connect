@@ -194,7 +194,7 @@ export default function ClubProfile() {
 
                 {isClubManager && (
                   <Link
-                    to="/club/dashboard"
+                    to="/club"
                     className="h-8 px-3.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-2xs cursor-pointer"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" />

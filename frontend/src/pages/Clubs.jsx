@@ -132,7 +132,7 @@ export default function Clubs() {
 
       {user?.role === 'club' && (
         <Link
-          to="/club/dashboard"
+          to="/club"
           className="h-9 px-4 rounded-lg bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-2xs cursor-pointer whitespace-nowrap"
         >
           <ShieldCheck className="w-3.5 h-3.5" />
