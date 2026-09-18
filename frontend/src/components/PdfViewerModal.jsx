@@ -25,15 +25,16 @@ export default function PdfViewerModal({ url, title = 'Resume PDF', onClose }) {
   
   // Build proxy URL so that headers (Content-Disposition: inline, Content-Type: application/pdf)
   // are guaranteed and cross-origin embedding issues from external buckets/Cloudinary are eliminated.
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   let pdfSrc = '';
   if (url) {
-    if (url.startsWith('http://localhost:5000/api/user/portfolio/resume/pdf')) {
+    if (url.startsWith(`${apiUrl}/api/user/portfolio/resume/pdf`)) {
       pdfSrc = url;
     } else {
-      pdfSrc = `http://localhost:5000/api/user/portfolio/resume/pdf?url=${encodeURIComponent(url)}${token ? `&token=${token}` : ''}`;
+      pdfSrc = `${apiUrl}/api/user/portfolio/resume/pdf?url=${encodeURIComponent(url)}${token ? `&token=${token}` : ''}`;
     }
   } else {
-    pdfSrc = `http://localhost:5000/api/user/portfolio/resume/pdf${token ? `?token=${token}` : ''}`;
+    pdfSrc = `${apiUrl}/api/user/portfolio/resume/pdf${token ? `?token=${token}` : ''}`;
   }
 
   const directUrl = url || pdfSrc;

@@ -2,7 +2,8 @@ import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 // Configure axios defaults
-axios.defaults.baseURL = 'http://localhost:5000/api';
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+axios.defaults.baseURL = `${apiUrl}/api`;
 axios.defaults.withCredentials = true; // Send cookies
 
 export const AuthContext = createContext();
