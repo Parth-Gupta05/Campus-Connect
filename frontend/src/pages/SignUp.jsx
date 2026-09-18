@@ -13,11 +13,15 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
-  UserCheck
+  UserCheck,
+  Check,
+  Edit2,
+  X
 } from 'lucide-react';
 import ThemeSwitcher from '../components/ui/ThemeSwitcher';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import { parseUID, generateUID, BRANCHES } from '../utils/uidUtils';
 
 export default function SignUp() {
   const [identifier, setIdentifier] = useState('');
@@ -28,9 +32,36 @@ export default function SignUp() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // UID Verification State
+  const [uidVerified, setUidVerified] = useState(false);
+  const [showUidModal, setShowUidModal] = useState(false);
+  const [isEditingUid, setIsEditingUid] = useState(false);
+  const [parsedProfileData, setParsedProfileData] = useState(null);
+
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
   const { showToast } = useToast();
+
+  React.useEffect(() => {
+    if (uidVerified) setUidVerified(false);
+  }, [identifier]);
+
+  const handleVerifyUID = () => {
+    const trimmedIdentifier = identifier.trim();
+    if (trimmedIdentifier.includes('@')) return;
+    const match = trimmedIdentifier.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
+    if (!match) {
+      setError('Invalid UID format. Expected format: 23-COMPA10-27');
+      return;
+    }
+    const data = parseUID(trimmedIdentifier);
+    if (data) {
+      setParsedProfileData(data);
+      setIsEditingUid(false);
+      setShowUidModal(true);
+      setError('');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,6 +80,10 @@ export default function SignUp() {
         setError('Invalid UID format. Expected format: 23-COMPA10-27');
         return;
       }
+      if (!uidVerified) {
+        setError('Please click "Verify UID" to confirm your details before creating an account.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -57,7 +92,8 @@ export default function SignUp() {
       await axios.post('/auth/register', {
         identifier: trimmedIdentifier,
         password,
-        role: 'student'
+        role: 'student',
+        profileData: uidVerified ? parsedProfileData : null
       });
 
       await login(trimmedIdentifier, password, false);
@@ -122,18 +158,38 @@ export default function SignUp() {
 
             {/* Sign Up Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                id="identifier"
-                label="Email or University UID"
-                type="text"
-                required
-                icon={Mail}
-                placeholder="e.g. 23-COMPA10-27 or student@campus.edu"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                size="lg"
-                helperText="Use your institutional email or registered UID format."
-              />
+              <div className="relative">
+                <Input
+                  id="identifier"
+                  label="Email or University UID"
+                  type="text"
+                  required
+                  icon={Mail}
+                  placeholder="e.g. 23-COMPA10-27 or student@campus.edu"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  size="lg"
+                  helperText="Use your institutional email or registered UID format."
+                  rightElement={
+                    identifier && /^\d{2}-/.test(identifier) && (
+                      uidVerified ? (
+                        <div className="flex items-center text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded text-xs font-semibold gap-1 border border-emerald-500/20 mr-1 mt-0.5 whitespace-nowrap">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleVerifyUID}
+                          className="text-xs font-semibold bg-gray-1000 text-background-100 px-3 py-1.5 rounded hover:opacity-90 transition-opacity mr-1 mt-0.5 whitespace-nowrap cursor-pointer"
+                        >
+                          Verify UID
+                        </button>
+                      )
+                    )
+                  }
+                />
+              </div>
 
               <div>
                 <Input
@@ -231,6 +287,137 @@ export default function SignUp() {
         <span>© 2026 Campus Connect Inc.</span>
         <span>Secure Registration</span>
       </footer>
+
+      {/* UID Verification Modal */}
+      {showUidModal && parsedProfileData && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-background-100 border border-gray-400 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 relative overflow-hidden">
+            {/* Background decoration */}
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="flex justify-between items-start relative z-10">
+              <div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold bg-blue-500/10 text-blue-700 border border-blue-500/20">
+                  UID Verification
+                </span>
+                <h3 className="text-lg font-bold text-gray-1000 mt-1">Verify Your Details</h3>
+                <p className="text-xs text-gray-600 mt-1">We extracted this information from your UID. Is this correct?</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowUidModal(false)}
+                className="p-1 text-gray-600 hover:text-gray-1000 rounded hover:bg-gray-200 cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {isEditingUid ? (
+              <div className="space-y-4 pt-2 relative z-10">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-1000 mb-1">Branch</label>
+                  <select 
+                    value={parsedProfileData.branch}
+                    onChange={(e) => setParsedProfileData({...parsedProfileData, branch: e.target.value})}
+                    className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
+                  >
+                    {BRANCHES.map(branch => (
+                      <option key={branch} value={branch}>{branch}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-1000 mb-1">Semester</label>
+                    <select
+                      value={parsedProfileData.currentSem}
+                      onChange={(e) => setParsedProfileData({...parsedProfileData, currentSem: parseInt(e.target.value)})}
+                      className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
+                    >
+                      {[1,2,3,4,5,6,7,8].map(sem => (
+                        <option key={sem} value={sem}>Semester {sem}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-1000 mb-1">Division</label>
+                    <input
+                      type="text"
+                      maxLength={1}
+                      value={parsedProfileData.division}
+                      onChange={(e) => setParsedProfileData({...parsedProfileData, division: e.target.value.toUpperCase().replace(/[^A-Z]/g, '')})}
+                      className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 uppercase focus:outline-none focus:border-gray-900 transition-colors"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-1000 mb-1">Roll Number</label>
+                  <input
+                    type="number"
+                    value={parsedProfileData.rollNo}
+                    onChange={(e) => setParsedProfileData({...parsedProfileData, rollNo: e.target.value})}
+                    className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="bg-background-200 rounded-xl border border-gray-400 p-4 space-y-3 relative z-10 shadow-sm">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] uppercase font-mono text-gray-500 font-semibold tracking-wider">Branch</span>
+                  <span className="text-sm font-semibold text-gray-1000">{parsedProfileData.branch}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 font-semibold tracking-wider">Semester</span>
+                    <span className="text-sm font-medium text-gray-1000">Sem {parsedProfileData.currentSem}</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 font-semibold tracking-wider">Division</span>
+                    <span className="text-sm font-medium text-gray-1000">Div {parsedProfileData.division}</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase font-mono text-gray-500 font-semibold tracking-wider">Roll No</span>
+                    <span className="text-sm font-medium text-gray-1000">{parsedProfileData.rollNo}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-400 relative z-10">
+              {isEditingUid ? (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingUid(false)}
+                  className="px-4 py-2 text-xs font-semibold text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
+                >
+                  Cancel Edit
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingUid(true)}
+                  className="px-4 py-2 text-xs font-semibold text-gray-700 hover:text-gray-1000 hover:bg-gray-200 rounded-md transition-colors flex items-center gap-1.5 cursor-pointer border border-transparent hover:border-gray-400"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  <span>No, let me edit</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const newUid = generateUID(parsedProfileData);
+                  setIdentifier(newUid);
+                  setUidVerified(true);
+                  setShowUidModal(false);
+                }}
+                className="px-5 py-2 text-xs font-semibold bg-gray-1000 text-background-100 hover:opacity-90 rounded-md transition-opacity flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                {isEditingUid ? 'Save & Confirm' : 'Yes, Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

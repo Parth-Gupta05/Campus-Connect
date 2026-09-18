@@ -61,6 +61,10 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  linkedInVerified: {
+    type: Boolean,
+    default: false,
+  },
   linkedInUrl: {
     type: String,
     default: '',
@@ -136,7 +140,8 @@ const UserSchema = new mongoose.Schema({
       issuedByClub: { type: Boolean, default: false },
       clubId: { type: mongoose.Schema.Types.ObjectId, ref: 'Club' },
       eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event' },
-      issuedAt: { type: Date, default: Date.now }
+      issuedAt: { type: Date, default: Date.now },
+      isHidden: { type: Boolean, default: false }
     }],
     achievements: [mongoose.Schema.Types.Mixed]
   },

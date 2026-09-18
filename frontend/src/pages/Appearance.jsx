@@ -115,10 +115,30 @@ export default function Appearance() {
     }));
   };
 
+  const handleCertVisibilityChange = (certIndex) => {
+    setProfileData(prev => {
+      if (!prev || !prev.resumeDetails || !prev.resumeDetails.certificates) return prev;
+      const newCerts = [...prev.resumeDetails.certificates];
+      newCerts[certIndex] = { ...newCerts[certIndex], isHidden: !newCerts[certIndex].isHidden };
+      return {
+        ...prev,
+        resumeDetails: {
+          ...prev.resumeDetails,
+          certificates: newCerts
+        }
+      };
+    });
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       await axios.patch('/user/profile/customization', customization);
+      
+      if (profileData?.resumeDetails) {
+        await axios.put('/user/portfolio', profileData.resumeDetails);
+      }
+      
       showToast('Profile appearance saved successfully!', 'success');
     } catch (err) {
       console.error('Failed to save settings', err);
@@ -315,6 +335,25 @@ export default function Appearance() {
                     </label>
                   ))}
                 </div>
+
+                {customization.visibility.showCertificates && profileData?.resumeDetails?.certificates?.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-800">
+                    <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Individual Certifications</h3>
+                    <div className="space-y-1 pl-2 border-l-2 border-gray-200 dark:border-gray-800">
+                      {profileData.resumeDetails.certificates.map((cert, index) => (
+                        <label key={cert._id || index} className="flex items-center justify-between text-[13px] p-1.5 hover:bg-background-200 rounded cursor-pointer">
+                          <span className="truncate pr-4 text-gray-700">{cert.title || 'Untitled Certificate'}</span>
+                          <input 
+                            type="checkbox" 
+                            className="rounded text-gray-900 border-gray-300 focus:ring-gray-900 w-3.5 h-3.5 shrink-0" 
+                            checked={!cert.isHidden} 
+                            onChange={() => handleCertVisibilityChange(index)} 
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </section>
               
               <section className="space-y-3 pt-4 border-t border-gray-300">

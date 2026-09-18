@@ -45,6 +45,17 @@ export default function AdminClubs() {
   const [leaderToDelete, setLeaderToDelete] = useState(null);
   const [isDeletingLeader, setIsDeletingLeader] = useState(false);
 
+  // Custom Reset Password Modal state
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [clubToReset, setClubToReset] = useState(null);
+  const [isResetting, setIsResetting] = useState(false);
+
+  // Custom Delete Club Modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [clubToDelete, setClubToDelete] = useState(null);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  const [isDeletingClub, setIsDeletingClub] = useState(false);
+
   // Create Club Form State
   const [newClubName, setNewClubName] = useState('');
   const [newClubCategory, setNewClubCategory] = useState('Technical');
@@ -221,36 +232,55 @@ export default function AdminClubs() {
     }
   };
 
-  const handleResetPassword = async (club) => {
-    if (!window.confirm(`Are you sure you want to reset the login password for ${club.name}?`)) return;
+  const handleResetPassword = (club) => {
+    setClubToReset(club);
+    setShowResetModal(true);
+  };
 
+  const executeResetPassword = async () => {
+    if (!clubToReset) return;
+    setIsResetting(true);
     try {
-      const res = await axios.patch(`/admin/clubs/${club._id}/reset-password`);
+      const res = await axios.patch(`/admin/clubs/${clubToReset._id}/reset-password`);
       showToast('Password reset successfully!', 'success');
+      setShowResetModal(false);
       setLatestCredentials({
-        clubName: club.name,
+        clubName: clubToReset.name,
         email: res.data.credentials.email,
         password: res.data.credentials.password
       });
       setShowCredentialsModal(true);
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to reset password', 'error');
+    } finally {
+      setIsResetting(false);
+      setClubToReset(null);
     }
   };
 
-  const handleDeleteClub = async (club) => {
-    const confirmation = window.prompt(`Type "${club.name}" to confirm permanent deletion of this club:`);
-    if (confirmation !== club.name) {
-      if (confirmation !== null) showToast('Club name confirmation did not match', 'info');
+  const handleDeleteClub = (club) => {
+    setClubToDelete(club);
+    setDeleteConfirmationText('');
+    setShowDeleteModal(true);
+  };
+
+  const executeDeleteClub = async () => {
+    if (!clubToDelete) return;
+    if (deleteConfirmationText !== clubToDelete.name) {
+      showToast('Club name confirmation did not match', 'info');
       return;
     }
-
+    setIsDeletingClub(true);
     try {
-      await axios.delete(`/admin/clubs/${club._id}`);
+      await axios.delete(`/admin/clubs/${clubToDelete._id}`);
       showToast('Club removed successfully', 'success');
+      setShowDeleteModal(false);
       fetchClubs();
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to delete club', 'error');
+    } finally {
+      setIsDeletingClub(false);
+      setClubToDelete(null);
     }
   };
 
@@ -1357,6 +1387,137 @@ export default function AdminClubs() {
                   <>
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Remove Leader</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 6: RESET CLUB PASSWORD */}
+      {/* ========================================================================= */}
+      {showResetModal && clubToReset && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-md z-[160] flex items-center justify-center p-4 overscroll-contain animate-in fade-in duration-150"
+          onClick={() => !isResetting && setShowResetModal(false)}
+        >
+          <div 
+            className="bg-background-100 border border-gray-400 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col text-gray-1000 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center text-blue-600 shrink-0">
+                  <Key className="w-5 h-5" strokeWidth={1.75} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-gray-1000 tracking-tight">
+                    Reset Login Password
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Are you sure you want to reset the login password for <strong className="text-gray-1000 font-semibold">{clubToReset.name}</strong>?
+                  </p>
+                </div>
+              </div>
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-700 text-xs flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>
+                  This action will invalidate the current password immediately. You will be provided with a new set of credentials to distribute to the Core Committee.
+                </span>
+              </div>
+            </div>
+            <div className="p-3.5 px-6 bg-background-200/80 border-t border-gray-400 flex items-center justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                disabled={isResetting}
+                onClick={() => setShowResetModal(false)}
+                className="h-8 px-3.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isResetting}
+                onClick={executeResetPassword}
+                className="h-8 px-4 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+              >
+                {isResetting ? (
+                  <span>Resetting...</span>
+                ) : (
+                  <>
+                    <Key className="w-3.5 h-3.5" />
+                    <span>Reset Password</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 7: DELETE CLUB */}
+      {/* ========================================================================= */}
+      {showDeleteModal && clubToDelete && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-md z-[160] flex items-center justify-center p-4 overscroll-contain animate-in fade-in duration-150"
+          onClick={() => !isDeletingClub && setShowDeleteModal(false)}
+        >
+          <div 
+            className="bg-background-100 border border-gray-400 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col text-gray-1000 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/25 flex items-center justify-center text-red-600 shrink-0">
+                  <Trash2 className="w-5 h-5" strokeWidth={1.75} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-bold text-gray-1000 tracking-tight">
+                    Delete Organization
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    This action is permanent and cannot be undone. All events, points, and records associated with <strong className="text-gray-1000 font-semibold">{clubToDelete.name}</strong> will be lost.
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2 pt-2">
+                <label className="block text-xs font-semibold text-gray-1000">
+                  Type "{clubToDelete.name}" to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmationText}
+                  onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-background-200 border border-gray-400 rounded-lg text-gray-1000 focus:outline-none focus:border-red-500"
+                  placeholder={clubToDelete.name}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="p-3.5 px-6 bg-background-200/80 border-t border-gray-400 flex items-center justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                disabled={isDeletingClub}
+                onClick={() => setShowDeleteModal(false)}
+                className="h-8 px-3.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingClub || deleteConfirmationText !== clubToDelete.name}
+                onClick={executeDeleteClub}
+                className="h-8 px-4 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition-colors cursor-pointer shadow-2xs flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeletingClub ? (
+                  <span>Deleting...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Club</span>
                   </>
                 )}
               </button>
