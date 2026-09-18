@@ -828,9 +828,11 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                             />
                           </div>
                           <div>
-                            <label className="text-[11px] font-medium text-gray-800">CGPA / Grade</label>
+                            <label className="text-[11px] font-medium text-gray-800">
+                              {['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? 'Percentage / Grade' : 'CGPA / Grade'}
+                            </label>
                             <input 
-                              placeholder="e.g. 8.85"
+                              placeholder={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? 'e.g. 85.5%' : 'e.g. 8.85'}
                               className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
                               value={edu.grade || edu.cgpa || ''} 
                               onChange={e => {
