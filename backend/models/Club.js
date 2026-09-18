@@ -53,6 +53,29 @@ const ClubSchema = new mongoose.Schema({
       enum: ['Core', 'WC', 'Member'],
       default: 'Member'
     }
+  }],
+  hasMembershipSystem: {
+    type: Boolean,
+    default: false
+  },
+  wcRoles: [{
+    type: String
+  }],
+  pendingMembers: [{
+    uid: {
+      type: String,
+      required: true,
+      uppercase: true
+    },
+    name: {
+      type: String,
+      default: ''
+    },
+    tier: {
+      type: String,
+      enum: ['Core', 'WC', 'Member'],
+      default: 'Member'
+    }
   }]
 }, { timestamps: true });
 

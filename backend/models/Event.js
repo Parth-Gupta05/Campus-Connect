@@ -42,6 +42,15 @@ const EventSchema = new mongoose.Schema({
     enum: ['upcoming', 'ongoing', 'completed'],
     default: 'upcoming'
   },
+  audience: {
+    type: String,
+    enum: ['All', 'Members Only', 'Department Only'],
+    default: 'All'
+  },
+  targetAudienceBranch: {
+    type: String,
+    default: ''
+  },
   durationHours: {
     type: Number,
     default: 2,
