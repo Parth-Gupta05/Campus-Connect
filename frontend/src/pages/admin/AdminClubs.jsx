@@ -50,6 +50,13 @@ export default function AdminClubs() {
   const [clubToReset, setClubToReset] = useState(null);
   const [isResetting, setIsResetting] = useState(false);
 
+  // Custom WC Roles Modal state
+  const [showWcRolesModal, setShowWcRolesModal] = useState(false);
+  const [clubForWcRoles, setClubForWcRoles] = useState(null);
+  const [wcRolesInput, setWcRolesInput] = useState('');
+  const [wcRolesList, setWcRolesList] = useState([]);
+  const [isUpdatingWcRoles, setIsUpdatingWcRoles] = useState(false);
+
   // Custom Delete Club Modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [clubToDelete, setClubToDelete] = useState(null);
@@ -267,20 +274,66 @@ export default function AdminClubs() {
   const executeDeleteClub = async () => {
     if (!clubToDelete) return;
     if (deleteConfirmationText !== clubToDelete.name) {
-      showToast('Club name confirmation did not match', 'info');
+      showToast('Club name does not match', 'error');
       return;
     }
-    setIsDeletingClub(true);
     try {
+      setIsDeletingClub(true);
       await axios.delete(`/admin/clubs/${clubToDelete._id}`);
-      showToast('Club removed successfully', 'success');
+      showToast('Club deleted successfully', 'success');
       setShowDeleteModal(false);
+      setClubToDelete(null);
+      setDeleteConfirmationText('');
       fetchClubs();
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to delete club', 'error');
     } finally {
       setIsDeletingClub(false);
-      setClubToDelete(null);
+    }
+  };
+
+  const handleToggleMembership = async (club) => {
+    try {
+      const res = await axios.patch(`/admin/clubs/${club._id}/membership`);
+      showToast(res.data.message, 'success');
+      setClubs(clubs.map(c => c._id === club._id ? { ...c, hasMembershipSystem: !c.hasMembershipSystem } : c));
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to toggle membership system', 'error');
+    }
+  };
+
+  const openWcRolesModal = (club) => {
+    setClubForWcRoles(club);
+    setWcRolesList(club.wcRoles || []);
+    setWcRolesInput('');
+    setShowWcRolesModal(true);
+  };
+
+  const handleAddWcRole = (e) => {
+    e.preventDefault();
+    const role = wcRolesInput.trim();
+    if (role && !wcRolesList.includes(role)) {
+      setWcRolesList([...wcRolesList, role]);
+      setWcRolesInput('');
+    }
+  };
+
+  const handleRemoveWcRole = (roleToRemove) => {
+    setWcRolesList(wcRolesList.filter(role => role !== roleToRemove));
+  };
+
+  const handleUpdateWcRoles = async () => {
+    if (!clubForWcRoles) return;
+    setIsUpdatingWcRoles(true);
+    try {
+      const res = await axios.patch(`/admin/clubs/${clubForWcRoles._id}/wcroles`, { wcRoles: wcRolesList });
+      showToast(res.data.message, 'success');
+      setClubs(clubs.map(c => c._id === clubForWcRoles._id ? { ...c, wcRoles: wcRolesList } : c));
+      setShowWcRolesModal(false);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to update WC roles', 'error');
+    } finally {
+      setIsUpdatingWcRoles(false);
     }
   };
 
@@ -481,6 +534,7 @@ export default function AdminClubs() {
                   <th className="p-4">Official Email</th>
                   <th className="p-4">Core Committee Leadership</th>
                   <th className="p-4 text-center">Activities</th>
+                  <th className="p-4 text-center">Membership System</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -597,6 +651,21 @@ export default function AdminClubs() {
                           </span>
                         </td>
 
+                        {/* Membership Toggle */}
+                        <td className="p-4 text-center">
+                          <button
+                            onClick={() => handleToggleMembership(club)}
+                            className={`px-3 py-1 text-xs font-mono font-medium rounded-md border transition-colors cursor-pointer ${
+                              club.hasMembershipSystem 
+                                ? 'bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-400 hover:bg-green-500/20' 
+                                : 'bg-gray-500/10 border-gray-400/50 text-gray-600 hover:bg-gray-500/20'
+                            }`}
+                            title={`Click to ${club.hasMembershipSystem ? 'disable' : 'enable'} official membership system`}
+                          >
+                            {club.hasMembershipSystem ? 'Enabled' : 'Disabled'}
+                          </button>
+                        </td>
+
                         {/* Actions */}
                         <td className="p-4 text-right">
                           <div className="inline-flex items-center gap-1.5">
@@ -606,6 +675,13 @@ export default function AdminClubs() {
                               title="Manage Core Committee"
                             >
                               <UserPlus className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => openWcRolesModal(club)}
+                              className="p-1.5 rounded-md border border-gray-400 bg-background-200 text-gray-800 hover:text-gray-1000 hover:bg-gray-300 transition-colors cursor-pointer"
+                              title="Configure WC Roles"
+                            >
+                              <Layers className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleResetPassword(club)}
@@ -1526,6 +1602,101 @@ export default function AdminClubs() {
         </div>
       )}
 
+      {/* WC Roles Configuration Modal */}
+      {showWcRolesModal && clubForWcRoles && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-1000/60 backdrop-blur-sm">
+          <div className="bg-background-100 rounded-xl w-full max-w-md border border-gray-400 shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-gray-400 bg-background-200 shrink-0">
+              <div>
+                <h3 className="text-heading-18 font-bold text-gray-1000">Configure WC Roles</h3>
+                <p className="text-xs text-gray-700 mt-0.5">{clubForWcRoles.name}</p>
+              </div>
+              <button 
+                onClick={() => setShowWcRolesModal(false)} 
+                className="p-2 rounded-full hover:bg-gray-300 transition-colors text-gray-600 hover:text-gray-900"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-4">
+              <form onSubmit={handleAddWcRole}>
+                <label className="block text-xs font-mono uppercase text-gray-700 mb-1.5 font-semibold">
+                  Add New WC Role
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={wcRolesInput}
+                    onChange={(e) => setWcRolesInput(e.target.value)}
+                    placeholder="e.g. Technical Head"
+                    className="flex-1 px-3 py-2 text-sm bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 transition-colors"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!wcRolesInput.trim()}
+                    className="px-4 py-2 bg-gray-1000 text-background-100 text-sm font-medium rounded-md hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Add
+                  </button>
+                </div>
+              </form>
+
+              <div className="mt-6">
+                <label className="block text-xs font-mono uppercase text-gray-700 mb-2 font-semibold">
+                  Configured Roles
+                </label>
+                {wcRolesList.length === 0 ? (
+                  <p className="text-sm text-gray-600 italic p-4 bg-background-200 border border-gray-400 rounded-lg text-center">
+                    No WC roles configured. Club admins will not be able to assign Working Committee members.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {wcRolesList.map((role) => (
+                      <div key={role} className="flex items-center gap-1.5 px-3 py-1.5 bg-background-200 border border-gray-400 rounded-full text-sm text-gray-1000">
+                        <span>{role}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveWcRole(role)}
+                          className="p-0.5 rounded-full hover:bg-red-500/10 text-gray-500 hover:text-red-500 transition-colors"
+                          title="Remove Role"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-6 border-t border-gray-400 bg-background-200 shrink-0 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowWcRolesModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleUpdateWcRoles}
+                disabled={isUpdatingWcRoles}
+                className="px-4 py-2 rounded-md bg-gray-1000 text-background-100 text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer disabled:opacity-70"
+              >
+                {isUpdatingWcRoles ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-background-100 border-t-transparent rounded-full animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  'Save Configuration'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
