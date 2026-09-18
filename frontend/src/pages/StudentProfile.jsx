@@ -5,6 +5,7 @@ import ImageCropperModal from '../components/ImageCropperModal';
 import PdfViewerModal from '../components/PdfViewerModal';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { calculateProfileCompleteness } from '../utils/profileUtils';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
 import {
@@ -416,7 +417,16 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
   const [leetcodeUsername, setLeetcodeUsername] = useState(profile?.leetcodeUsername || '');
   const [linkedInUrl, setLinkedInUrl] = useState(profile?.linkedInUrl || '');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [education, setEducation] = useState(profile?.resumeDetails?.education || []);
+  const defaultEducation = [
+    { degree: 'High School (10th Std)', institution: '', duration: '', score: '' },
+    { degree: '11th and 12th or Diploma', institution: '', duration: '', score: '' },
+    { degree: 'Undergrad Degree', institution: '', duration: '', score: '' }
+  ];
+  const [education, setEducation] = useState(() => {
+    const existing = profile?.resumeDetails?.education;
+    if (existing && existing.length > 0) return existing;
+    return defaultEducation;
+  });
   const [experience, setExperience] = useState(profile?.resumeDetails?.experience || []);
   const [projects, setProjects] = useState(profile?.resumeDetails?.projects || []);
   const [achievements, setAchievements] = useState(profile?.resumeDetails?.achievements || []);
@@ -1369,23 +1379,7 @@ export default function StudentProfile() {
   const hasIncompleteCerts = allCertificates.length === 0 ? false : allCertificates.some(cert => !cert.isComplete);
   const hasCertificates = allCertificates.length > 0;
 
-  const missingSections = [];
-  if (skills.length === 0) missingSections.push('Skills');
-  if (experience.length === 0) missingSections.push('Experience');
-  if (education.length === 0) missingSections.push('Education');
-  if (projects.length === 0) missingSections.push('Projects');
-  if (achievements.length === 0) missingSections.push('Achievements');
-  if (!portfolioUrl) missingSections.push('Portfolio');
-  if (!hasCertificates || hasIncompleteCerts) missingSections.push('Certificates');
-
-  let profileStrength = 10;
-  if (skills.length > 0) profileStrength += 15;
-  if (experience.length > 0) profileStrength += 15;
-  if (education.length > 0) profileStrength += 15;
-  if (projects.length > 0) profileStrength += 15;
-  if (achievements.length > 0) profileStrength += 10;
-  if (portfolioUrl) profileStrength += 10;
-  if (hasCertificates && !hasIncompleteCerts) profileStrength += 10;
+  const { profileStrength, missingSections } = profile ? calculateProfileCompleteness(profile) : { profileStrength: 0, missingSections: [] };
 
   const handleShareProfile = async () => {
     if (!profile.uid) {

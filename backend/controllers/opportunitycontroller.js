@@ -1,13 +1,9 @@
 const Opportunity = require('../models/Opportunities');
 const Applicant = require('../models/Applicants');
 const User = require('../models/User');
-const cloudinary = require('cloudinary').v2;
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const { analyzeResumeCompatibility } = require('../utils/gemini');
+const { calculateProfileCompleteness } = require('../utils/profileUtils');
+const cloudinary = require('../config/cloudinary');
 
 /**
  * @desc    Get all active opportunities with optional filtering, search & pagination
@@ -131,6 +127,19 @@ const applyForOpportunity = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'This opportunity is no longer active',
+      });
+    }
+
+    // Enforce Profile Completeness Constraint
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    const { profileStrength, missingSections } = calculateProfileCompleteness(user);
+    if (profileStrength < 100) {
+      return res.status(403).json({
+        success: false,
+        message: 'You must complete your profile to 100% before applying for opportunities. Missing sections: ' + missingSections.join(', '),
       });
     }
 

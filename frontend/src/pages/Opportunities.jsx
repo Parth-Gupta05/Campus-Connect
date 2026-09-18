@@ -3,6 +3,7 @@ import axios from 'axios';
 import PageHeader from '../components/ui/PageHeader';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { calculateProfileCompleteness } from '../utils/profileUtils';
 import {
   Briefcase,
   MapPin,
@@ -138,6 +139,8 @@ export default function Opportunities() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [studentProfile, setStudentProfile] = useState(null);
+  const [profileStrength, setProfileStrength] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('ALL');
   const [sortBy, setSortBy] = useState('recent');
@@ -162,19 +165,25 @@ export default function Opportunities() {
 
   const [vaultResumes, setVaultResumes] = useState([]);
 
-  const fetchVaultResumes = async () => {
+  const fetchVaultResumesAndProfile = async () => {
     try {
       if (user) {
-        const res = await axios.get('/user/resumes');
-        setVaultResumes(res.data?.resumes || []);
+        const [resumesRes, profileRes] = await Promise.all([
+          axios.get('/user/resumes'),
+          axios.get('/user/profile')
+        ]);
+        setVaultResumes(resumesRes.data?.resumes || []);
+        setStudentProfile(profileRes.data);
+        const { profileStrength: strength } = calculateProfileCompleteness(profileRes.data);
+        setProfileStrength(strength);
       }
     } catch (err) {
-      console.error('Failed to fetch resumes:', err);
+      console.error('Failed to fetch user data:', err);
     }
   };
 
   useEffect(() => {
-    fetchVaultResumes();
+    fetchVaultResumesAndProfile();
   }, [user]);
 
   useEffect(() => {
@@ -734,12 +743,15 @@ export default function Opportunities() {
                     <button
                       type="button"
                       onClick={() => setIsApplyModalOpen(true)}
-                      disabled={isApplied || applying}
-                      className={`h-9 px-5 rounded-lg text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                      disabled={isApplied || applying || profileStrength < 100}
+                      className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-2xs ${
                         isApplied
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 cursor-default'
-                          : 'bg-gray-1000 text-background-100 hover:opacity-90 active:scale-[0.98]'
+                          ? 'bg-green-500/10 text-green-600 border border-green-500/20 cursor-not-allowed'
+                          : profileStrength < 100
+                          ? 'bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed'
+                          : 'bg-gray-1000 text-background-100 hover:opacity-90 active:scale-95'
                       }`}
+                      title={profileStrength < 100 ? 'Complete your profile to 100% to apply' : ''}
                     >
                       {isApplied ? (
                         <>
