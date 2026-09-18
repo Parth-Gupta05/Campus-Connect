@@ -93,6 +93,23 @@ export default function Events() {
     };
   };
 
+  const checkEventAccess = (event) => {
+    if (!user || user.role !== 'student') return { canRegister: false, message: 'Students only' };
+    
+    if (event.audience === 'Members Only') {
+      const isMember = event.clubId?.assignedStudents?.some(s => s.studentId?._id === user._id || s.studentId === user._id);
+      if (!isMember) return { canRegister: false, message: 'Members Only' };
+    }
+    
+    if (event.audience === 'Department Only' && event.targetAudienceBranch) {
+      if (user.branch !== event.targetAudienceBranch && user.shortCode !== event.targetAudienceBranch) {
+        return { canRegister: false, message: `${event.targetAudienceBranch} Only` };
+      }
+    }
+    
+    return { canRegister: true, message: '' };
+  };
+
   const handleRegister = async (event) => {
     setRegisteringEventId(event._id);
     try {
@@ -469,6 +486,13 @@ export default function Events() {
                             <Calendar className="w-3 h-3 text-white/80" />
                             <span>{eventDateStr}</span>
                           </div>
+                          
+                          {/* Floating Bottom-Left Restriction Badge */}
+                          {ev.audience && ev.audience !== 'All' && (
+                            <div className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-md bg-orange-600/90 backdrop-blur-md border border-orange-400/50 shadow-lg flex items-center gap-1 text-[10px] font-mono font-bold tracking-tight text-white">
+                              <span>{ev.audience === 'Department Only' ? `${ev.targetAudienceBranch} Only` : 'Members Only'}</span>
+                            </div>
+                          )}
 
                           {/* Floating Top-Right Registration Status */}
                           {isRegistered && (
@@ -568,9 +592,9 @@ export default function Events() {
                             <button
                               type="button"
                               onClick={() => handleRegister(ev)}
-                              disabled={isRegistering || !isRegistrationOpen(ev)}
+                              disabled={isRegistering || !isRegistrationOpen(ev) || !checkEventAccess(ev).canRegister}
                               className={`flex-1 h-9 px-3 rounded-lg text-xs font-medium shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                                isRegistrationOpen(ev) 
+                                isRegistrationOpen(ev) && checkEventAccess(ev).canRegister
                                   ? 'bg-gray-1000 text-background-100 hover:opacity-90 disabled:opacity-50'
                                   : 'bg-background-200 text-gray-500 border border-gray-400 cursor-not-allowed opacity-70'
                               }`}
@@ -582,6 +606,8 @@ export default function Events() {
                                 </>
                               ) : !isRegistrationOpen(ev) ? (
                                 <span>Registration Closed</span>
+                              ) : !checkEventAccess(ev).canRegister ? (
+                                <span>{checkEventAccess(ev).message}</span>
                               ) : (
                                 <>
                                   <span>Register Now</span>
@@ -907,15 +933,17 @@ export default function Events() {
                       handleRegister(selectedEventForDetail);
                       setSelectedEventForDetail(null);
                     }}
-                    disabled={registeringEventId === selectedEventForDetail._id || !isRegistrationOpen(selectedEventForDetail)}
+                    disabled={registeringEventId === selectedEventForDetail._id || !isRegistrationOpen(selectedEventForDetail) || !checkEventAccess(selectedEventForDetail).canRegister}
                     className={`h-9 px-4 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
-                      isRegistrationOpen(selectedEventForDetail)
+                      isRegistrationOpen(selectedEventForDetail) && checkEventAccess(selectedEventForDetail).canRegister
                         ? 'bg-gray-1000 text-background-100 hover:opacity-90 disabled:opacity-50'
                         : 'bg-background-200 text-gray-500 border border-gray-400 cursor-not-allowed opacity-70'
                     }`}
                   >
                     {!isRegistrationOpen(selectedEventForDetail) ? (
                       <span>Registration Closed</span>
+                    ) : !checkEventAccess(selectedEventForDetail).canRegister ? (
+                      <span>{checkEventAccess(selectedEventForDetail).message}</span>
                     ) : (
                       <>
                         <span>Register for Event</span>

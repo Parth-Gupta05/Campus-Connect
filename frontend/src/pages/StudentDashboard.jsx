@@ -1153,8 +1153,13 @@ export default function StudentDashboard() {
                           className="py-3 flex items-center justify-between group cursor-pointer hover:bg-background-100/50 -mx-2 px-2 rounded-md transition-colors"
                         >
                           <div className="min-w-0 pr-4">
-                            <div className="text-xs font-medium text-gray-1000 group-hover:underline truncate">
+                            <div className="text-xs font-medium text-gray-1000 group-hover:underline truncate flex items-center gap-2">
                               {ev.title}
+                              {ev.audience && ev.audience !== 'All' && (
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-orange-100 text-orange-700 border border-orange-200 shrink-0">
+                                  {ev.audience === 'Department Only' ? `${ev.targetAudienceBranch} Only` : 'Members Only'}
+                                </span>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 text-[11px] text-gray-700 font-mono mt-0.5">
                               <span>{new Date(ev.date).toLocaleDateString()}</span>
@@ -1660,7 +1665,14 @@ export default function StudentDashboard() {
                           </div>
                         )}
                         <div>
-                          <div className="text-xs font-semibold text-gray-1000 truncate">{ev.title}</div>
+                          <div className="text-xs font-semibold text-gray-1000 truncate flex items-center gap-2">
+                            {ev.title}
+                            {ev.audience && ev.audience !== 'All' && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-orange-100 text-orange-700 border border-orange-200 shrink-0">
+                                {ev.audience === 'Department Only' ? `${ev.targetAudienceBranch} Only` : 'Members Only'}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[11px] text-gray-700 font-mono mt-1">
                             {new Date(ev.date).toLocaleDateString()} at {ev.time ? formatTime12h(ev.time) : 'TBA'}
                           </p>
