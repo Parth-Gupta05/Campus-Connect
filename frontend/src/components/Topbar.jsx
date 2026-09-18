@@ -136,7 +136,9 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
             >
               <Bell className="w-4 h-4" strokeWidth={1.5} />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-background-100" />
+                <span className="absolute top-1 right-1 flex items-center justify-center min-w-[14px] h-[14px] px-[3px] bg-red-500 text-white text-[9px] font-bold rounded-full ring-2 ring-background-100">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
             </button>
           )}
