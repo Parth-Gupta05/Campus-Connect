@@ -41,10 +41,7 @@ router.put('/profile', authMiddleware, clubMiddleware, async (req, res) => {
     }
     
     if (socials) {
-      if (!club.socials) club.socials = {};
-      if (socials.instagram !== undefined) club.socials.instagram = socials.instagram;
-      if (socials.facebook !== undefined) club.socials.facebook = socials.facebook;
-      if (socials.linkedin !== undefined) club.socials.linkedin = socials.linkedin;
+      club.socials = { ...club.socials, ...socials };
     }
 
     await club.save();
@@ -78,6 +75,92 @@ router.get('/search-students', authMiddleware, clubMiddleware, async (req, res) 
   }
 });
 
+// Batch import members
+router.post('/members/batch', authMiddleware, clubMiddleware, async (req, res) => {
+  try {
+    const { membersData } = req.body; // Array of { name, uid }
+    if (!membersData || !Array.isArray(membersData)) {
+      return res.status(400).json({ message: 'Invalid data format' });
+    }
+
+    const club = await Club.findById(req.user.id);
+    if (!club.hasMembershipSystem) {
+      return res.status(400).json({ message: 'Membership system is not enabled for this club' });
+    }
+
+    let addedCount = 0;
+    let pendingCount = 0;
+    let skippedCount = 0;
+
+    for (const data of membersData) {
+      const uid = (data.uid || '').trim().toUpperCase();
+      const name = (data.name || '').trim();
+      
+      if (!uid) {
+        skippedCount++;
+        continue;
+      }
+
+      // Check if already assigned
+      const alreadyAssigned = club.assignedStudents.some(member => 
+        member.studentId && member.studentId.toString() === data._id // We don't have _id easily, wait let's query first
+      );
+
+      const student = await User.findOne({ uid });
+
+      if (student) {
+        // Check if student is already in assignedStudents
+        if (club.assignedStudents.some(member => member.studentId.toString() === student._id.toString())) {
+          skippedCount++;
+          continue;
+        }
+        
+        club.assignedStudents.push({
+          studentId: student._id,
+          role: 'Member',
+          tier: 'Member'
+        });
+        addedCount++;
+        
+        // Notify the assigned student
+        await createNotification({
+          recipient: student._id,
+          recipientModel: 'User',
+          type: 'committee_assignment',
+          title: `Joined ${club.name}`,
+          message: `You have been added as an official member in ${club.name}. Welcome!`,
+          link: '/clubs',
+          sender: club._id,
+          senderModel: 'Club'
+        });
+      } else {
+        // Not found, add to pending if not already in pending
+        const alreadyPending = club.pendingMembers.some(p => p.uid === uid);
+        if (!alreadyPending) {
+          club.pendingMembers.push({ uid, name, tier: 'Member' });
+          pendingCount++;
+        } else {
+          skippedCount++;
+        }
+      }
+    }
+
+    await club.save();
+    
+    // Return updated assignedStudents and pendingMembers
+    const updatedClub = await Club.findById(req.user.id).populate('assignedStudents.studentId', 'name uid email avatarUrl branch currentSem');
+    
+    res.json({ 
+      message: `Batch import complete: ${addedCount} added, ${pendingCount} pending, ${skippedCount} skipped.`, 
+      assignedStudents: updatedClub.assignedStudents,
+      pendingMembers: updatedClub.pendingMembers
+    });
+  } catch (error) {
+    console.error('Batch import error:', error);
+    res.status(500).json({ message: 'Server error during batch import' });
+  }
+});
+
 // Add member by UID
 router.post('/members', authMiddleware, clubMiddleware, async (req, res) => {
   try {
@@ -89,19 +172,43 @@ router.post('/members', authMiddleware, clubMiddleware, async (req, res) => {
 
     const club = await Club.findById(req.user.id);
     
-    // Check if student already assigned
-    if (club.assignedStudents.some(member => member.studentId.toString() === student._id.toString())) {
-      return res.status(400).json({ message: 'Student is already a member of this club' });
-    }
-
     const { resolveMemberTier } = require('../utils/aicteCalculator');
     const resolvedTier = resolveMemberTier(club.name, role, tier);
 
-    club.assignedStudents.push({ 
-      studentId: student._id, 
-      role: role || 'Member',
-      tier: resolvedTier
-    });
+    // Enforce governance: Only root admins can assign 'Core' members.
+    if (resolvedTier === 'Core') {
+      return res.status(403).json({ message: 'Only root administrators can appoint Core Team members.' });
+    }
+
+    // Enforce WC Roles validation
+    if (resolvedTier === 'WC') {
+      if (!club.wcRoles || club.wcRoles.length === 0) {
+        return res.status(403).json({ message: 'No Working Committee roles configured by Root Admin. Assignment blocked.' });
+      }
+      if (!club.wcRoles.includes(role)) {
+        return res.status(400).json({ message: 'Invalid Working Committee role selected.' });
+      }
+    }
+
+    // Check if student already assigned
+    const existingIndex = club.assignedStudents.findIndex(
+      m => m.studentId && m.studentId.toString() === student._id.toString()
+    );
+
+    if (existingIndex > -1) {
+      // Prevent club admins from downgrading or editing a Core member
+      if (club.assignedStudents[existingIndex].tier === 'Core') {
+        return res.status(403).json({ message: 'Cannot modify a Core Team member. Contact a root admin to perform this action.' });
+      }
+      club.assignedStudents[existingIndex].role = role || club.assignedStudents[existingIndex].role || 'Member';
+      club.assignedStudents[existingIndex].tier = resolvedTier;
+    } else {
+      club.assignedStudents.push({ 
+        studentId: student._id, 
+        role: role || 'Member',
+        tier: resolvedTier
+      });
+    }
     await club.save();
 
     // Notify the assigned student
@@ -172,7 +279,9 @@ router.post('/events', authMiddleware, clubMiddleware, async (req, res) => {
       venue,
       durationHours,
       aicteCategory,
-      activitySummary
+      activitySummary,
+      audience,
+      targetAudienceBranch
     } = req.body;
     
     if (!title || !date || !time) {
@@ -218,6 +327,8 @@ router.post('/events', authMiddleware, clubMiddleware, async (req, res) => {
       durationHours: duration,
       aicteCategory: category,
       activitySummary: activitySummary || '',
+      audience: audience || 'All',
+      targetAudienceBranch: targetAudienceBranch || '',
       registeredStudents: coreRegistrations
     });
 

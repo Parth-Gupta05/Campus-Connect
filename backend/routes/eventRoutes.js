@@ -37,7 +37,9 @@ router.post('/', authMiddleware, clubMiddleware, async (req, res) => {
       durationHours,
       aicteCategory,
       activitySummary,
-      registrationDeadline
+      registrationDeadline,
+      audience,
+      targetAudienceBranch
     } = req.body;
     
     if (!title || !date || !time) {
@@ -93,6 +95,8 @@ router.post('/', authMiddleware, clubMiddleware, async (req, res) => {
       aicteCategory: category,
       activitySummary: activitySummary || '',
       registrationDeadline: parsedDeadline,
+      audience: audience || 'All',
+      targetAudienceBranch: targetAudienceBranch || '',
       registeredStudents: coreRegistrations
     });
 
@@ -118,7 +122,9 @@ router.put('/:eventId', authMiddleware, clubMiddleware, async (req, res) => {
       durationHours,
       aicteCategory,
       activitySummary,
-      registrationDeadline
+      registrationDeadline,
+      audience,
+      targetAudienceBranch
     } = req.body;
     
     if (!title || !date || !time) {
@@ -186,6 +192,8 @@ router.put('/:eventId', authMiddleware, clubMiddleware, async (req, res) => {
     event.aicteCategory = newCategory;
     event.activitySummary = activitySummary || '';
     event.registrationDeadline = parsedDeadline;
+    if (audience !== undefined) event.audience = audience;
+    if (targetAudienceBranch !== undefined) event.targetAudienceBranch = targetAudienceBranch;
 
     if (needsAicteRecalc) {
       event.registeredStudents.forEach(student => {
@@ -315,6 +323,32 @@ router.post('/:eventId/register', authMiddleware, async (req, res) => {
 
     if (alreadyRegistered) {
       return res.status(400).json({ message: 'Already registered for this event' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Audience Check
+    if (event.audience === 'Members Only') {
+      const club = await Club.findById(event.clubId);
+      if (!club) return res.status(404).json({ message: 'Club not found' });
+      
+      const isMember = club.assignedStudents.some(member => 
+        member.studentId && member.studentId.toString() === req.user.id
+      );
+      if (!isMember) {
+        return res.status(403).json({ message: 'This event is restricted to official club members only.' });
+      }
+    } else if (event.audience === 'Department Only' && event.targetAudienceBranch) {
+      if (user.branch !== event.targetAudienceBranch && user.shortCode !== event.targetAudienceBranch) {
+        // also checking shortCode in case that's stored instead of full branch name sometimes
+        const { getBranchShortcode } = require('../utils/uidUtils');
+        const userShortcode = getBranchShortcode(user.branch) || user.branch;
+        
+        if (userShortcode !== event.targetAudienceBranch) {
+          return res.status(403).json({ message: `This event is restricted to ${event.targetAudienceBranch} students only.` });
+        }
+      }
     }
 
     // Generate unique QR code token

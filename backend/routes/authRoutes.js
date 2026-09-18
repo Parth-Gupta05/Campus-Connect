@@ -35,6 +35,45 @@ const BRANCH_MAPPING = {
   CSE: "B.E. Computer Science and Engineering (Cyber Security)"
 };
 
+// Helper to auto-enroll users from pending members
+const processPendingMembers = async (user) => {
+  if (!user.uid) return;
+  try {
+    const { createNotification } = require('../utils/notificationService');
+    const clubs = await Club.find({ 'pendingMembers.uid': user.uid });
+    
+    for (const club of clubs) {
+      const pendingMatch = club.pendingMembers.find(p => p.uid === user.uid);
+      if (pendingMatch) {
+        // check if already in assignedStudents
+        if (!club.assignedStudents.some(s => s.studentId && s.studentId.toString() === user._id.toString())) {
+          club.assignedStudents.push({
+            studentId: user._id,
+            role: 'Member',
+            tier: pendingMatch.tier || 'Member'
+          });
+          
+          await createNotification({
+            recipient: user._id,
+            recipientModel: 'User',
+            type: 'committee_assignment',
+            title: `Joined ${club.name}`,
+            message: `You have been added as an official member in ${club.name}. Welcome!`,
+            link: '/clubs',
+            sender: club._id,
+            senderModel: 'Club'
+          });
+        }
+        // Remove from pending
+        club.pendingMembers = club.pendingMembers.filter(p => p.uid !== user.uid);
+        await club.save();
+      }
+    }
+  } catch (error) {
+    console.error('Error processing pending members:', error);
+  }
+};
+
 // Helper to parse UID
 const parseUID = (uid) => {
   const match = uid.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
@@ -151,6 +190,11 @@ router.post('/register', async (req, res) => {
     });
 
     await user.save();
+    
+    // Process any pending club memberships
+    if (user.uid) {
+      await processPendingMembers(user);
+    }
 
     // Create Access Token (auto login)
     const accessToken = jwt.sign(
@@ -367,6 +411,10 @@ router.post('/link-account', async (req, res) => {
     }
 
     await user.save();
+
+    if (identifier.toUpperCase() === user.uid) {
+      await processPendingMembers(user);
+    }
 
     res.json({
       message: 'Account linked successfully',

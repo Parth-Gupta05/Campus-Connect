@@ -292,6 +292,8 @@ router.get('/clubs', authMiddleware, adminMiddleware, async (req, res) => {
           profilePhoto: club.profilePhoto,
           bannerPhoto: club.bannerPhoto,
           socials: club.socials,
+          hasMembershipSystem: club.hasMembershipSystem || false,
+          wcRoles: club.wcRoles || [],
           totalMembersCount: (club.assignedStudents || []).length,
           coreMembersCount: coreMembers.length,
           eventsCount,
@@ -520,6 +522,47 @@ router.patch('/clubs/:clubId/reset-password', authMiddleware, adminMiddleware, a
   } catch (err) {
     console.error('Error resetting club password:', err);
     res.status(500).json({ message: 'Server error resetting club password' });
+  }
+});
+
+// @route   PATCH /api/admin/clubs/:clubId/membership
+// @desc    Toggle official membership system for a club
+// @access  Root Admin
+router.patch('/clubs/:clubId/membership', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const club = await Club.findById(req.params.clubId);
+    if (!club) return res.status(404).json({ message: 'Club not found' });
+
+    club.hasMembershipSystem = !club.hasMembershipSystem;
+    await club.save();
+
+    res.json({ message: `Membership system ${club.hasMembershipSystem ? 'enabled' : 'disabled'} for ${club.name}`, club });
+  } catch (err) {
+    console.error('Error toggling membership system:', err);
+    res.status(500).json({ message: 'Server error toggling membership system' });
+  }
+});
+
+// @route   PATCH /api/admin/clubs/:clubId/wcroles
+// @desc    Update Working Committee roles for a club
+// @access  Root Admin
+router.patch('/clubs/:clubId/wcroles', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { wcRoles } = req.body;
+    if (!Array.isArray(wcRoles)) {
+      return res.status(400).json({ message: 'wcRoles must be an array of strings' });
+    }
+
+    const club = await Club.findById(req.params.clubId);
+    if (!club) return res.status(404).json({ message: 'Club not found' });
+
+    club.wcRoles = wcRoles;
+    await club.save();
+
+    res.json({ message: `Working Committee roles updated for ${club.name}`, club });
+  } catch (err) {
+    console.error('Error updating WC roles:', err);
+    res.status(500).json({ message: 'Server error updating WC roles' });
   }
 });
 
