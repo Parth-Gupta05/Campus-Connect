@@ -64,7 +64,7 @@ const CountUp = ({ end }) => {
         return (
           <span key={i} className="inline-flex flex-col h-[1em] overflow-hidden leading-none relative">
             <span 
-              className="transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col"
+              className="transition-transform duration-1000 ease-geist flex flex-col"
               style={{ transform: mounted ? `translateY(-${(d + 1)}em)` : 'translateY(0)' }}
             >
               <span className="opacity-0">0</span>

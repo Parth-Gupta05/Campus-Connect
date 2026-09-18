@@ -431,7 +431,13 @@ const updatePortfolio = async (req, res) => {
 
       if (githubUsername !== undefined) user.githubUsername = githubUsername;
       if (leetcodeUsername !== undefined) user.leetcodeUsername = leetcodeUsername;
-      if (linkedInUrl !== undefined) user.linkedInUrl = linkedInUrl;
+      if (linkedInUrl !== undefined && linkedInUrl !== user.linkedInUrl) {
+        user.linkedInUrl = linkedInUrl;
+        user.linkedInVerified = false;
+        if (user.scrapedData && user.scrapedData.linkedin) {
+          delete user.scrapedData.linkedin;
+        }
+      }
       
       user.lastHandleUpdateAt = new Date();
       

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Briefcase, Users, LogOut, PanelLeft, ShieldAlert, Building2, Loader2 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -7,6 +7,7 @@ import { useToast } from '../../context/ToastContext';
 export default function AdminSidebar() {
   const { logout } = useContext(AuthContext);
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('cc_admin_sidebar_open');
@@ -53,7 +54,7 @@ export default function AdminSidebar() {
     try {
       await logout();
       showToast('Logged out successfully', 'success');
-      // AuthContext handles redirect to /signin
+      navigate('/signin');
     } catch (err) {
       setIsLoggingOut(false);
       showToast('Failed to log out', 'error');
@@ -68,14 +69,14 @@ export default function AdminSidebar() {
 
   return (
     <aside 
-      className={`bg-background-100 border-r border-gray-400 h-screen sticky top-0 flex flex-col z-50 shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width] select-none ${
+      className={`bg-background-100 border-r border-gray-400 h-screen sticky top-0 flex flex-col z-50 shrink-0 overflow-hidden transition-[width] duration-300 ease-geist will-change-[width] select-none ${
         isSidebarOpen ? 'w-64' : 'w-16'
       }`}
     >
       {/* Brand & Toggle Header */}
       <div className="h-14 flex items-center border-b border-gray-400 px-3.5 shrink-0 relative overflow-hidden bg-background-100">
         <div 
-          className={`flex items-center gap-2.5 min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`flex items-center gap-2.5 min-w-0 transition-all duration-300 ease-geist ${
             isSidebarOpen 
               ? 'opacity-100 translate-x-0' 
               : 'opacity-0 -translate-x-4 pointer-events-none absolute left-3.5'
@@ -105,7 +106,7 @@ export default function AdminSidebar() {
           }`}
         >
           <PanelLeft 
-            className={`w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`w-4 h-4 transition-transform duration-300 ease-geist ${
               isSidebarOpen ? 'rotate-0' : 'rotate-180'
             }`} 
             strokeWidth={1.5} 
@@ -136,7 +137,7 @@ export default function AdminSidebar() {
                 <Icon className="w-4 h-4" strokeWidth={1.5} />
               </div>
               <span 
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-geist ${
                   isSidebarOpen 
                     ? 'max-w-[160px] opacity-100 translate-x-0 ml-3' 
                     : 'max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none'
@@ -174,7 +175,7 @@ export default function AdminSidebar() {
             )}
           </div>
           <span 
-            className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-geist ${
               isSidebarOpen 
                 ? 'max-w-[160px] opacity-100 translate-x-0 ml-3' 
                 : 'max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none'

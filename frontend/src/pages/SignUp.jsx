@@ -21,7 +21,7 @@ import {
 import ThemeSwitcher from '../components/ui/ThemeSwitcher';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import { parseUID, generateUID, BRANCHES } from '../utils/uidUtils';
+import { parseUID, generateUID, BRANCHES, calculateYearFromSem } from '../utils/uidUtils';
 
 export default function SignUp() {
   const [identifier, setIdentifier] = useState('');
@@ -42,9 +42,11 @@ export default function SignUp() {
   const { login } = useContext(AuthContext);
   const { showToast } = useToast();
 
+  const [verifiedUid, setVerifiedUid] = useState(null);
+
   React.useEffect(() => {
-    if (uidVerified) setUidVerified(false);
-  }, [identifier]);
+    if (uidVerified && identifier !== verifiedUid) setUidVerified(false);
+  }, [identifier, verifiedUid]);
 
   const handleVerifyUID = () => {
     const trimmedIdentifier = identifier.trim();
@@ -331,7 +333,10 @@ export default function SignUp() {
                     <label className="block text-xs font-semibold text-gray-1000 mb-1">Semester</label>
                     <select
                       value={parsedProfileData.currentSem}
-                      onChange={(e) => setParsedProfileData({...parsedProfileData, currentSem: parseInt(e.target.value)})}
+                      onChange={(e) => {
+                        const sem = parseInt(e.target.value);
+                        setParsedProfileData({...parsedProfileData, currentSem: sem, currentYear: calculateYearFromSem(sem)});
+                      }}
                       className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
                     >
                       {[1,2,3,4,5,6,7,8].map(sem => (
@@ -407,6 +412,7 @@ export default function SignUp() {
                 onClick={() => {
                   const newUid = generateUID(parsedProfileData);
                   setIdentifier(newUid);
+                  setVerifiedUid(newUid);
                   setUidVerified(true);
                   setShowUidModal(false);
                 }}

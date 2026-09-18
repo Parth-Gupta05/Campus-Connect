@@ -124,7 +124,16 @@ router.post('/register', async (req, res) => {
     
     // Override with any explicit profile data provided by the frontend (e.g. from UID verification modal)
     if (req.body.profileData) {
-      profileData = { ...profileData, ...req.body.profileData };
+      const allowedFields = ['admissionYear', 'graduationYear', 'branch', 'division', 'rollNo', 'currentYear', 'currentSem', 'shortCode'];
+      const safeProfileData = {};
+      
+      allowedFields.forEach(field => {
+        if (req.body.profileData[field] !== undefined) {
+          safeProfileData[field] = req.body.profileData[field];
+        }
+      });
+      
+      profileData = { ...profileData, ...safeProfileData };
     }
 
     if (profileData.division) {

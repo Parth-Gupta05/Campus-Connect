@@ -810,7 +810,7 @@ export default function LandingPage() {
               {/* Simulated Animated Cursor with Click Ripple & Floating Action Chip */}
               {isPlayingTour && !isUserHovering && (
                 <div 
-                  className="pointer-events-none absolute z-50 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] hidden sm:block"
+                  className="pointer-events-none absolute z-50 transition-all duration-700 ease-geist-out hidden sm:block"
                   style={{ left: cursorPos.x, top: cursorPos.y }}
                 >
                   {/* Click ripple animation ring */}

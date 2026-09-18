@@ -87,6 +87,14 @@ export default {
       backdropBlur: {
         xs: "2px",
       },
+      transitionTimingFunction: {
+        'geist': 'cubic-bezier(0.16,1,0.3,1)',
+        'geist-out': 'cubic-bezier(0.2,0.8,0.2,1)',
+        'geist-in-out': 'cubic-bezier(0.2,1,0.3,1)',
+      },
+      transitionDuration: {
+        '1500': '1500ms',
+      }
     },
   },
   plugins: [

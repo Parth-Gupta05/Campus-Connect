@@ -40,7 +40,7 @@ import {
   Code2,
   CheckCheck
 } from 'lucide-react';
-import { parseUID, generateUID, BRANCHES } from '../utils/uidUtils';
+import { parseUID, generateUID, BRANCHES, calculateYearFromSem } from '../utils/uidUtils';
 
 const formatExternalUrl = (url) => {
   if (!url) return '#';
@@ -72,9 +72,11 @@ function ProfileSetupOverlay({ onComplete, user }) {
   const [isEditingUid, setIsEditingUid] = useState(false);
   const [parsedProfileData, setParsedProfileData] = useState(null);
 
+  const [verifiedUid, setVerifiedUid] = useState(null);
+
   useEffect(() => {
-    if (uidVerified && missingField === 'uid') setUidVerified(false);
-  }, [formData.uid, missingField]);
+    if (uidVerified && missingField === 'uid' && formData.uid !== verifiedUid) setUidVerified(false);
+  }, [formData.uid, missingField, verifiedUid]);
 
   const handleVerifyUID = () => {
     const trimmedIdentifier = formData.uid?.trim() || '';
@@ -305,7 +307,10 @@ function ProfileSetupOverlay({ onComplete, user }) {
                     <label className="block text-xs font-semibold text-gray-1000 mb-1">Semester</label>
                     <select
                       value={parsedProfileData.currentSem}
-                      onChange={(e) => setParsedProfileData({...parsedProfileData, currentSem: parseInt(e.target.value)})}
+                      onChange={(e) => {
+                        const sem = parseInt(e.target.value);
+                        setParsedProfileData({...parsedProfileData, currentSem: sem, currentYear: calculateYearFromSem(sem)});
+                      }}
                       className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
                     >
                       {[1,2,3,4,5,6,7,8].map(sem => (
@@ -382,6 +387,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
                   const newUid = generateUID(parsedProfileData);
                   if (missingField === 'uid') {
                     setFormData(prev => ({ ...prev, uid: newUid }));
+                    setVerifiedUid(newUid);
                   }
                   setUidVerified(true);
                   setShowUidModal(false);

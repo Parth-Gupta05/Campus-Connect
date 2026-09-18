@@ -14,6 +14,13 @@ export const BRANCH_MAPPING = {
 
 export const BRANCHES = Object.values(BRANCH_MAPPING);
 
+export const calculateYearFromSem = (currentSem) => {
+  if (currentSem <= 2) return 'FE';
+  if (currentSem <= 4) return 'SE';
+  if (currentSem <= 6) return 'TE';
+  return 'BE';
+};
+
 export const parseUID = (uid) => {
   if (!uid) return null;
   const match = uid.match(/^(\d{2})-([A-Za-z]+)([A-Za-z])(\d+)-(\d{2})$/);
@@ -43,11 +50,7 @@ export const parseUID = (uid) => {
   if (currentSem > 8) currentSem = 8;
   if (currentSem < 1) currentSem = 1;
 
-  let currentYear = 'FE';
-  if (currentSem <= 2) currentYear = 'FE';
-  else if (currentSem <= 4) currentYear = 'SE';
-  else if (currentSem <= 6) currentYear = 'TE';
-  else if (currentSem <= 8) currentYear = 'BE';
+  let currentYear = calculateYearFromSem(currentSem);
 
   return {
     admissionYear,
@@ -66,11 +69,8 @@ export const generateUID = (profileData) => {
   const { admissionYear, branch, division, rollNo, graduationYear } = profileData;
   
   // Find short code from branch
-  let shortCode = profileData.shortCode;
-  if (!shortCode) {
-    const entry = Object.entries(BRANCH_MAPPING).find(([key, val]) => val === branch);
-    shortCode = entry ? entry[0] : 'UNK';
-  }
+  const entry = Object.entries(BRANCH_MAPPING).find(([key, val]) => val === branch);
+  const shortCode = entry ? entry[0] : profileData.shortCode || 'UNK';
 
   const adYY = admissionYear.toString().slice(-2);
   const gradYY = graduationYear.toString().slice(-2);

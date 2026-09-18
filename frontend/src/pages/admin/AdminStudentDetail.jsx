@@ -64,7 +64,7 @@ const CountUp = ({ end }) => {
         return (
           <span key={i} className="inline-block h-[1em] overflow-hidden leading-none align-text-bottom relative">
             <span
-              className="flex flex-col transition-transform duration-[1500ms] ease-[cubic-bezier(0.2,1,0.3,1)]"
+              className="flex flex-col transition-transform duration-1500 ease-geist-in-out"
               style={{ transform: `translateY(calc(-${mounted ? char : '0'} * 1em))`, transitionDelay: `${i * 100}ms` }}
             >
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (

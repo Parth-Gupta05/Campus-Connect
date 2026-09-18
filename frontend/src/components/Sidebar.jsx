@@ -150,7 +150,7 @@ export default function Sidebar() {
 
   return (
     <aside 
-      className={`hidden md:flex flex-col bg-background-100 border-r border-gray-400 h-screen sticky top-0 shrink-0 overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width] ${
+      className={`hidden md:flex flex-col bg-background-100 border-r border-gray-400 h-screen sticky top-0 shrink-0 overflow-hidden transition-[width] duration-300 ease-geist will-change-[width] ${
         isSidebarOpen ? 'w-64' : 'w-16'
       } z-40 select-none`}
     >
@@ -158,7 +158,7 @@ export default function Sidebar() {
       <div className="h-14 flex items-center border-b border-gray-400 px-3 shrink-0 relative overflow-hidden">
         <Link 
           to="/dashboard" 
-          className={`flex items-center gap-2.5 min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`flex items-center gap-2.5 min-w-0 transition-all duration-300 ease-geist ${
             isSidebarOpen 
               ? 'opacity-100 translate-x-0' 
               : 'opacity-0 -translate-x-4 pointer-events-none absolute left-3'
@@ -178,12 +178,12 @@ export default function Sidebar() {
         <button 
           onClick={toggleSidebar} 
           aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          className={`relative p-2 hover:bg-gray-200 rounded-md transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] text-gray-700 hover:text-gray-1000 cursor-pointer shrink-0 ${
+          className={`relative p-2 hover:bg-gray-200 rounded-md transition-all duration-300 ease-geist text-gray-700 hover:text-gray-1000 cursor-pointer shrink-0 ${
             isSidebarOpen ? 'ml-auto' : 'mx-auto'
           }`}
         >
           <PanelLeft 
-            className={`w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`w-4 h-4 transition-transform duration-300 ease-geist ${
               isSidebarOpen ? 'rotate-0' : 'rotate-180'
             }`} 
             strokeWidth={1.5} 
@@ -218,7 +218,7 @@ export default function Sidebar() {
                 )}
               </div>
               <span 
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] text-xs sm:text-sm ${
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-geist text-xs sm:text-sm ${
                   isSidebarOpen 
                     ? 'max-w-[160px] opacity-100 translate-x-0 ml-3' 
                     : 'max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none'
@@ -258,7 +258,7 @@ export default function Sidebar() {
             )}
           </div>
           <span 
-            className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-geist ${
               isSidebarOpen 
                 ? 'max-w-[160px] opacity-100 translate-x-0 ml-3' 
                 : 'max-w-0 opacity-0 -translate-x-2 ml-0 pointer-events-none'

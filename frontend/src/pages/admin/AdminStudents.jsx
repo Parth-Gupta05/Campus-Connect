@@ -152,8 +152,8 @@ export default function AdminStudents() {
                     className="w-full bg-background-200 border border-gray-400 rounded-lg px-3.5 py-2 text-xs sm:text-sm text-gray-1000 focus:outline-none focus:border-gray-900 dark:focus:border-gray-100 transition-colors"
                   >
                     <option value="">All Branches</option>
-                    {BRANCHES.map(branch => (
-                      <option key={branch} value={branch}>{branch}</option>
+                    {Object.entries(BRANCH_MAPPING).map(([code, name]) => (
+                      <option key={code} value={code}>{name}</option>
                     ))}
                   </select>
                 </div>
@@ -179,21 +179,21 @@ export default function AdminStudents() {
                   <span className="font-mono text-[11px] uppercase mr-1">Quick Presets:</span>
                   <button
                     type="button"
-                    onClick={() => applyPreset({ passingYear: '2027', department: BRANCH_MAPPING.COMP, division: '' })}
+                    onClick={() => applyPreset({ passingYear: '2027', department: 'COMP', division: '' })}
                     className="px-2.5 py-1 rounded bg-background-200 hover:bg-gray-200 border border-gray-400 font-mono text-[11px] text-gray-800 transition-colors cursor-pointer"
                   >
                     COMP '27
                   </button>
                   <button
                     type="button"
-                    onClick={() => applyPreset({ passingYear: '2027', department: BRANCH_MAPPING.IT, division: '' })}
+                    onClick={() => applyPreset({ passingYear: '2027', department: 'IT', division: '' })}
                     className="px-2.5 py-1 rounded bg-background-200 hover:bg-gray-200 border border-gray-400 font-mono text-[11px] text-gray-800 transition-colors cursor-pointer"
                   >
                     IT '27
                   </button>
                   <button
                     type="button"
-                    onClick={() => applyPreset({ passingYear: '2026', department: BRANCH_MAPPING.COMP, division: '' })}
+                    onClick={() => applyPreset({ passingYear: '2026', department: 'COMP', division: '' })}
                     className="px-2.5 py-1 rounded bg-background-200 hover:bg-gray-200 border border-gray-400 font-mono text-[11px] text-gray-800 transition-colors cursor-pointer"
                   >
                     COMP '26

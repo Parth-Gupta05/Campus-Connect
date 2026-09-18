@@ -393,7 +393,17 @@ export default function Appearance() {
               <div className="bg-background-100 rounded-xl shadow-2xl border border-gray-400 overflow-hidden relative" style={{ minHeight: '1000px' }}>
                 <div className="w-full h-full transform origin-top left-0 overflow-y-auto">
                   {profileData?.uid ? (
-                    <PublicProfile previewUid={profileData.uid} previewCustomization={customization} previewProfileData={profileData} />
+                    (() => {
+                      const getFilteredPreviewProfileData = () => {
+                        if (!profileData) return profileData;
+                        const filtered = JSON.parse(JSON.stringify(profileData));
+                        if (filtered.resumeDetails && filtered.resumeDetails.certificates) {
+                          filtered.resumeDetails.certificates = filtered.resumeDetails.certificates.filter(c => !c.isHidden);
+                        }
+                        return filtered;
+                      };
+                      return <PublicProfile previewUid={profileData.uid} previewCustomization={customization} previewProfileData={getFilteredPreviewProfileData()} />;
+                    })()
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
                       <Loader2 className="w-6 h-6 animate-spin mb-4" />
