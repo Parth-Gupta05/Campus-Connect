@@ -267,9 +267,9 @@ function ProfileSetupOverlay({ onComplete, user }) {
       </div>
 
       {/* UID Verification Modal */}
-      {showUidModal && parsedProfileData && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[130] flex items-center justify-center p-4">
-          <div className="bg-background-100 border border-gray-400 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 relative overflow-hidden">
+      <AnimatedModal isOpen={showUidModal} onClose={() => setShowUidModal(false)}>
+        {showUidModal && parsedProfileData && (
+          <div className="bg-background-100 border border-gray-400 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
             <div className="flex justify-between items-start relative z-10">
@@ -280,8 +280,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
                 <h3 className="text-lg font-bold text-gray-1000 mt-1">Verify Your Details</h3>
                 <p className="text-xs text-gray-600 mt-1">We extracted this information from your UID. Is this correct?</p>
               </div>
-              <button
-                type="button"
+              <button 
                 onClick={() => setShowUidModal(false)}
                 className="p-1 text-gray-600 hover:text-gray-1000 rounded hover:bg-gray-200 cursor-pointer transition-colors"
               >
@@ -314,8 +313,8 @@ function ProfileSetupOverlay({ onComplete, user }) {
                       }}
                       className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
                     >
-                      {[1,2,3,4,5,6,7,8].map(sem => (
-                        <option key={sem} value={sem}>Semester {sem}</option>
+                      {[1,2,3,4,5,6,7,8].map(s => (
+                        <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
                   </div>
@@ -399,8 +398,8 @@ function ProfileSetupOverlay({ onComplete, user }) {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatedModal>
     </div>
   );
 }
@@ -835,9 +834,12 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                             <label className="text-[11px] font-medium text-gray-800">
                               {['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? 'Percentage / Grade' : 'CGPA / Grade'}
                             </label>
-                            <input 
-                              placeholder={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? 'e.g. 85.5%' : 'e.g. 8.85'}
-                              pattern={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? "^(100(\\.0{1,2})?|[0-9]{1,2}(\\.[0-9]{1,2})?)%?$" : "^(10(\\.0{1,2})?|[0-9](\\.[0-9]{1,2})?)$"}
+                            <input
+                              type="number"
+                              min="0"
+                              max={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? "100" : "10"}
+                              step="0.01"
+                              placeholder={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? 'e.g. 85.5' : 'e.g. 8.85'}
                               title={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? "Please enter a valid percentage (0-100)" : "Please enter a valid CGPA (0-10)"}
                               className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
                               value={edu.grade || edu.cgpa || ''} 

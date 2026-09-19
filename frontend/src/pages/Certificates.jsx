@@ -809,6 +809,7 @@ export default function Certificates() {
                     <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400 absolute left-3 pointer-events-none" />
                     <input
                       type="date"
+                      required
                       value={toIsoDateString(formData.issueDate)}
                       onClick={(e) => {
                         try {

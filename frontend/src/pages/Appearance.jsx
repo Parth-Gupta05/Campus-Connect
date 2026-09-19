@@ -50,6 +50,7 @@ export default function Appearance() {
       texture: 'none'
     },
     visibility: {
+      showAbout: true,
       showGithub: true,
       showLeetcode: true,
       showExperience: true,
@@ -318,6 +319,7 @@ export default function Appearance() {
                 <h2 className="text-sm font-semibold tracking-tight flex items-center gap-1.5"><Eye className="w-4 h-4" /> Section Visibility</h2>
                 <div className="space-y-2">
                   {[
+                    { key: 'showAbout', label: 'About Me' },
                     { key: 'showGithub', label: 'GitHub Activity' },
                     { key: 'showLeetcode', label: 'LeetCode Stats' },
                     { key: 'showExperience', label: 'Experience' },

@@ -5,6 +5,8 @@ import Topbar from '../components/Topbar';
 import Sidebar from '../components/Sidebar';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
+import Prism from '../components/Prism';
 import { ActivityCalendar } from 'react-activity-calendar';
 import PdfViewerModal from '../components/PdfViewerModal';
 import { ProfileThemeProvider } from '../profile/ProfileThemeProvider';
@@ -452,7 +454,10 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                   <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">LeetCode Global Rank</div>
                   <div className="text-2xl font-bold font-sans text-[var(--profile-text)] mt-1">
                     {leetcode?.profile?.ranking ? (
-                      `#${leetcode.profile.ranking.toLocaleString()}`
+                      <div className="flex items-center">
+                        <span className="mr-0.5">#</span>
+                        <CountUp end={leetcode.profile.ranking} />
+                      </div>
                     ) : (
                       <span className="text-[var(--profile-muted-text)] font-mono text-base font-normal">—</span>
                     )}
@@ -463,11 +468,15 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
               {showCgpa && (
                 <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
                   <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">Academic CGPA</div>
-                  <div className="text-2xl font-bold font-sans text-teal-700 mt-1 flex items-baseline">
+                  <div className="text-2xl font-bold font-sans text-[var(--profile-accent)] mt-1 flex items-baseline">
                     {studentCgpa ? (
                       <>
-                        <span>{studentCgpa}</span>
-                        {!studentCgpa.includes('/') && !isNaN(Number(studentCgpa)) && (
+                        {!isNaN(Number(studentCgpa)) ? (
+                          <CountUp end={Number(studentCgpa)} decimals={2} />
+                        ) : (
+                          <span>{studentCgpa}</span>
+                        )}
+                        {!String(studentCgpa).includes('/') && !isNaN(Number(studentCgpa)) && (
                           <span className="text-xs font-mono font-normal text-[var(--profile-muted-text)] ml-1.5">/ 10.0</span>
                         )}
                       </>
@@ -477,6 +486,16 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* About Me Section */}
+          {visibility.showAbout !== false && (profile.about || profile.scrapedData?.linkedin?.about) && (
+            <div className="profile-card p-6 space-y-3">
+              <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">About Me</h2>
+              <p className="text-xs md:text-sm text-[var(--profile-muted-text)] leading-relaxed font-sans whitespace-pre-wrap">
+                {profile.about || profile.scrapedData?.linkedin?.about}
+              </p>
             </div>
           )}
 
