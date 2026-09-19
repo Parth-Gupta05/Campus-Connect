@@ -671,12 +671,11 @@ export default function ClubDashboard() {
                           {profileForm.description?.length || 0} characters
                         </span>
                       </div>
-                      <textarea 
-                        rows="5" 
+                      <RichTextEditor
+                        value={profileForm.description}
+                        onChange={(content) => setProfileForm({...profileForm, description: content})}
                         placeholder="Detail your club's objectives, annual flagships, and community mission..."
-                        className="w-full px-3.5 py-2 text-sm bg-background-200 border border-gray-400 rounded-md text-gray-1000 focus:outline-none focus:border-gray-900 dark:focus:border-gray-100 transition-colors font-sans leading-relaxed"
-                        value={profileForm.description} 
-                        onChange={e => setProfileForm({...profileForm, description: e.target.value})} 
+                        minHeight="120px"
                       />
                     </div>
 
@@ -1241,9 +1240,8 @@ export default function ClubDashboard() {
       {/* ===================================================================
           MODAL: ADD MEMBER WITH LIVE AUTOCOMPLETE
           =================================================================== */}
-      {showAddMemberModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[150] flex justify-center items-center p-4 overscroll-contain">
-          <div className="bg-background-100 border border-gray-400 p-6 rounded-2xl w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-150">
+      <AnimatedModal isOpen={showAddMemberModal} onClose={() => setShowAddMemberModal(false)}>
+        <div className="bg-background-100 border border-gray-400 p-6 rounded-2xl w-full max-w-md shadow-2xl relative">
             <button 
               onClick={() => setShowAddMemberModal(false)} 
               className="absolute top-4 right-4 text-gray-700 hover:text-gray-1000 p-1.5 rounded-md hover:bg-gray-200 transition-colors"
@@ -1387,15 +1385,21 @@ export default function ClubDashboard() {
 
                     <button
                       type="button"
-                      onClick={() => setNewMemberTier('Member')}
-                      className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                      onClick={() => club?.hasMembershipSystem && setNewMemberTier('Member')}
+                      disabled={!club?.hasMembershipSystem}
+                      title={!club?.hasMembershipSystem ? "Enable official membership system in admin panel to add regular members" : ""}
+                      className={`p-2.5 rounded-lg border text-left transition-all ${
+                        !club?.hasMembershipSystem ? 'opacity-50 cursor-not-allowed bg-background-200 border-gray-300' : 'cursor-pointer'
+                      } ${
                         newMemberTier === 'Member'
                           ? 'bg-gray-1000 text-background-100 font-semibold'
                           : 'bg-background-200 border-gray-400 text-gray-700 hover:border-gray-600'
                       }`}
                     >
                       <div className="text-[11px] font-bold">👥 Club Member</div>
-                      <div className="text-[10px] opacity-80 mt-0.5">1x Pts via QR Scan</div>
+                      <div className="text-[10px] opacity-80 mt-0.5">
+                        {!club?.hasMembershipSystem ? "Membership Disabled" : "1x Pts via QR Scan"}
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -1412,16 +1416,14 @@ export default function ClubDashboard() {
                 </button>
               </div>
             </form>
-          </div>
         </div>
-      )}
+      </AnimatedModal>
 
       {/* ===================================================================
           MODAL: CREATE EVENT
           =================================================================== */}
-      {showCreateEventModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[150] flex justify-center items-center p-4 overflow-y-auto overscroll-contain">
-          <div className="bg-background-100 border border-gray-400 p-6 md:p-8 rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-150">
+      <AnimatedModal isOpen={showCreateEventModal} onClose={() => setShowCreateEventModal(false)}>
+        <div className="bg-background-100 border border-gray-400 p-6 md:p-8 rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setShowCreateEventModal(false)} 
               className="absolute top-4 right-4 text-gray-700 hover:text-gray-1000 p-1.5 rounded-md hover:bg-gray-200 transition-colors"
@@ -1634,12 +1636,11 @@ export default function ClubDashboard() {
 
               <div>
                 <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">Description</label>
-                <textarea 
-                  rows="4" 
+                <RichTextEditor
+                  value={newEvent.description}
+                  onChange={(content) => setNewEvent({...newEvent, description: content})}
                   placeholder="Agenda, prerequisites, speaker bio, and event milestones..."
-                  className="w-full px-3.5 py-2 text-sm bg-background-200 border border-gray-400 rounded-md text-gray-1000 focus:outline-none focus:border-gray-900 dark:focus:border-gray-100 font-sans" 
-                  value={newEvent.description} 
-                  onChange={e => setNewEvent({...newEvent, description: e.target.value})} 
+                  minHeight="120px"
                 />
               </div>
 
@@ -1654,16 +1655,15 @@ export default function ClubDashboard() {
                 </button>
               </div>
             </form>
-          </div>
         </div>
-      )}
+      </AnimatedModal>
 
       {/* ===================================================================
           MODAL: CREATE ANNOUNCEMENT
           =================================================================== */}
-      {showCreateAnnouncementModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[150] flex justify-center items-center p-4 overscroll-contain">
-          <div className="bg-background-100 border border-gray-400 p-6 md:p-8 rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-150">
+      <AnimatedModal isOpen={showCreateAnnouncementModal} onClose={() => setShowCreateAnnouncementModal(false)}>
+        {showCreateAnnouncementModal && (
+          <div className="bg-background-100 border border-gray-400 p-6 md:p-8 rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setShowCreateAnnouncementModal(false)} 
               className="absolute top-4 right-4 text-gray-700 hover:text-gray-1000 p-1.5 rounded-md hover:bg-gray-200 transition-colors"
@@ -1691,13 +1691,10 @@ export default function ClubDashboard() {
 
               <div>
                 <label className="block text-xs font-mono uppercase text-gray-700 mb-1 font-semibold">Message Content</label>
-                <textarea 
-                  required 
-                  rows="6" 
+                <RichTextEditor 
+                  content={newAnnouncement.content} 
+                  onChange={(html) => setNewAnnouncement({...newAnnouncement, content: html})} 
                   placeholder="Full announcement text, schedule changes, links, or instructions for participants..."
-                  className="w-full px-3.5 py-2 text-sm bg-background-200 border border-gray-400 rounded-md text-gray-1000 focus:outline-none focus:border-gray-900 dark:focus:border-gray-100 font-sans leading-relaxed" 
-                  value={newAnnouncement.content} 
-                  onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})} 
                 />
               </div>
 
@@ -1712,13 +1709,12 @@ export default function ClubDashboard() {
               </div>
             </form>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatedModal>
 
       {/* Confirmation Modal for Removing Member */}
-      {memberToRemove && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-background-100 border border-gray-400 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+      <AnimatedModal isOpen={!!memberToRemove} onClose={() => setMemberToRemove(null)}>
+        <div className="bg-background-100 border border-gray-400 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
             <div className="p-6">
               <h3 className="text-lg font-bold text-gray-1000 font-mono tracking-tight mb-2">
                 Remove Member
@@ -1743,15 +1739,13 @@ export default function ClubDashboard() {
                 Remove Member
               </button>
             </div>
-          </div>
         </div>
-      )}
+      </AnimatedModal>
 
 
       {/* Batch Import Modal */}
-      {showBatchImportModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[150] flex justify-center items-center p-4">
-          <div className="bg-background-100 border border-gray-400 p-6 rounded-xl w-full max-w-lg shadow-2xl relative">
+      <AnimatedModal isOpen={showBatchImportModal} onClose={() => setShowBatchImportModal(false)}>
+        <div className="bg-background-100 border border-gray-400 p-6 rounded-xl w-full max-w-lg shadow-2xl relative">
             <button 
               onClick={() => setShowBatchImportModal(false)}
               className="absolute top-4 right-4 text-gray-600 hover:text-gray-1000 p-1 bg-background-200 hover:bg-gray-300 rounded-md transition-colors cursor-pointer"
@@ -1798,9 +1792,8 @@ export default function ClubDashboard() {
             >
               {isBatchImporting ? 'Importing...' : 'Start Import'}
             </button>
-          </div>
         </div>
-      )}
+      </AnimatedModal>
 
       {/* Media Image Cropper Integration */}
       {cropData && (

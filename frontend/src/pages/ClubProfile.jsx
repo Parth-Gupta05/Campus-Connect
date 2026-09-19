@@ -40,8 +40,11 @@ export default function ClubProfile() {
   const [activeEventTab, setActiveEventTab] = useState('upcoming');
 
   // Derived Events
-  const upcomingEvents = events.filter(e => e.status === 'upcoming' || e.status === 'ongoing');
-  const pastEvents = events.filter(e => e.status === 'completed');
+  const upcomingEvents = events.filter(e => {
+    const s = getEventStatus(e);
+    return s === 'UPCOMING' || s === 'ONGOING';
+  });
+  const pastEvents = events.filter(e => getEventStatus(e) === 'COMPLETED');
   const displayEvents = activeEventTab === 'upcoming' ? upcomingEvents : pastEvents;
 
   useEffect(() => {
