@@ -10,7 +10,7 @@ export const calculateProfileCompleteness = (profile) => {
   const education = rd.education || [];
 
   const hasCertificates = certificates.length > 0;
-  const hasIncompleteCerts = certificates.some((c) => !c.isComplete);
+  const hasIncompleteCerts = certificates.some((c) => !c.isComplete || !c.issueDate);
 
   // Core Resume sections
   if (skills.length === 0) missingSections.push('Skills');

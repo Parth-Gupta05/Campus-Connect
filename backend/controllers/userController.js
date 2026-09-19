@@ -352,7 +352,7 @@ const refreshMetrics = async (req, res) => {
 
 const updatePortfolio = async (req, res) => {
   try {
-    const { skills, education, experience, projects, certificates, portfolioUrl, achievements, githubUsername, leetcodeUsername, linkedInUrl } = req.body;
+    const { about, skills, education, experience, projects, certificates, portfolioUrl, achievements, githubUsername, leetcodeUsername, linkedInUrl } = req.body;
     
     let user = await User.findById(req.user.id);
     if (!user) {
@@ -379,7 +379,7 @@ const updatePortfolio = async (req, res) => {
           issueDate: c.issueDate || '',
           credentialUrl: c.credentialUrl || '',
           fileUrl: c.fileUrl || '',
-          isComplete: !!c.fileUrl,
+          isComplete: !!(c.fileUrl && c.issueDate),
           isVerified: false,
           issuedByClub: false,
           isHidden: !!c.isHidden
@@ -397,7 +397,18 @@ const updatePortfolio = async (req, res) => {
       finalCertificates = sanitizedClientCerts;
     }
 
+    // Process About section (strip basic tags for character counting, or just slice the raw string to be safe)
+    let processedAbout = about;
+    if (processedAbout !== undefined && typeof processedAbout === 'string') {
+      if (processedAbout.length > 2000) {
+        processedAbout = processedAbout.substring(0, 2000);
+      }
+    } else {
+      processedAbout = (user.resumeDetails && user.resumeDetails.about) || '';
+    }
+
     user.resumeDetails = {
+      about: processedAbout,
       portfolioUrl: portfolioUrl !== undefined ? portfolioUrl : (user.resumeDetails && user.resumeDetails.portfolioUrl) || '',
       skills: skills || (user.resumeDetails && user.resumeDetails.skills) || [],
       education: education || (user.resumeDetails && user.resumeDetails.education) || [],

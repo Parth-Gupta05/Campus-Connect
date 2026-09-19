@@ -37,18 +37,29 @@ export const parseUID = (uid) => {
   const currentYearFull = new Date().getFullYear();
   const currentMonth = new Date().getMonth(); // 0-11
   
+  const totalYears = parseInt(graduationYear) - parseInt(admissionYear);
+  const isDSE = totalYears === 3;
+  
   const yearsDiff = currentYearFull - parseInt(admissionYear);
   let currentSem = 1;
 
-  if (currentMonth >= 6) { // Assuming July onwards is odd semester
-    currentSem = (yearsDiff * 2) + 1;
+  if (isDSE) {
+    if (currentMonth >= 6) { // Assuming July onwards is odd semester
+      currentSem = (yearsDiff * 2) + 3;
+    } else {
+      currentSem = (yearsDiff * 2) + 2;
+    }
   } else {
-    currentSem = (yearsDiff * 2);
+    if (currentMonth >= 6) { 
+      currentSem = (yearsDiff * 2) + 1;
+    } else {
+      currentSem = (yearsDiff * 2);
+    }
   }
 
   // Bound it just in case
   if (currentSem > 8) currentSem = 8;
-  if (currentSem < 1) currentSem = 1;
+  if (currentSem < (isDSE ? 3 : 1)) currentSem = isDSE ? 3 : 1;
 
   let currentYear = calculateYearFromSem(currentSem);
 

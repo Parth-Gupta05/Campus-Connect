@@ -124,6 +124,7 @@ const UserSchema = new mongoose.Schema({
     ref: 'Resume'
   }],
   resumeDetails: {
+    about: { type: String, default: '', maxLength: 2000 },
     portfolioUrl: { type: String, default: '' },
     skills: [{ type: String }],
     education: [mongoose.Schema.Types.Mixed],
@@ -169,11 +170,12 @@ const UserSchema = new mongoose.Schema({
       },
       texture: {
         type: String,
-        enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix', 'shape-waves'],
+        enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix', 'shape-waves', 'prism'],
         default: 'none'
       }
     },
     visibility: {
+      showAbout: { type: Boolean, default: true },
       showGithub: { type: Boolean, default: true },
       showLeetcode: { type: Boolean, default: true },
       showExperience: { type: Boolean, default: true },
