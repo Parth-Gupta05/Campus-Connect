@@ -25,7 +25,7 @@ import {
   ExternalLink,
   ChevronRight
 } from 'lucide-react';
-import { isRegistrationOpen, getEventStatus, formatTime12h } from '../utils/eventUtils';
+import { isRegistrationOpen, isEventPast, getEventStatus, formatTime12h } from '../utils/eventUtils';
 
 export default function Events() {
   const { user } = useContext(AuthContext);
@@ -33,7 +33,9 @@ export default function Events() {
 
   const [activeTab, setActiveTab] = useState('events'); // 'events' | 'registered' | 'announcements'
   const [events, setEvents] = useState([]);
+  const [registeredEventRecords, setRegisteredEventRecords] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [announcementNotifications, setAnnouncementNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [registeringEventId, setRegisteringEventId] = useState(null);
@@ -52,13 +54,19 @@ export default function Events() {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
 
-      const [eventsRes, announcementsRes] = await Promise.all([
-        axios.get('/events/public'),
-        axios.get('/clubs/announcements/public')
+      const [eventsRes, announcementsRes, registeredRes, notificationsRes] = await Promise.all([
+        axios.get('/events/public?status=all'),
+        axios.get('/clubs/announcements/public'),
+        user ? axios.get('/events/student/registered') : Promise.resolve({ data: [] }),
+        user ? axios.get('/notifications').catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
       ]);
 
       const sortedEvents = (eventsRes.data || []).sort((a, b) => new Date(a.date) - new Date(b.date));
       setEvents(sortedEvents);
+      setRegisteredEventRecords(registeredRes.data || []);
+      setAnnouncementNotifications(
+        (notificationsRes.data || []).filter((notification) => notification.type === 'announcement')
+      );
 
       const sortedAnnouncements = (announcementsRes.data || []).sort(
         (a, b) => new Date(b.datePublished || b.createdAt) - new Date(a.datePublished || a.createdAt)
@@ -75,7 +83,7 @@ export default function Events() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   const userId = user?.id || user?._id;
 
@@ -149,12 +157,25 @@ export default function Events() {
   };
 
   // Filtered Events
+  const upcomingEvents = useMemo(() => events.filter((ev) => !isEventPast(ev)), [events]);
+  const pastEvents = useMemo(() => events.filter(isEventPast), [events]);
+
   const registeredEvents = useMemo(() => {
-    return events.filter((ev) => getRegistrationInfo(ev).isRegistered);
-  }, [events, userId]);
+    const knownEvents = new Map();
+    [...registeredEventRecords, ...events].forEach((event) => {
+      knownEvents.set(event._id, event);
+    });
+    return [...knownEvents.values()].filter((ev) => (
+      registeredEventRecords.some((registered) => registered._id === ev._id) || getRegistrationInfo(ev).isRegistered
+    ));
+  }, [events, registeredEventRecords, userId]);
 
   const filteredEvents = useMemo(() => {
-    const baseList = activeTab === 'registered' ? registeredEvents : events;
+    const baseList = activeTab === 'registered'
+      ? registeredEvents
+      : activeTab === 'past'
+        ? pastEvents
+        : upcomingEvents;
     let filtered = baseList;
 
     if (search.trim()) {
@@ -177,7 +198,7 @@ export default function Events() {
       }
       return new Date(a.date) - new Date(b.date);
     });
-  }, [events, registeredEvents, activeTab, search, sortBy]);
+  }, [events, registeredEvents, upcomingEvents, pastEvents, activeTab, search, sortBy]);
 
   // Filtered Announcements
   const filteredAnnouncements = useMemo(() => {
@@ -212,12 +233,27 @@ export default function Events() {
   };
 
   // Scope Tabs
+  const unreadAnnouncementCount = announcementNotifications.filter((notification) => !notification.isRead).length;
+  const announcementTab = {
+    id: 'announcements',
+    label: 'Announcements',
+    icon: Megaphone,
+    ...(unreadAnnouncementCount > 0 ? { badge: unreadAnnouncementCount } : {})
+  };
+
   const tabs = [
+    announcementTab,
     {
       id: 'events',
       label: 'Upcoming Events',
-      count: events.length,
+      count: upcomingEvents.length,
       icon: Calendar
+    },
+    {
+      id: 'past',
+      label: 'Past Events',
+      count: pastEvents.length,
+      icon: Clock
     },
     ...(user
       ? [
@@ -229,13 +265,24 @@ export default function Events() {
           }
         ]
       : []),
-    {
-      id: 'announcements',
-      label: 'Announcements',
-      count: announcements.length,
-      icon: Megaphone
-    }
   ];
+
+  const handleTabChange = async (tabId) => {
+    setActiveTab(tabId);
+    setSearch('');
+
+    if (tabId === 'announcements') {
+      const unreadNotifications = announcementNotifications.filter((notification) => !notification.isRead);
+      if (unreadNotifications.length > 0) {
+        setAnnouncementNotifications((previous) => previous.map((notification) => (
+          notification.type === 'announcement' ? { ...notification, isRead: true } : notification
+        )));
+        await Promise.allSettled(
+          unreadNotifications.map((notification) => axios.put(`/notifications/${notification._id}/read`))
+        );
+      }
+    }
+  };
 
   // Header Actions Cluster
   const headerActions = (
@@ -285,10 +332,7 @@ export default function Events() {
             actions={headerActions}
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={(tabId) => {
-              setActiveTab(tabId);
-              setSearch('');
-            }}
+            onTabChange={handleTabChange}
           />
 
           {/* Level 3: Unified Single-Row Search & Filter Toolbar */}
@@ -336,7 +380,7 @@ export default function Events() {
                 </div>
 
                 <span className="text-xs font-mono text-gray-600 hidden sm:inline px-1 select-none">
-                  Showing {filteredEvents.length} of {activeTab === 'registered' ? registeredEvents.length : events.length}
+                  Showing {filteredEvents.length} of {activeTab === 'registered' ? registeredEvents.length : activeTab === 'past' ? pastEvents.length : upcomingEvents.length}
                 </span>
               </div>
             )}
@@ -638,11 +682,13 @@ export default function Events() {
                   <Calendar className="w-5 h-5" />
                 </div>
                 <h3 className="text-sm font-semibold text-gray-1000">
-                  {activeTab === 'registered' ? 'No Registered Events' : 'No Events Found'}
+                  {activeTab === 'registered' ? 'No Registered Events' : activeTab === 'past' ? 'No Past Events' : 'No Events Found'}
                 </h3>
                 <p className="text-xs text-gray-600 max-w-sm mx-auto">
                   {activeTab === 'registered'
-                    ? 'You have not registered for any upcoming events yet. Check out the Upcoming Events tab to join!'
+                    ? 'You have not registered for any events yet. Check out the Upcoming Events tab to join!'
+                    : activeTab === 'past'
+                    ? 'There are no completed events to display yet.'
                     : search
                     ? 'No events match your current search query. Try clearing the filter.'
                     : 'There are no upcoming events scheduled at the moment. Check back soon!'}

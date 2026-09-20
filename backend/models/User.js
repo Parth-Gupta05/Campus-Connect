@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['student', 'admin'],
     default: 'student',
   },
+  tokenVersion: {
+    type: Number,
+    default: 0,
+  },
   name: {
     type: String,
     default: '',
@@ -101,6 +105,14 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  resetOtpAttempts: {
+    type: Number,
+    default: 0,
+  },
+  linkEmailOtpAttempts: {
+    type: Number,
+    default: 0,
+  },
   scrapedData: {
     type: Object,
     default: null,
@@ -158,52 +170,66 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AssessmentUpload'
   }],
-  profileCustomization: {
-    appearance: {
-      preset: {
-        type: String,
-        enum: ['geist', 'editorial', 'research', 'cyber', 'paper', 'brutalist', 'organic', 'luxury'],
-        default: 'geist'
+  pastEducation: [{
+      level: { type: String, required: true }, // e.g., '10th', '12th', 'Diploma'
+      institution: { type: String, required: true },
+      passingYear: { type: String, required: true },
+      score: { type: String, required: true }, // Percentage or CGPA
+      documentUrl: { type: String, required: true }
+    }],
+    semesterRecords: [{
+      semester: { type: Number, required: true },
+      sgpa: { type: Number, required: true },
+      cgpa: { type: Number },
+      documentUrl: { type: String, required: true }
+    }],
+    profileCustomization: {
+      appearance: {
+        preset: {
+          type: String,
+          enum: ['geist', 'editorial', 'research', 'cyber', 'paper', 'brutalist', 'organic', 'luxury'],
+          default: 'geist'
+        },
+        accent: {
+          type: String,
+          enum: ['default', 'blue', 'violet', 'green', 'orange', 'rose', 'cyan'],
+          default: 'default'
+        },
+        cardStyle: {
+          type: String,
+          enum: ['default', 'glass', 'paper', 'outlined'],
+          default: 'default'
+        },
+        motion: {
+          type: String,
+          enum: ['none', 'subtle', 'interactive'],
+          default: 'subtle'
+        },
+        texture: {
+          type: String,
+          enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix', 'shape-waves', '3d-prism'],
+          default: 'none'
+        }
       },
-      accent: {
-        type: String,
-        enum: ['default', 'blue', 'violet', 'green', 'orange', 'rose', 'cyan'],
-        default: 'default'
+      visibility: {
+        showAbout: { type: Boolean, default: true },
+        showGithub: { type: Boolean, default: true },
+        showLeetcode: { type: Boolean, default: true },
+        showExperience: { type: Boolean, default: true },
+        showEducation: { type: Boolean, default: true },
+        showProjects: { type: Boolean, default: true },
+        showCertificates: { type: Boolean, default: true },
+        showAcademicProgression: { type: Boolean, default: true }
       },
-      cardStyle: {
-        type: String,
-        enum: ['default', 'glass', 'paper', 'outlined'],
-        default: 'default'
-      },
-      motion: {
-        type: String,
-        enum: ['none', 'subtle', 'interactive'],
-        default: 'subtle'
-      },
-      texture: {
-        type: String,
-        enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix', 'shape-waves', 'prism'],
-        default: 'none'
+      metricsPrivacy: {
+        githubHeatmap: { type: Boolean, default: true },
+        githubTotalStars: { type: Boolean, default: true },
+        leetcodeHeatmap: { type: Boolean, default: true },
+        leetcodeRank: { type: Boolean, default: true },
+        leetcodeAchievements: { type: Boolean, default: true },
+        cgpa: { type: Boolean, default: false }
       }
-    },
-    visibility: {
-      showAbout: { type: Boolean, default: true },
-      showGithub: { type: Boolean, default: true },
-      showLeetcode: { type: Boolean, default: true },
-      showExperience: { type: Boolean, default: true },
-      showEducation: { type: Boolean, default: true },
-      showProjects: { type: Boolean, default: true },
-      showCertificates: { type: Boolean, default: true }
-    },
-    metricsPrivacy: {
-      githubHeatmap: { type: Boolean, default: true },
-      githubTotalStars: { type: Boolean, default: true },
-      leetcodeHeatmap: { type: Boolean, default: true },
-      leetcodeRank: { type: Boolean, default: true },
-      leetcodeAchievements: { type: Boolean, default: true },
-      cgpa: { type: Boolean, default: false }
     }
-  }
-}, { timestamps: true });
+  }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

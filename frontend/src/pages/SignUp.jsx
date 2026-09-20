@@ -21,6 +21,7 @@ import {
 import ThemeSwitcher from '../components/ui/ThemeSwitcher';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import BrandLogo from '../components/BrandLogo';
 import { parseUID, generateUID, BRANCHES, calculateYearFromSem } from '../utils/uidUtils';
 
 export default function SignUp() {
@@ -137,11 +138,7 @@ export default function SignUp() {
           <div className="geist-specular-card rounded-xl border border-gray-400 bg-background-100/95 backdrop-blur-md p-8 sm:p-10 shadow-2xl transition-colors">
             {/* Header / Logo */}
             <div className="text-center mb-8">
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gray-1000 text-background-100 shadow-sm mb-4">
-                <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
-                  <path d="M8 1L15 13.5H1L8 1Z" />
-                </svg>
-              </div>
+              <BrandLogo className="inline-flex h-9 w-9 mb-4" />
               <h1 className="text-heading-24 font-bold text-gray-1000 tracking-tight">
                 Create an account
               </h1>

@@ -1,9 +1,33 @@
-const cron = require('node-cron');
+const path = require('path');
+const mongoose = require('mongoose');
 const Event = require('../models/Event');
 
-// Run every 15 minutes
-cron.schedule('*/15 * * * *', async () => {
-  console.log('[Cron] Running event lifecycle & attendance cleanup job...');
+// Load environment variables from backend/.env or root .env
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+/**
+ * Connect to MongoDB
+ */
+async function connectDB() {
+  if (mongoose.connection.readyState === 0) {
+    try {
+      await mongoose.connect(MONGODB_URI);
+      console.log('[AttendanceCron] Connected to MongoDB successfully');
+    } catch (err) {
+      console.error('[AttendanceCron] MongoDB connection error:', err);
+      process.exit(1);
+    }
+  }
+}
+
+/**
+ * Worker task: Event lifecycle & attendance cleanup
+ */
+async function runAttendanceCron() {
+  console.log('[AttendanceCron] Running event lifecycle & attendance cleanup job...');
   try {
     const now = new Date();
     
@@ -56,6 +80,27 @@ cron.schedule('*/15 * * * *', async () => {
       }
     }
   } catch (error) {
-    console.error('[Cron Error] Failed to process event lifecycle:', error);
+    console.error('[AttendanceCron] Failed to process event lifecycle:', error);
   }
-});
+}
+
+/**
+ * Main Execution
+ */
+async function main() {
+  try {
+    await connectDB();
+    await runAttendanceCron();
+    console.log('[AttendanceCron] Finished processing successfully.');
+  } catch (error) {
+    console.error('[AttendanceCron] Fatal error:', error);
+  } finally {
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+      console.log('[AttendanceCron] Disconnected from MongoDB');
+    }
+    process.exit(0);
+  }
+}
+
+main();

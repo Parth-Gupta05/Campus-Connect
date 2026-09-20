@@ -344,12 +344,12 @@ const refreshMetrics = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check timeout: 30 minutes (Temporarily disabled for testing)
-    const THIRTY_MINUTES_MS = 0; // 30 * 60 * 1000;
+    // Keep external metrics providers from being queried more than once every two hours.
+    const REFRESH_LOCK_MS = 2 * 60 * 60 * 1000;
     if (user.lastScrapedAt) {
       const timeSinceLastScrape = Date.now() - new Date(user.lastScrapedAt).getTime();
-      if (timeSinceLastScrape < THIRTY_MINUTES_MS) {
-        const remainingMinutes = Math.ceil((THIRTY_MINUTES_MS - timeSinceLastScrape) / 60000);
+      if (timeSinceLastScrape < REFRESH_LOCK_MS) {
+        const remainingMinutes = Math.ceil((REFRESH_LOCK_MS - timeSinceLastScrape) / 60000);
         return res.status(429).json({ 
           message: `Please wait ${remainingMinutes} minutes before refreshing again.`
         });
@@ -766,6 +766,70 @@ const generateVerificationCode = async (req, res) => {
   }
 };
 
+const uploadVaultDocument = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file provided' });
+    }
+
+    const { type, semester, level, institution, passingYear, score } = req.body;
+    
+    if (!type || !['semester', 'pastEducation'].includes(type)) {
+      return res.status(400).json({ message: 'Invalid or missing document type' });
+    }
+
+    const uploadStream = new Promise((resolve, reject) => {
+      // Use resource_type 'image' to allow PDF to image conversion (thumbnails)
+      const stream = cloudinary.uploader.upload_stream(
+        { resource_type: 'image', folder: 'academic_vault' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result.secure_url);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+    
+    const documentUrl = await uploadStream;
+    
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (type === 'semester') {
+      if (!semester || !score) return res.status(400).json({ message: 'Missing semester or SGPA' });
+      
+      const recordIndex = user.semesterRecords.findIndex(r => r.semester === Number(semester));
+      const record = { semester: Number(semester), sgpa: Number(score), documentUrl };
+      
+      if (recordIndex >= 0) user.semesterRecords[recordIndex] = record;
+      else user.semesterRecords.push(record);
+      
+      // Calculate CGPA dynamically (simplified: average of all SGPAs)
+      let totalSgpa = 0;
+      user.semesterRecords.forEach(r => totalSgpa += r.sgpa);
+      const cgpa = totalSgpa / user.semesterRecords.length;
+      user.cgpa = cgpa.toFixed(2);
+      
+    } else if (type === 'pastEducation') {
+      if (!level || !institution || !passingYear || !score) {
+        return res.status(400).json({ message: 'Missing education fields' });
+      }
+      
+      const recordIndex = user.pastEducation.findIndex(r => r.level === level);
+      const record = { level, institution, passingYear, score, documentUrl };
+      
+      if (recordIndex >= 0) user.pastEducation[recordIndex] = record;
+      else user.pastEducation.push(record);
+    }
+    
+    await user.save();
+    res.json({ message: 'Academic document uploaded successfully', user });
+  } catch (error) {
+    console.error('Error uploading vault document:', error);
+    res.status(500).json({ message: 'Server error uploading document', details: error.message || error });
+  }
+};
+
 module.exports = {
   getProfile,
   getPublicProfile,
@@ -774,6 +838,7 @@ module.exports = {
   updatePortfolio,
   uploadAvatar,
   uploadCertFile,
+  uploadVaultDocument,
   getResumePdf,
   approveAchievement,
   discardAchievement,

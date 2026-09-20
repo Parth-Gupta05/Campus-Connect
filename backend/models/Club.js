@@ -14,6 +14,10 @@ const ClubSchema = new mongoose.Schema({
     type: String,
     default: 'club'
   },
+  tokenVersion: {
+    type: Number,
+    default: 0,
+  },
   name: {
     type: String,
     required: true,

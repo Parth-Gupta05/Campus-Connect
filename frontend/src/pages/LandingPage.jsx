@@ -41,6 +41,7 @@ import {
   Pause
 } from 'lucide-react';
 import ThemeSwitcher from '../components/ui/ThemeSwitcher';
+import BrandLogo from '../components/BrandLogo';
 
 // ============================================================================
 // Microinteraction Helper Components & Animation Hooks
@@ -620,11 +621,7 @@ export default function LandingPage() {
             {/* Brand Logo */}
             <div className="flex items-center gap-8">
               <Link to="/" className="flex items-center gap-2.5 font-semibold text-sm tracking-tight text-gray-1000 hover:opacity-90 transition-opacity">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-1000 text-background-100 shadow-sm">
-                  <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
-                    <path d="M8 1L15 13.5H1L8 1Z" />
-                  </svg>
-                </div>
+                <BrandLogo className="h-7 w-7" />
                 <span className="font-sans font-semibold">Campus Connect</span>
               </Link>
 
@@ -1893,11 +1890,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             <div className="col-span-2">
               <div className="flex items-center gap-2.5 font-semibold text-sm tracking-tight text-gray-1000 mb-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-1000 text-background-100 shadow-xs">
-                  <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
-                    <path d="M8 1L15 13.5H1L8 1Z" />
-                  </svg>
-                </div>
+                <BrandLogo className="h-7 w-7" />
                 <span className="font-sans font-bold">Campus Connect</span>
               </div>
               <p className="text-xs text-gray-900 max-w-sm leading-relaxed mb-3">

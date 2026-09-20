@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import ImageCropperModal from '../components/ImageCropperModal';
 import PdfViewerModal from '../components/PdfViewerModal';
 import AnimatedModal from '../components/ui/AnimatedModal';
+import RichTextEditor from '../components/RichTextEditor';
+import RichContentRenderer from '../components/RichContentRenderer';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { calculateProfileCompleteness } from '../utils/profileUtils';
@@ -119,7 +121,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
 
     try {
       if (isMissingCredential && formData[missingField]) {
-        await axios.post('/auth/link-account', { 
+        await axios.post('/auth/link-account', {
           identifier: formData[missingField],
           profileData: (missingField === 'uid' && uidVerified) ? parsedProfileData : null
         });
@@ -141,7 +143,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in duration-150">
       <div className="bg-background-100 rounded-xl shadow-2xl max-w-lg w-full border border-gray-400 max-h-[90vh] flex flex-col overflow-hidden text-gray-1000">
-        
+
         {/* Header Strip */}
         <div className="px-6 py-5 bg-background-200 border-b border-gray-400 flex items-start gap-3.5 shrink-0">
           <div className="w-10 h-10 rounded-xl bg-background-100 border border-gray-400 flex items-center justify-center shrink-0 shadow-2xs text-gray-1000">
@@ -155,7 +157,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
               </span>
             </div>
             <p className="text-xs text-gray-700 font-sans mt-0.5 leading-relaxed">
-              {isMissingCredential 
+              {isMissingCredential
                 ? `Link your university ${!user.email ? 'email' : 'UID'} to synchronize verified coding telemetry and activate campus portfolio access.`
                 : `Enter your student details to automatically link repository contributions and algorithmic profiles.`}
             </p>
@@ -181,13 +183,13 @@ function ProfileSetupOverlay({ onComplete, user }) {
                   )}
                 </div>
                 <div className="relative flex items-center">
-                  <input 
-                    required 
-                    type="text" 
-                    className="w-full px-3 py-2 pr-24 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                    placeholder={!user.email ? "student@university.edu" : "23-COMPA10-27"} 
-                    value={formData[missingField]} 
-                    onChange={e => setFormData({...formData, [missingField]: e.target.value})} 
+                  <input
+                    required
+                    type="text"
+                    className="w-full px-3 py-2 pr-24 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono"
+                    placeholder={!user.email ? "student@university.edu" : "23-COMPA10-27"}
+                    value={formData[missingField]}
+                    onChange={e => setFormData({ ...formData, [missingField]: e.target.value })}
                   />
                   {missingField === 'uid' && formData.uid && /^\d{2}-/.test(formData.uid) && (
                     <div className="absolute right-1">
@@ -212,45 +214,45 @@ function ProfileSetupOverlay({ onComplete, user }) {
             )}
             <div>
               <label className="block font-medium text-gray-900 mb-1.5">Full Name</label>
-              <input 
-                required 
-                type="text" 
-                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors" 
-                placeholder="e.g. John Doe" 
-                value={formData.name} 
-                onChange={e => setFormData({...formData, name: e.target.value})} 
+              <input
+                required
+                type="text"
+                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors"
+                placeholder="e.g. John Doe"
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
             <div>
               <label className="block font-medium text-gray-900 mb-1.5">GitHub Username</label>
-              <input 
-                required 
-                type="text" 
-                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                placeholder="octocat" 
-                value={formData.githubUsername} 
-                onChange={e => setFormData({...formData, githubUsername: e.target.value})} 
+              <input
+                required
+                type="text"
+                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono"
+                placeholder="octocat"
+                value={formData.githubUsername}
+                onChange={e => setFormData({ ...formData, githubUsername: e.target.value })}
               />
             </div>
             <div>
               <label className="block font-medium text-gray-900 mb-1.5">LeetCode Username</label>
-              <input 
-                required 
-                type="text" 
-                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                placeholder="johndoe" 
-                value={formData.leetcodeUsername} 
-                onChange={e => setFormData({...formData, leetcodeUsername: e.target.value})} 
+              <input
+                required
+                type="text"
+                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono"
+                placeholder="johndoe"
+                value={formData.leetcodeUsername}
+                onChange={e => setFormData({ ...formData, leetcodeUsername: e.target.value })}
               />
             </div>
             <div>
               <label className="block font-medium text-gray-900 mb-1.5">LinkedIn Profile URL</label>
-              <input 
-                type="url" 
-                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                placeholder="https://linkedin.com/in/johndoe" 
-                value={formData.linkedInUrl} 
-                onChange={e => setFormData({...formData, linkedInUrl: e.target.value})} 
+              <input
+                type="url"
+                className="w-full px-3 py-2 bg-background-200 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono"
+                placeholder="https://linkedin.com/in/johndoe"
+                value={formData.linkedInUrl}
+                onChange={e => setFormData({ ...formData, linkedInUrl: e.target.value })}
               />
             </div>
           </form>
@@ -258,10 +260,10 @@ function ProfileSetupOverlay({ onComplete, user }) {
 
         {/* Footer */}
         <div className="px-6 py-4 bg-background-200 border-t border-gray-400 flex justify-end shrink-0">
-          <button 
+          <button
             form="profile-setup-form"
-            disabled={loading} 
-            type="submit" 
+            disabled={loading}
+            type="submit"
             className="w-full sm:w-auto px-6 py-2.5 bg-gray-1000 text-background-100 rounded-md text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex justify-center items-center gap-2 cursor-pointer shadow-xs"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Complete Setup & Synchronize'}
@@ -283,7 +285,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
                 <h3 className="text-lg font-bold text-gray-1000 mt-1">Verify Your Details</h3>
                 <p className="text-xs text-gray-600 mt-1">We extracted this information from your UID. Is this correct?</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowUidModal(false)}
                 className="p-1 text-gray-600 hover:text-gray-1000 rounded hover:bg-gray-200 cursor-pointer transition-colors"
               >
@@ -295,9 +297,9 @@ function ProfileSetupOverlay({ onComplete, user }) {
               <div className="space-y-4 pt-2 relative z-10">
                 <div>
                   <label className="block text-xs font-semibold text-gray-1000 mb-1">Branch</label>
-                  <select 
+                  <select
                     value={parsedProfileData.branch}
-                    onChange={(e) => setParsedProfileData({...parsedProfileData, branch: e.target.value})}
+                    onChange={(e) => setParsedProfileData({ ...parsedProfileData, branch: e.target.value })}
                     className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
                   >
                     {BRANCHES.map(branch => (
@@ -312,11 +314,11 @@ function ProfileSetupOverlay({ onComplete, user }) {
                       value={parsedProfileData.currentSem}
                       onChange={(e) => {
                         const sem = parseInt(e.target.value);
-                        setParsedProfileData({...parsedProfileData, currentSem: sem, currentYear: calculateYearFromSem(sem)});
+                        setParsedProfileData({ ...parsedProfileData, currentSem: sem, currentYear: calculateYearFromSem(sem) });
                       }}
                       className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
                     >
-                      {[1,2,3,4,5,6,7,8].map(s => (
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
@@ -327,7 +329,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
                       type="text"
                       maxLength={1}
                       value={parsedProfileData.division}
-                      onChange={(e) => setParsedProfileData({...parsedProfileData, division: e.target.value.toUpperCase().replace(/[^A-Z]/g, '')})}
+                      onChange={(e) => setParsedProfileData({ ...parsedProfileData, division: e.target.value.toUpperCase().replace(/[^A-Z]/g, '') })}
                       className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 uppercase focus:outline-none focus:border-gray-900 transition-colors"
                     />
                   </div>
@@ -337,7 +339,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
                   <input
                     type="number"
                     value={parsedProfileData.rollNo}
-                    onChange={(e) => setParsedProfileData({...parsedProfileData, rollNo: e.target.value})}
+                    onChange={(e) => setParsedProfileData({ ...parsedProfileData, rollNo: e.target.value })}
                     className="w-full bg-background-200 border border-gray-400 rounded-lg px-3 py-2 text-sm text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
                   />
                 </div>
@@ -413,6 +415,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
 function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initialSectionId }) {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('all');
+  const [about, setAbout] = useState(profile?.resumeDetails?.about || '');
   const [skillsStr, setSkillsStr] = useState(profile?.resumeDetails?.skills?.join(', ') || '');
   const [portfolioUrl, setPortfolioUrl] = useState(profile?.resumeDetails?.portfolioUrl || '');
   const [githubUsername, setGithubUsername] = useState(profile?.githubUsername || '');
@@ -449,16 +452,16 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     const formData = new FormData();
     formData.append('resume', file);
-    
+
     setParsing(true);
     try {
       const res = await axios.post('/user/parse-resume', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
+
       const { parsedData } = res.data;
       if (parsedData) {
         if (parsedData.skills) setSkillsStr(parsedData.skills.join(', '));
@@ -477,7 +480,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
 
   const handleSave = async (e) => {
     if (e) e.preventDefault();
-    const handlesChanged = 
+    const handlesChanged =
       githubUsername !== (profile?.githubUsername || '') ||
       leetcodeUsername !== (profile?.leetcodeUsername || '') ||
       linkedInUrl !== (profile?.linkedInUrl || '');
@@ -486,7 +489,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
       setShowConfirmModal(true);
       return;
     }
-    
+
     await executeSave();
   };
 
@@ -494,6 +497,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
     setLoading(true);
     try {
       const payload = {
+        about,
         portfolioUrl,
         skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean),
         education,
@@ -549,19 +553,19 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
 
   const tabs = [
     { id: 'all', label: 'All Sections' },
+    { id: 'about', label: 'About' },
     { id: 'handles', label: 'Profiles & Handles' },
     { id: 'skills', label: 'Skills' },
     { id: 'education', label: `Education (${education.length})` },
     { id: 'experience', label: `Experience (${experience.length})` },
     { id: 'projects', label: `Projects (${projects.length})` },
-    { id: 'achievements', label: `Honors (${achievements.length})` },
-    { id: 'assessments', label: `Assessments (${profile?.assessments?.length || 0})` }
+    { id: 'achievements', label: `Honors (${achievements.length})` }
   ];
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[110] flex items-center justify-center p-4 animate-in fade-in duration-150">
       <div className="bg-background-100 rounded-xl shadow-2xl max-w-4xl w-full border border-gray-400 max-h-[90vh] flex flex-col relative text-gray-1000 overflow-hidden">
-        
+
         {/* Modal Header */}
         <div className="px-6 py-4 bg-background-200 border-b border-gray-400 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-3">
@@ -576,17 +580,17 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               type="button"
-              onClick={onClose} 
+              onClick={onClose}
               className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-md text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" strokeWidth={1.5} />
             </button>
-            <button 
+            <button
               type="button"
-              onClick={handleSave} 
-              disabled={loading} 
+              onClick={handleSave}
+              disabled={loading}
               className="bg-gray-1000 text-background-100 px-4 py-1.5 rounded-md text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Changes'}
@@ -602,11 +606,10 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1 text-xs rounded-md transition-all whitespace-nowrap cursor-pointer ${
-                  activeTab === tab.id
+                className={`px-3 py-1 text-xs rounded-md transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
                     ? 'bg-background-100 text-gray-1000 font-medium shadow-2xs border border-gray-400'
                     : 'text-gray-700 hover:text-gray-1000'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -616,7 +619,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
 
         {/* Modal Scrollable Body */}
         <div className="p-6 overflow-y-auto space-y-6">
-          
+
           {/* AI Resume Parser Strip */}
           <div className="p-4 rounded-xl border border-teal-500/30 bg-teal-500/5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -655,7 +658,28 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
 
           {/* Form Sections */}
           <form id="resume-editor-form" onSubmit={handleSave} className="space-y-6 text-xs font-sans">
-            
+
+            {/* About */}
+            {(activeTab === 'all' || activeTab === 'about') && (
+              <div id="section-about" className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+                <div className="flex items-center gap-2 border-b border-gray-400/70 pb-3">
+                  <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
+                    <MessageSquare className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-xs font-semibold text-gray-1000">About Me</h3>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-gray-900 font-medium">Short professional introduction</label>
+                  <RichTextEditor
+                    content={about}
+                    onChange={setAbout}
+                    placeholder="Share your background, interests, and the kind of work you want to pursue."
+                  />
+                  <div className="text-right text-[10px] font-mono text-gray-600">{about.replace(/<[^>]*>/g, '').length}/2000</div>
+                </div>
+              </div>
+            )}
+
             {/* Online Profiles */}
             {(activeTab === 'all' || activeTab === 'handles') && (
               <div id="section-handles" className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
@@ -669,42 +693,42 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div className="md:col-span-2">
                     <label className="block text-gray-900 font-medium mb-1.5">Personal Portfolio Website</label>
-                    <input 
-                      type="url" 
-                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                      placeholder="https://yourportfolio.dev" 
-                      value={portfolioUrl} 
-                      onChange={(e) => setPortfolioUrl(e.target.value)} 
+                    <input
+                      type="url"
+                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono"
+                      placeholder="https://yourportfolio.dev"
+                      value={portfolioUrl}
+                      onChange={(e) => setPortfolioUrl(e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="block text-gray-900 font-medium mb-1.5">GitHub Username</label>
-                    <input 
-                      type="text" 
-                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                      placeholder="octocat" 
-                      value={githubUsername} 
-                      onChange={(e) => setGithubUsername(e.target.value)} 
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono"
+                      placeholder="octocat"
+                      value={githubUsername}
+                      onChange={(e) => setGithubUsername(e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="block text-gray-900 font-medium mb-1.5">LeetCode Username</label>
-                    <input 
-                      type="text" 
-                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                      placeholder="johndoe" 
-                      value={leetcodeUsername} 
-                      onChange={(e) => setLeetcodeUsername(e.target.value)} 
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono"
+                      placeholder="johndoe"
+                      value={leetcodeUsername}
+                      onChange={(e) => setLeetcodeUsername(e.target.value)}
                     />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-gray-900 font-medium mb-1.5">LinkedIn Profile URL</label>
-                    <input 
-                      type="url" 
-                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono" 
-                      placeholder="https://linkedin.com/in/johndoe" 
-                      value={linkedInUrl} 
-                      onChange={(e) => setLinkedInUrl(e.target.value)} 
+                    <input
+                      type="url"
+                      className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors font-mono"
+                      placeholder="https://linkedin.com/in/johndoe"
+                      value={linkedInUrl}
+                      onChange={(e) => setLinkedInUrl(e.target.value)}
                     />
                   </div>
                 </div>
@@ -723,12 +747,12 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
 
                 <div className="space-y-1.5">
                   <label className="block text-gray-900 font-medium">Core Frameworks &amp; Languages</label>
-                  <input 
-                    type="text" 
-                    className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors" 
-                    placeholder="React, TypeScript, Node.js, Go, Python, PostgreSQL, Docker, TailwindCSS" 
-                    value={skillsStr} 
-                    onChange={(e) => setSkillsStr(e.target.value)} 
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 bg-background-100 border border-gray-400 rounded-md text-gray-1000 placeholder:text-gray-600 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors"
+                    placeholder="React, TypeScript, Node.js, Go, Python, PostgreSQL, Docker, TailwindCSS"
+                    value={skillsStr}
+                    onChange={(e) => setSkillsStr(e.target.value)}
                   />
                   <p className="text-[11px] text-gray-600 font-mono">Comma-separated list of programming languages, libraries, and developer tooling.</p>
                 </div>
@@ -745,9 +769,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                     </div>
                     <h3 className="text-xs font-semibold text-gray-1000">Education History ({education.length})</h3>
                   </div>
-                  <button 
-                    type="button" 
-                    onClick={addEdu} 
+                  <button
+                    type="button"
+                    onClick={addEdu}
                     className="px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-900 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add Degree
@@ -766,9 +790,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                       <div key={idx} className="bg-background-100 p-4 rounded-lg border border-gray-400 space-y-3 relative shadow-2xs">
                         <div className="flex items-center justify-between border-b border-gray-400/50 pb-2">
                           <span className="text-[11px] font-mono font-medium text-gray-600 uppercase tracking-wider">Degree #{idx + 1}</span>
-                          <button 
-                            type="button" 
-                            onClick={() => removeEdu(idx)} 
+                          <button
+                            type="button"
+                            onClick={() => removeEdu(idx)}
                             className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors cursor-pointer"
                             title="Remove degree"
                           >
@@ -778,12 +802,12 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Institution</label>
-                            <input 
-                              required 
+                            <input
+                              required
                               placeholder="e.g. Stanford University"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
-                              value={edu.institution} 
-                              onChange={e => updateEdu(idx, 'institution', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900"
+                              value={edu.institution}
+                              onChange={e => updateEdu(idx, 'institution', e.target.value)}
                             />
                           </div>
                           <div>
@@ -804,34 +828,34 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Degree / Major</label>
-                            <input 
-                              required 
+                            <input
+                              required
                               placeholder="e.g. B.Tech Computer Science"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
-                              value={edu.degree} 
-                              onChange={e => updateEdu(idx, 'degree', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900"
+                              value={edu.degree}
+                              onChange={e => updateEdu(idx, 'degree', e.target.value)}
                             />
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Start Year</label>
-                            <input 
+                            <input
                               placeholder="2021"
                               pattern="^(19|20)[0-9]{2}$"
                               title="Please enter a valid 4-digit year (e.g. 2021)"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={edu.startYear} 
-                              onChange={e => updateEdu(idx, 'startYear', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900"
+                              value={edu.startYear}
+                              onChange={e => updateEdu(idx, 'startYear', e.target.value)}
                             />
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">End Year</label>
-                            <input 
+                            <input
                               placeholder="2025"
                               pattern="^(19|20)[0-9]{2}$"
                               title="Please enter a valid 4-digit year (e.g. 2025)"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={edu.endYear} 
-                              onChange={e => updateEdu(idx, 'endYear', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900"
+                              value={edu.endYear}
+                              onChange={e => updateEdu(idx, 'endYear', e.target.value)}
                             />
                           </div>
                           <div>
@@ -845,12 +869,12 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                               step="0.01"
                               placeholder={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? 'e.g. 85.5' : 'e.g. 8.85'}
                               title={['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? "Please enter a valid percentage (0-100)" : "Please enter a valid CGPA (0-10)"}
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={edu.grade || edu.cgpa || ''} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900"
+                              value={edu.grade || edu.cgpa || ''}
                               onChange={e => {
                                 updateEdu(idx, 'grade', e.target.value);
                                 updateEdu(idx, 'cgpa', e.target.value);
-                              }} 
+                              }}
                             />
                           </div>
                         </div>
@@ -871,9 +895,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                     </div>
                     <h3 className="text-xs font-semibold text-gray-1000">Work Experience ({experience.length})</h3>
                   </div>
-                  <button 
-                    type="button" 
-                    onClick={addExp} 
+                  <button
+                    type="button"
+                    onClick={addExp}
                     className="px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-900 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add Experience
@@ -892,9 +916,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                       <div key={idx} className="bg-background-100 p-4 rounded-lg border border-gray-400 space-y-3 relative shadow-2xs">
                         <div className="flex items-center justify-between border-b border-gray-400/50 pb-2">
                           <span className="text-[11px] font-mono font-medium text-gray-600 uppercase tracking-wider">Role #{idx + 1}</span>
-                          <button 
-                            type="button" 
-                            onClick={() => removeExp(idx)} 
+                          <button
+                            type="button"
+                            onClick={() => removeExp(idx)}
                             className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors cursor-pointer"
                             title="Remove role"
                           >
@@ -904,50 +928,50 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Company / Organization</label>
-                            <input 
-                              required 
+                            <input
+                              required
                               placeholder="e.g. Acme Corp"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
-                              value={exp.company} 
-                              onChange={e => updateExp(idx, 'company', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900"
+                              value={exp.company}
+                              onChange={e => updateExp(idx, 'company', e.target.value)}
                             />
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Role / Title</label>
-                            <input 
-                              required 
+                            <input
+                              required
                               placeholder="e.g. Software Engineer Intern"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
-                              value={exp.role} 
-                              onChange={e => updateExp(idx, 'role', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900"
+                              value={exp.role}
+                              onChange={e => updateExp(idx, 'role', e.target.value)}
                             />
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Start Date</label>
-                            <input 
+                            <input
                               placeholder="Jun 2024"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={exp.startDate} 
-                              onChange={e => updateExp(idx, 'startDate', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900"
+                              value={exp.startDate}
+                              onChange={e => updateExp(idx, 'startDate', e.target.value)}
                             />
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">End Date</label>
-                            <input 
+                            <input
                               placeholder="Present"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={exp.endDate} 
-                              onChange={e => updateExp(idx, 'endDate', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900"
+                              value={exp.endDate}
+                              onChange={e => updateExp(idx, 'endDate', e.target.value)}
                             />
                           </div>
                           <div className="md:col-span-2">
                             <label className="text-[11px] font-medium text-gray-800">Key Contributions &amp; Impact</label>
-                            <textarea 
-                              rows="2" 
+                            <textarea
+                              rows="2"
                               placeholder="Designed and deployed microservices reducing API latency by 40%..."
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed" 
-                              value={exp.description} 
-                              onChange={e => updateExp(idx, 'description', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed"
+                              value={exp.description}
+                              onChange={e => updateExp(idx, 'description', e.target.value)}
                             />
                           </div>
                         </div>
@@ -968,9 +992,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                     </div>
                     <h3 className="text-xs font-semibold text-gray-1000">Featured Projects ({projects.length})</h3>
                   </div>
-                  <button 
-                    type="button" 
-                    onClick={addProj} 
+                  <button
+                    type="button"
+                    onClick={addProj}
                     className="px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-900 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add Project
@@ -989,9 +1013,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                       <div key={idx} className="bg-background-100 p-4 rounded-lg border border-gray-400 space-y-3 relative shadow-2xs">
                         <div className="flex items-center justify-between border-b border-gray-400/50 pb-2">
                           <span className="text-[11px] font-mono font-medium text-gray-600 uppercase tracking-wider">Project #{idx + 1}</span>
-                          <button 
-                            type="button" 
-                            onClick={() => removeProj(idx)} 
+                          <button
+                            type="button"
+                            onClick={() => removeProj(idx)}
                             className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors cursor-pointer"
                             title="Remove project"
                           >
@@ -1001,32 +1025,32 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Project Title</label>
-                            <input 
-                              required 
+                            <input
+                              required
                               placeholder="e.g. Distributed Task Queue"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
-                              value={proj.title} 
-                              onChange={e => updateProj(idx, 'title', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900"
+                              value={proj.title}
+                              onChange={e => updateProj(idx, 'title', e.target.value)}
                             />
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Live URL / Repository</label>
-                            <input 
-                              type="url" 
+                            <input
+                              type="url"
                               placeholder="https://github.com/..."
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={proj.link} 
-                              onChange={e => updateProj(idx, 'link', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900"
+                              value={proj.link}
+                              onChange={e => updateProj(idx, 'link', e.target.value)}
                             />
                           </div>
                           <div className="md:col-span-2">
                             <label className="text-[11px] font-medium text-gray-800">Description</label>
-                            <textarea 
-                              rows="2" 
+                            <textarea
+                              rows="2"
                               placeholder="High-throughput distributed asynchronous job processing library in Go..."
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed" 
-                              value={proj.description} 
-                              onChange={e => updateProj(idx, 'description', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed"
+                              value={proj.description}
+                              onChange={e => updateProj(idx, 'description', e.target.value)}
                             />
                           </div>
                         </div>
@@ -1047,9 +1071,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                     </div>
                     <h3 className="text-xs font-semibold text-gray-1000">Honors &amp; Achievements ({achievements.length})</h3>
                   </div>
-                  <button 
-                    type="button" 
-                    onClick={addAchieve} 
+                  <button
+                    type="button"
+                    onClick={addAchieve}
                     className="px-3 py-1.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-900 hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add Achievement
@@ -1068,9 +1092,9 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                       <div key={idx} className="bg-background-100 p-4 rounded-lg border border-gray-400 space-y-3 relative shadow-2xs">
                         <div className="flex items-center justify-between border-b border-gray-400/50 pb-2">
                           <span className="text-[11px] font-mono font-medium text-gray-600 uppercase tracking-wider">Achievement #{idx + 1}</span>
-                          <button 
-                            type="button" 
-                            onClick={() => removeAchieve(idx)} 
+                          <button
+                            type="button"
+                            onClick={() => removeAchieve(idx)}
                             className="text-gray-500 hover:text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors cursor-pointer"
                             title="Remove achievement"
                           >
@@ -1080,41 +1104,41 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Title</label>
-                            <input 
-                              required 
+                            <input
+                              required
                               placeholder="e.g. 1st Place - University Hackathon"
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900" 
-                              value={ach.title} 
-                              onChange={e => updateAchieve(idx, 'title', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900"
+                              value={ach.title}
+                              onChange={e => updateAchieve(idx, 'title', e.target.value)}
                             />
                           </div>
                           <div>
                             <label className="text-[11px] font-medium text-gray-800">Date Received</label>
-                            <input 
-                              type="date" 
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={ach.date ? String(ach.date).split('T')[0] : ''} 
-                              onChange={e => updateAchieve(idx, 'date', e.target.value)} 
+                            <input
+                              type="date"
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900"
+                              value={ach.date ? String(ach.date).split('T')[0] : ''}
+                              onChange={e => updateAchieve(idx, 'date', e.target.value)}
                             />
                           </div>
                           <div className="md:col-span-2">
                             <label className="text-[11px] font-medium text-gray-800">Certificate / Badge Image URL (Optional)</label>
-                            <input 
-                              type="url" 
+                            <input
+                              type="url"
                               placeholder="https://..."
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={ach.imageUrl} 
-                              onChange={e => updateAchieve(idx, 'imageUrl', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900"
+                              value={ach.imageUrl}
+                              onChange={e => updateAchieve(idx, 'imageUrl', e.target.value)}
                             />
                           </div>
                           <div className="md:col-span-2">
                             <label className="text-[11px] font-medium text-gray-800">Description</label>
-                            <textarea 
-                              rows="2" 
+                            <textarea
+                              rows="2"
                               placeholder="Awarded for creating an autonomous agent system..."
-                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed" 
-                              value={ach.description} 
-                              onChange={e => updateAchieve(idx, 'description', e.target.value)} 
+                              className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 focus:outline-none focus:border-gray-900 leading-relaxed"
+                              value={ach.description}
+                              onChange={e => updateAchieve(idx, 'description', e.target.value)}
                             />
                           </div>
                         </div>
@@ -1397,14 +1421,15 @@ export default function StudentProfile() {
   const education = Array.isArray(profile.resumeDetails?.education) ? profile.resumeDetails.education : [];
   const projects = Array.isArray(profile.resumeDetails?.projects) ? profile.resumeDetails.projects : [];
   const achievements = Array.isArray(profile.resumeDetails?.achievements) ? profile.resumeDetails.achievements : [];
+  const about = profile.resumeDetails?.about || '';
   const portfolioUrl = profile.resumeDetails?.portfolioUrl || '';
   const manualCerts = Array.isArray(profile.resumeDetails?.certificates) ? profile.resumeDetails.certificates : [];
   const scrapedCerts = Array.isArray(profile.scrapedData?.linkedin?.certifications) ? profile.scrapedData.linkedin.certifications : [];
-  
+
   const certificatesMap = new Map();
   scrapedCerts.forEach(cert => certificatesMap.set(cert.title, { isComplete: false }));
   manualCerts.forEach(cert => certificatesMap.set(cert.title, cert));
-  
+
   const allCertificates = Array.from(certificatesMap.values());
   const hasIncompleteCerts = allCertificates.length === 0 ? false : allCertificates.some(cert => !cert.isComplete);
   const hasCertificates = allCertificates.length > 0;
@@ -1428,7 +1453,7 @@ export default function StudentProfile() {
 
   return (
     <>
-      
+
       {/* Onboarding Overlay if profile incomplete */}
       {(!profile.isProfileComplete || !profile.email || !profile.uid) && (
         <ProfileSetupOverlay onComplete={setProfile} user={profile} />
@@ -1436,11 +1461,11 @@ export default function StudentProfile() {
 
       {/* Resume Editor Modal */}
       {showEditor && (
-        <ResumeEditorModal 
+        <ResumeEditorModal
           initialSectionId={typeof showEditor === 'string' ? showEditor : null}
-          profile={profile} 
-          onClose={() => setShowEditor(false)} 
-          onComplete={(updatedProfile) => setProfile(updatedProfile)} 
+          profile={profile}
+          onClose={() => setShowEditor(false)}
+          onComplete={(updatedProfile) => setProfile(updatedProfile)}
           onPreviewPdf={() => setShowPdf(true)}
         />
       )}
@@ -1460,14 +1485,14 @@ export default function StudentProfile() {
               </h2>
               <button onClick={() => { setLinkingAccount(null); setLinkingOtpRequired(false); setLinkingOtp(''); }} className="text-gray-700 hover:text-gray-1000"><X className="w-4 h-4" /></button>
             </div>
-            
+
             {!linkingOtpRequired ? (
               <>
                 <div>
                   <p className="text-xs text-gray-700 mb-3 font-sans">
-                    {linkingAccount === 'email' ? 'Enter your personal email address. E.g. name@gmail.com' : 
-                     linkingAccount === 'universityEmail' ? 'Enter your university email address. E.g. name@tcetmumbai.in' : 
-                     'Enter your 14-character student UID. E.g. 23-COMPA10-27'}
+                    {linkingAccount === 'email' ? 'Enter your personal email address. E.g. name@gmail.com' :
+                      linkingAccount === 'universityEmail' ? 'Enter your university email address. E.g. name@tcetmumbai.in' :
+                        'Enter your 14-character student UID. E.g. 23-COMPA10-27'}
                   </p>
                   <input
                     type="text"
@@ -1513,11 +1538,11 @@ export default function StudentProfile() {
 
       {/* Achievement Details Modal */}
       {selectedAchievement && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/70 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in duration-150"
           onClick={() => setSelectedAchievement(null)}
         >
-          <div 
+          <div
             className="bg-background-100 rounded-xl shadow-2xl max-w-xl w-full border border-gray-400 max-h-[90vh] flex flex-col overflow-hidden text-gray-1000"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1531,8 +1556,8 @@ export default function StudentProfile() {
                   <span className="text-[10px] font-mono text-gray-600">Verified Credential Showcase</span>
                 </div>
               </div>
-              <button 
-                onClick={() => setSelectedAchievement(null)} 
+              <button
+                onClick={() => setSelectedAchievement(null)}
                 className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-md text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" strokeWidth={1.5} />
@@ -1541,10 +1566,10 @@ export default function StudentProfile() {
             <div className="p-6 overflow-y-auto space-y-4">
               {selectedAchievement.imageUrl && (
                 <div className="rounded-xl border border-gray-400 p-2.5 bg-background-200 flex items-center justify-center overflow-hidden shadow-2xs">
-                  <img 
-                    src={selectedAchievement.imageUrl} 
-                    alt={selectedAchievement.title} 
-                    className="w-full max-h-64 object-contain rounded-lg" 
+                  <img
+                    src={selectedAchievement.imageUrl}
+                    alt={selectedAchievement.title}
+                    className="w-full max-h-64 object-contain rounded-lg"
                   />
                 </div>
               )}
@@ -1590,11 +1615,11 @@ export default function StudentProfile() {
 
       {/* Platform Verification Modal */}
       {verifyingPlatform && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/70 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in duration-150"
           onClick={() => setVerifyingPlatform(null)}
         >
-          <div 
+          <div
             className="bg-background-100 rounded-xl shadow-2xl max-w-md w-full border border-gray-400 overflow-hidden text-gray-1000 animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1608,8 +1633,8 @@ export default function StudentProfile() {
                   <span className="text-[10px] font-mono text-gray-600">Cryptographic Identity Verification</span>
                 </div>
               </div>
-              <button 
-                onClick={() => setVerifyingPlatform(null)} 
+              <button
+                onClick={() => setVerifyingPlatform(null)}
                 className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-md text-gray-700 hover:text-gray-1000 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" strokeWidth={1.5} />
@@ -1627,8 +1652,8 @@ export default function StudentProfile() {
                     Your {verifyingPlatform === 'github' ? 'GitHub' : verifyingPlatform === 'leetcode' ? 'LeetCode' : 'LinkedIn'} identity is now cryptographically verified. You can safely remove the verification tag from your profile.
                   </p>
                 </div>
-                <button 
-                  onClick={() => setVerifyingPlatform(null)} 
+                <button
+                  onClick={() => setVerifyingPlatform(null)}
                   className="w-full bg-gray-1000 text-background-100 py-2.5 rounded-md text-xs font-medium hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   Done
@@ -1646,9 +1671,9 @@ export default function StudentProfile() {
                       <span className="text-[10px] font-mono text-gray-600 block uppercase tracking-wider mb-0.5">Verification Token</span>
                       <span className="font-mono text-xs font-bold text-gray-1000 select-all tracking-wider break-all">{profile.verificationCode}</span>
                     </div>
-                    <button 
-                      onClick={handleCopyCode} 
-                      className="h-8 px-2.5 rounded-md bg-background-100 border border-gray-400 hover:bg-gray-200 text-gray-700 hover:text-gray-1000 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer text-xs font-mono" 
+                    <button
+                      onClick={handleCopyCode}
+                      className="h-8 px-2.5 rounded-md bg-background-100 border border-gray-400 hover:bg-gray-200 text-gray-700 hover:text-gray-1000 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer text-xs font-mono"
                       title="Copy code"
                     >
                       {copiedCode ? (
@@ -1671,8 +1696,8 @@ export default function StudentProfile() {
                   <p className="text-gray-700 font-sans">1. Copy token &rarr; 2. Add to your account bio &rarr; 3. Click "Verify Account Now".</p>
                 </div>
 
-                <button 
-                  onClick={() => handleVerify(verifyingPlatform)} 
+                <button
+                  onClick={() => handleVerify(verifyingPlatform)}
                   disabled={verifyingLoad}
                   className="w-full bg-gray-1000 text-background-100 py-2.5 rounded-md text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex justify-center items-center gap-2 cursor-pointer shadow-xs"
                 >
@@ -1689,16 +1714,16 @@ export default function StudentProfile() {
       <main className="flex-1 min-w-0">
 
         <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8">
-          
+
           {/* ===================================================================
               PROFILE HEADER & IDENTITY OVERVIEW
               =================================================================== */}
           <section className="rounded-xl border border-gray-400 bg-background-200 p-6 shadow-2xs space-y-6">
             <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
-              
+
               {/* Avatar & Core Metadata */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-                
+
                 {/* Avatar with Camera Trigger */}
                 <div className="relative group w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-800 border-2 border-gray-400 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
                   {profile.avatarUrl ? (
@@ -1887,17 +1912,17 @@ export default function StudentProfile() {
                 <span className="text-gray-1000 font-bold">{profileStrength}%</span>
               </div>
               <div className="h-1.5 w-full bg-gray-300 dark:bg-gray-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-teal-700 rounded-full transition-all duration-700" 
-                  style={{ width: `${profileStrength}%` }} 
+                <div
+                  className="h-full bg-teal-700 rounded-full transition-all duration-700"
+                  style={{ width: `${profileStrength}%` }}
                 />
               </div>
               {profileStrength < 100 && missingSections.length > 0 && (
                 <div className="flex items-center gap-1.5 flex-wrap text-[11px] font-mono pt-1">
                   <span className="text-gray-700 font-medium">Incomplete:</span>
                   {missingSections.map(sec => (
-                    <span 
-                      key={sec} 
+                    <span
+                      key={sec}
                       className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-[10px] font-mono font-medium transition-colors"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
@@ -1916,11 +1941,10 @@ export default function StudentProfile() {
             <button
               type="button"
               onClick={() => setActiveTab('portfolio')}
-              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'portfolio'
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${activeTab === 'portfolio'
                   ? 'border-gray-1000 text-gray-1000 font-semibold'
                   : 'border-transparent text-gray-700 hover:text-gray-1000'
-              }`}
+                }`}
             >
               <Briefcase className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span>Portfolio &amp; Career</span>
@@ -1928,11 +1952,10 @@ export default function StudentProfile() {
             <button
               type="button"
               onClick={() => setActiveTab('honors')}
-              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'honors'
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${activeTab === 'honors'
                   ? 'border-gray-1000 text-gray-1000 font-semibold'
                   : 'border-transparent text-gray-700 hover:text-gray-1000'
-              }`}
+                }`}
             >
               <Award className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span>Honors &amp; Credentials</span>
@@ -1945,11 +1968,10 @@ export default function StudentProfile() {
             <button
               type="button"
               onClick={() => setActiveTab('placements')}
-              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'placements'
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${activeTab === 'placements'
                   ? 'border-gray-1000 text-gray-1000 font-semibold'
                   : 'border-transparent text-gray-700 hover:text-gray-1000'
-              }`}
+                }`}
             >
               <MessageSquare className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span>Placement Stories</span>
@@ -1962,11 +1984,10 @@ export default function StudentProfile() {
             <button
               type="button"
               onClick={() => setActiveTab('identities')}
-              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'identities'
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${activeTab === 'identities'
                   ? 'border-gray-1000 text-gray-1000 font-semibold'
                   : 'border-transparent text-gray-700 hover:text-gray-1000'
-              }`}
+                }`}
             >
               <ShieldCheck className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span>Verification</span>
@@ -1978,7 +1999,7 @@ export default function StudentProfile() {
               =================================================================== */}
           {activeTab === 'portfolio' && (
             <div className="space-y-8 animate-in fade-in duration-150">
-              
+
               {/* 4-Column Quick Metric Strip */}
               <div className="grid grid-cols-2 md:grid-cols-4 rounded-xl border border-gray-400 bg-background-200 divide-y md:divide-y-0 md:divide-x divide-gray-400 overflow-hidden shadow-2xs">
                 <div className="p-4 flex flex-col justify-center">
@@ -1999,6 +2020,26 @@ export default function StudentProfile() {
                 </div>
               </div>
 
+              {/* About Me */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                    <MessageSquare className="w-3.5 h-3.5" strokeWidth={1.5} /> About Me
+                  </h3>
+                  <button
+                    onClick={() => setShowEditor('section-about')}
+                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
+                  >
+                    Edit About &rarr;
+                  </button>
+                </div>
+                {about ? (
+                  <RichContentRenderer htmlContent={about} className="text-gray-700" />
+                ) : (
+                  <p className="text-xs text-gray-600 font-mono py-2">No About section added yet.</p>
+                )}
+              </div>
+
               {/* Skills Tags Cloud */}
               <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
@@ -2016,8 +2057,8 @@ export default function StudentProfile() {
                 {skills.length > 0 ? (
                   <div className="flex flex-wrap gap-2 pt-1">
                     {skills.map((skill, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-xs font-mono text-gray-900 font-medium hover:border-gray-500 transition-colors"
                       >
                         {skill}
@@ -2118,18 +2159,18 @@ export default function StudentProfile() {
                 {projects.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {projects.map((proj, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className="p-4 rounded-lg border border-gray-400 bg-background-100 flex flex-col justify-between space-y-3 hover:border-gray-500 transition-colors"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center justify-between gap-2">
                             <h4 className="text-xs font-semibold text-gray-1000 truncate">{proj.title}</h4>
                             {proj.link && (
-                              <a 
-                                href={formatExternalUrl(proj.link)} 
-                                target="_blank" 
-                                rel="noreferrer" 
+                              <a
+                                href={formatExternalUrl(proj.link)}
+                                target="_blank"
+                                rel="noreferrer"
                                 className="text-gray-600 hover:text-gray-1000 transition-colors p-1"
                                 title="Open project link"
                               >
@@ -2159,7 +2200,7 @@ export default function StudentProfile() {
               =================================================================== */}
           {activeTab === 'honors' && (
             <div className="space-y-8 animate-in fade-in duration-150">
-              
+
               {/* Achievements Grid */}
               <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between border-b border-gray-400 pb-3">
@@ -2177,16 +2218,16 @@ export default function StudentProfile() {
                 {achievements.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {achievements.map((ach, idx) => (
-                      <div 
-                        key={idx} 
-                        onClick={() => setSelectedAchievement(ach)} 
+                      <div
+                        key={idx}
+                        onClick={() => setSelectedAchievement(ach)}
                         className="p-4 rounded-lg border border-gray-400 bg-background-100 hover:border-gray-500 cursor-pointer transition-colors flex flex-col justify-between space-y-3"
                       >
                         {ach.imageUrl && (
-                          <img 
-                            src={ach.imageUrl} 
-                            alt={ach.title} 
-                            className="w-full h-36 object-contain bg-background-200 rounded-md border border-gray-400" 
+                          <img
+                            src={ach.imageUrl}
+                            alt={ach.title}
+                            className="w-full h-36 object-contain bg-background-200 rounded-md border border-gray-400"
                           />
                         )}
                         <div className="space-y-1">
@@ -2210,37 +2251,7 @@ export default function StudentProfile() {
                 )}
               </div>
 
-              {/* Placement Assessments */}
-              {profile?.assessments?.length > 0 && (
-                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                  <div className="flex items-center justify-between border-b border-gray-400 pb-3">
-                    <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" strokeWidth={1.5} /> Placement Assessments
-                    </h3>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {profile.assessments.map((assessment, index) => (
-                      <div key={index} className="flex flex-col justify-between gap-3 p-4 rounded-xl border border-gray-300 bg-background-100 shadow-xs hover:border-gray-400 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-                            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                          </div>
-                          <h4 className="text-xs font-semibold text-gray-1000 line-clamp-2" title={assessment.title}>{assessment.title}</h4>
-                        </div>
-                        <a 
-                          href={assessment.fileUrl} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center gap-1.5 whitespace-nowrap mt-2 sm:self-end"
-                        >
-                          <Download className="w-3 h-3" /> Download Report
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* LinkedIn Certifications Summary */}
               {Array.isArray(profile.scrapedData?.linkedin?.certifications) && profile.scrapedData.linkedin.certifications.length > 0 && (
@@ -2262,10 +2273,10 @@ export default function StudentProfile() {
                           <div className="text-[11px] text-gray-600 font-sans mt-0.5">{cert.issuedBy}</div>
                         </div>
                         {cert.link && (
-                          <a 
-                            href={formatExternalUrl(cert.link)} 
-                            target="_blank" 
-                            rel="noreferrer" 
+                          <a
+                            href={formatExternalUrl(cert.link)}
+                            target="_blank"
+                            rel="noreferrer"
                             className="text-[11px] font-mono text-gray-700 hover:text-gray-1000 hover:underline shrink-0 flex items-center gap-1"
                           >
                             <span>View Credential</span>
@@ -2302,6 +2313,38 @@ export default function StudentProfile() {
                 </Link>
               </div>
 
+              {/* Placement Assessments */}
+              {profile?.assessments?.length > 0 && (
+                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                    <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" strokeWidth={1.5} /> Placement Assessments
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {profile.assessments.map((assessment, index) => (
+                      <div key={index} className="flex flex-col justify-between gap-3 p-4 rounded-xl border border-gray-300 bg-background-100 shadow-xs hover:border-gray-400 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+                            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <h4 className="text-xs font-semibold text-gray-1000 line-clamp-2" title={assessment.title}>{assessment.title}</h4>
+                        </div>
+                        <a
+                          href={assessment.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center gap-1.5 whitespace-nowrap mt-2 sm:self-end"
+                        >
+                          <Download className="w-3 h-3" /> Download Report
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {userPlacementPosts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {userPlacementPosts.map((post) => (
@@ -2315,10 +2358,10 @@ export default function StudentProfile() {
                             <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 p-1 flex items-center justify-center font-bold text-xs text-gray-1000 shrink-0 overflow-hidden shadow-2xs">
                               {post.company?.logoUrl || post.company?.name ? (
                                 <>
-                                  <img 
-                                    src={post.company?.logoUrl || `https://logo.clearbit.com/${post.company.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`} 
-                                    alt={post.company?.name} 
-                                    className="w-full h-full object-contain" 
+                                  <img
+                                    src={post.company?.logoUrl || `https://logo.clearbit.com/${post.company.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`}
+                                    alt={post.company?.name}
+                                    className="w-full h-full object-contain"
                                     onError={(e) => {
                                       e.target.onerror = null;
                                       e.target.style.display = 'none';
@@ -2387,7 +2430,7 @@ export default function StudentProfile() {
               =================================================================== */}
           {activeTab === 'identities' && (
             <div className="space-y-6 animate-in fade-in duration-150">
-              
+
               {/* Core Account Identities Card */}
               <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
                 <div className="flex items-center gap-3 border-b border-gray-400 pb-4">
@@ -2399,7 +2442,7 @@ export default function StudentProfile() {
                     <p className="text-[11px] text-gray-600 font-sans">Manage your primary identifiers and recovery methods</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4 pt-1">
                   {/* Email */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -2411,7 +2454,7 @@ export default function StudentProfile() {
                       <button onClick={() => setLinkingAccount('email')} className="text-xs font-mono text-gray-700 hover:text-gray-1000 underline cursor-pointer">Link Email</button>
                     )}
                   </div>
-                  
+
                   {/* University Email */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
@@ -2435,7 +2478,7 @@ export default function StudentProfile() {
                   </div>
                 </div>
               </div>
-              
+
               {/* GitHub Card */}
               <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-400 pb-4">
