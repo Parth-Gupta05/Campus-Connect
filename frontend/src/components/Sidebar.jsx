@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
+import BrandLogo from './BrandLogo';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { 
@@ -165,11 +166,7 @@ export default function Sidebar() {
           }`}
           title="Campus Connect"
         >
-          <div className="w-7 h-7 rounded-md bg-gray-1000 text-background-100 flex items-center justify-center shrink-0 shadow-2xs">
-            <svg width="12" height="11" viewBox="0 0 76 65" fill="currentColor">
-              <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
-            </svg>
-          </div>
+          <BrandLogo className="w-7 h-7 shrink-0" />
           <span className="font-sans font-semibold text-sm tracking-tight text-gray-1000 whitespace-nowrap truncate min-w-0">
             Campus Connect
           </span>

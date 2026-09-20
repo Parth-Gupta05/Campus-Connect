@@ -40,6 +40,14 @@ export function ThemeProvider({ children }) {
       root.setAttribute('data-theme', active);
       root.style.colorScheme = active;
 
+      const favicon = document.querySelector('link[rel="icon"]');
+      if (favicon) {
+        favicon.type = 'image/png';
+        favicon.href = active === 'light'
+          ? '/campus-connect-logo-dark.png'
+          : '/campus-connect-logo-light.png';
+      }
+
       try {
         localStorage.setItem('zeit-theme', theme);
       } catch (err) {
