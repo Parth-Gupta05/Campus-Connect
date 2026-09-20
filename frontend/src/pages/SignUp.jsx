@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
@@ -40,8 +40,17 @@ export default function SignUp() {
   const [parsedProfileData, setParsedProfileData] = useState(null);
 
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { user, login } = useContext(AuthContext);
   const { showToast } = useToast();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') navigate('/admin');
+      else if (user.role === 'club') navigate('/club');
+      else navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const [verifiedUid, setVerifiedUid] = useState(null);
 

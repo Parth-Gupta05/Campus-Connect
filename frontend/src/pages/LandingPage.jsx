@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { ActivityCalendar } from 'react-activity-calendar';
 import { useTheme } from '../context/ThemeContext';
+import { AuthContext } from '../context/AuthContext';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
 import {
@@ -216,6 +217,15 @@ function TypewriterCode({ code = SAMPLE_RATE_LIMITER_CODE, speed = 12, delay = 2
 
 export default function LandingPage() {
   const { resolvedTheme } = useTheme();
+  const { user } = useContext(AuthContext);
+
+  const getDashboardLink = () => {
+    if (!user) return '/signin';
+    if (user.role === 'admin') return '/admin';
+    if (user.role === 'club') return '/club';
+    return '/dashboard';
+  };
+
   const previewCardRef = useRef(null);
   const footerRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -638,18 +648,29 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-3 font-sans">
               <ThemeSwitcher small />
               <div className="h-4 w-px bg-gray-400 mx-1" />
-              <Link
-                to="/signin"
-                className="text-xs font-medium text-gray-900 hover:text-gray-1000 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/signup"
-                className="inline-flex items-center justify-center h-8 px-3 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity shadow-xs"
-              >
-                Get Started
-              </Link>
+              {user ? (
+                <Link
+                  to={getDashboardLink()}
+                  className="inline-flex items-center justify-center h-8 px-3 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity shadow-xs"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/signin"
+                    className="text-xs font-medium text-gray-900 hover:text-gray-1000 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="inline-flex items-center justify-center h-8 px-3 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity shadow-xs"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -691,18 +712,32 @@ export default function LandingPage() {
               </a>
               <div className="h-px bg-gray-400 my-1" />
               <div className="flex items-center gap-3 pt-1">
-                <Link
-                  to="/signin"
-                  className="w-full text-center text-xs font-medium text-gray-1000 py-2 border border-gray-400 rounded-md"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/signup"
-                  className="w-full text-center text-xs font-medium bg-gray-1000 text-background-100 py-2 rounded-md"
-                >
-                  Get Started
-                </Link>
+                {user ? (
+                  <Link
+                    to={getDashboardLink()}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center text-xs font-medium bg-gray-1000 text-background-100 py-2 rounded-md"
+                  >
+                    Go to Dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      to="/signin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center text-xs font-medium text-gray-1000 py-2 border border-gray-400 rounded-md"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full text-center text-xs font-medium bg-gray-1000 text-background-100 py-2 rounded-md"
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -1845,20 +1880,32 @@ export default function LandingPage() {
               Join thousands of university students, placement cell administrators, and hiring teams building with verified data.
             </p>
 
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                to="/signup"
-                className="btn-shimmer-effect inline-flex items-center justify-center gap-2 h-10 px-6 rounded-md bg-gray-1000 text-background-100 text-sm font-medium hover:opacity-90 transition-opacity w-full sm:w-auto shadow-xs"
-              >
-                <span>Get Started with Campus Connect</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                to="/signin"
-                className="inline-flex items-center justify-center h-10 px-6 rounded-md border border-gray-400 bg-background-100 text-gray-1000 text-sm font-medium hover:bg-gray-100 hover:border-gray-500 transition-colors w-full sm:w-auto"
-              >
-                Sign In to Account
-              </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 animate-fade-in delay-200">
+              {user ? (
+                <Link
+                  to={getDashboardLink()}
+                  className="btn-shimmer-effect inline-flex items-center justify-center gap-2 h-10 px-6 rounded-md bg-gray-1000 text-background-100 text-sm font-medium hover:opacity-90 transition-opacity w-full sm:w-auto shadow-xs"
+                >
+                  <span>Go to Dashboard</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/signup"
+                    className="btn-shimmer-effect inline-flex items-center justify-center gap-2 h-10 px-6 rounded-md bg-gray-1000 text-background-100 text-sm font-medium hover:opacity-90 transition-opacity w-full sm:w-auto shadow-xs"
+                  >
+                    <span>Get Started with Campus Connect</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    to="/signin"
+                    className="inline-flex items-center justify-center h-10 px-6 rounded-md border border-gray-400 bg-background-100 text-gray-1000 text-sm font-medium hover:bg-gray-100 hover:border-gray-500 transition-colors w-full sm:w-auto"
+                  >
+                    Sign In to Account
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </section>
