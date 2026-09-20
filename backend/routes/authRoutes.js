@@ -16,9 +16,23 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { message: 'Too many verification attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Helper to hash password
 const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
+};
+
+const refreshCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
 };
 
 const BRANCH_MAPPING = {
@@ -121,11 +135,14 @@ const parseUID = (uid) => {
 // Register Route
 router.post('/register', async (req, res) => {
   try {
-    let { identifier, password, role } = req.body;
+    let { identifier, password } = req.body;
     identifier = identifier?.trim();
 
     if (!identifier || !password) {
       return res.status(400).json({ message: 'Please provide email/UID and password' });
+    }
+    if (password.length < 8 || password.length > 128) {
+      return res.status(400).json({ message: 'Password must be between 8 and 128 characters' });
     }
 
     const isEmail = identifier.includes('@');
@@ -185,7 +202,7 @@ router.post('/register', async (req, res) => {
       universityEmail,
       uid,
       password: hashedPassword,
-      role: role === 'admin' ? 'admin' : 'student', // Default to student
+      role: 'student',
       ...profileData
     });
 
@@ -198,23 +215,21 @@ router.post('/register', async (req, res) => {
 
     // Create Access Token (auto login)
     const accessToken = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id, role: user.role, tokenVersion: user.tokenVersion },
       process.env.JWT_SECRET,
       { expiresIn: '15m' }
     );
 
     // Create Refresh Token
     const refreshToken = jwt.sign(
-      { id: user._id },
+      { id: user._id, tokenVersion: user.tokenVersion },
       process.env.JWT_REFRESH_SECRET,
       { expiresIn: '7d' }
     );
 
     // Set Refresh Token in HttpOnly cookie
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      ...refreshCookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -236,9 +251,175 @@ router.post('/register', async (req, res) => {
 });
 
 // Login Route
-router.post('/login', /* loginLimiter, */ async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
-    let { identifier, password, remember } = req.body;
+          let { identifier, password, remember } = req.body;
+          identifier = identifier?.trim();
+          if (!identifier || !password) {
+            return res.status(400).json({ message: 'Please provide email/UID and password' });
+          }
+          const isEmail = identifier.includes('@');
+          const uid = !isEmail ? identifier.toUpperCase() : undefined;
+          const query = [];
+          if (isEmail) {
+            query.push({ email: identifier });
+            query.push({ universityEmail: identifier });
+          }
+          if (uid) query.push({ uid });
+          // Find user
+          let user = await User.findOne({ $or: query });
+          let isClub = false;
+          if (!user && isEmail) {
+            user = await Club.findOne({ email: identifier });
+            if (user) isClub = true;
+          }
+          if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+          }
+          // Verify password
+          const hashedPassword = hashPassword(password);
+          if (user.password !== hashedPassword) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+          }
+          // Create Access Token
+          const accessToken = jwt.sign(
+            { id: user._id, role: user.role, tokenVersion: user.tokenVersion },
+            process.env.JWT_SECRET,
+            { expiresIn: '15m' } // Short lived access token
+          );
+          // Create Refresh Token (Long lived if remember is true, otherwise shorter)
+          const refreshToken = jwt.sign(
+            { id: user._id, tokenVersion: user.tokenVersion },
+            process.env.JWT_REFRESH_SECRET,
+            { expiresIn: remember ? '7d' : '1d' }
+          );
+          // Set Refresh Token in HttpOnly cookie
+          const cookieOptions = {
+            ...refreshCookieOptions,
+          };
+          if (remember) {
+            cookieOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+          }
+          res.cookie('refreshToken', refreshToken, cookieOptions);
+          // Send response
+          res.json({
+            message: 'Logged in successfully',
+            accessToken,
+            user: {
+              id: user._id,
+              email: user.email,
+              universityEmail: user.universityEmail,
+              uid: user.uid,
+              role: user.role,
+              isMissingCredential: isClub ? false : (!user.email || !user.uid)
+            }
+          });
+        } catch (error) {
+          console.error('Login error:', error);
+          res.status(500).json({ message: 'Server error during login' });
+        }
+      });
+/*
+// Link Account Route
+router.post('/link-account', otpLimiter, async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    let { identifier } = req.body;
+    if (!identifier || !identifier.trim()) {
+      return res.status(400).json({ message: 'Please provide an identifier to link' });
+    }
+    identifier = identifier.trim();
+    const isEmail = identifier.includes('@');
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if (isEmail) {
+      const isUniversity = identifier.endsWith('@tcetmumbai.in');
+      // Validation before sending OTP
+      if (isUniversity) {
+        if (user.universityEmail) {
+          return res.status(400).json({ message: 'University email is already linked' });
+        }
+        const existingUser = await User.findOne({ universityEmail: identifier });
+        if (existingUser) {
+          return res.status(400).json({ message: 'This email is already in use by another account' });
+        }
+      } else {
+        if (user.email) {
+          return res.status(400).json({ message: 'Email is already linked' });
+        }
+        const existingUser = await User.findOne({ email: identifier });
+        if (existingUser) {
+          return res.status(400).json({ message: 'This email is already in use by another account' });
+        }
+      }
+      // Generate OTP
+      const otp = crypto.randomInt(100000, 1000000).toString();
+      user.pendingLinkEmail = identifier;
+      user.linkEmailOtp = otp;
+      user.linkEmailOtpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+      user.linkEmailOtpAttempts = 0;
+
+      await user.save();
+      await emailService.sendLinkEmailOtp(identifier, otp);
+
+      return res.json({ requiresOtp: true, message: 'OTP sent to email' });
+    } else {
+      const uid = identifier.toUpperCase();
+      if (user.uid) {
+        return res.status(400).json({ message: 'UID is already linked' });
+      }
+      const existingUser = await User.findOne({ uid: uid });
+      if (existingUser) {
+        return res.status(400).json({ message: 'This UID is already in use by another account' });
+      }
+      user.uid = uid;
+
+      // Auto-fill details if missing
+      let profileData = parseUID(uid) || {};
+      if (req.body.profileData) {
+        profileData = { ...profileData, ...req.body.profileData };
+      }
+      if (Object.keys(profileData).length > 0) {
+        if (!user.admissionYear) user.admissionYear = profileData.admissionYear;
+        if (!user.graduationYear) user.graduationYear = profileData.graduationYear;
+        if (!user.branch) user.branch = profileData.branch;
+        if (!user.division && profileData.division) user.division = profileData.division.toUpperCase().charAt(0);
+        if (!user.rollNo) user.rollNo = profileData.rollNo;
+        if (!user.currentYear) user.currentYear = profileData.currentYear;
+        if (!user.currentSem) user.currentSem = profileData.currentSem;
+      }
+    }
+    await user.save();
+    if (identifier.toUpperCase() === user.uid) {
+      await processPendingMembers(user);
+    }
+    res.json({
+      message: 'Account linked successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        uid: user.uid,
+        role: user.role,
+        isMissingCredential: !user.email || !user.uid
+      }
+    });
+  } catch (error) {
+    console.error('Link account error:', error);
+    res.status(500).json({ message: 'Server error during account linking' });
+  }
+});
     identifier = identifier?.trim();
 
     if (!identifier || !password) {
@@ -290,9 +471,7 @@ router.post('/login', /* loginLimiter, */ async (req, res) => {
 
     // Set Refresh Token in HttpOnly cookie
     const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      ...refreshCookieOptions,
     };
 
     if (remember) {
@@ -320,9 +499,10 @@ router.post('/login', /* loginLimiter, */ async (req, res) => {
     res.status(500).json({ message: 'Server error during login' });
   }
 });
+*/
 
 // Link Account Route
-router.post('/link-account', async (req, res) => {
+router.post('/link-account', otpLimiter, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -372,10 +552,11 @@ router.post('/link-account', async (req, res) => {
       }
 
       // Generate OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otp = crypto.randomInt(100000, 1000000).toString();
       user.pendingLinkEmail = identifier;
       user.linkEmailOtp = otp;
       user.linkEmailOtpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+      user.linkEmailOtpAttempts = 0;
       
       await user.save();
       await emailService.sendLinkEmailOtp(identifier, otp);
@@ -436,15 +617,15 @@ router.post('/link-account', async (req, res) => {
 // @route   POST /api/auth/verify-link-otp
 // @desc    Verify OTP to link email
 // @access  Private
-router.post('/verify-link-otp', async (req, res) => {
-  const token = req.cookies.token;
-  if (!token) {
+router.post('/verify-link-otp', otpLimiter, async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'No token, authorization denied' });
   }
 
   let decoded;
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
+    decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
   } catch (err) {
     return res.status(401).json({ message: 'Invalid token' });
   }
@@ -461,7 +642,13 @@ router.post('/verify-link-otp', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    if (user.linkEmailOtpAttempts >= 5) {
+      return res.status(429).json({ message: 'Too many invalid OTP attempts' });
+    }
+
     if (!user.linkEmailOtp || user.linkEmailOtp !== otp) {
+      user.linkEmailOtpAttempts += 1;
+      await user.save();
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
@@ -484,6 +671,7 @@ router.post('/verify-link-otp', async (req, res) => {
     user.pendingLinkEmail = null;
     user.linkEmailOtp = null;
     user.linkEmailOtpExpiry = null;
+    user.linkEmailOtpAttempts = 0;
 
     await user.save();
 
@@ -529,9 +717,13 @@ router.post('/refresh', (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
 
+      if (decoded.tokenVersion !== undefined && decoded.tokenVersion !== user.tokenVersion) {
+        return res.status(403).json({ message: 'Session has been revoked' });
+      }
+
       // Issue new access token
       const accessToken = jwt.sign(
-        { id: user._id, role: user.role },
+        { id: user._id, role: user.role, tokenVersion: user.tokenVersion },
         process.env.JWT_SECRET,
         { expiresIn: '15m' }
       );
@@ -545,42 +737,57 @@ router.post('/refresh', (req, res) => {
 });
 
 // Logout Route
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+      const user = await User.findById(decoded.id) || await Club.findById(decoded.id);
+      if (user) {
+        user.tokenVersion += 1;
+        await user.save();
+      }
+    }
+  } catch (error) {
+    console.error('Logout session revocation error:', error);
+  }
   res.clearCookie('refreshToken');
   res.json({ message: 'Logged out successfully' });
 });
 
 // Forgot Password Route
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', otpLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email is required' });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const genericResponse = { message: 'If the account exists, a verification code has been sent' };
+    if (!user) return res.json(genericResponse);
     
     if (user.role === 'admin') {
-      return res.status(403).json({ message: 'Admins cannot reset password via OTP' });
+      return res.json(genericResponse);
     }
 
     // Cooldown check (60 seconds)
     if (user.resetOtpLastSent && Date.now() - user.resetOtpLastSent.getTime() < 60000) {
-      return res.status(429).json({ message: 'Please wait 60 seconds before requesting another OTP' });
+      return res.json(genericResponse);
     }
 
     // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const hashedOtp = hashPassword(otp);
 
     user.resetOtp = hashedOtp;
     user.resetOtpExpiry = new Date(Date.now() + 15 * 60000); // 15 mins
     user.resetOtpLastSent = new Date();
+    user.resetOtpAttempts = 0;
     await user.save();
 
     const { sendPasswordResetEmail } = require('../utils/emailService');
     await sendPasswordResetEmail(user.email, otp);
 
-    res.json({ message: 'OTP sent to your email' });
+    res.json(genericResponse);
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -588,13 +795,17 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // Verify OTP Route
-router.post('/verify-otp', async (req, res) => {
+router.post('/verify-otp', otpLimiter, async (req, res) => {
   try {
     const { email, otp } = req.body;
     if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(400).json({ message: 'OTP is invalid or expired' });
+
+    if (user.resetOtpAttempts >= 5) {
+      return res.status(429).json({ message: 'Too many invalid OTP attempts' });
+    }
 
     if (!user.resetOtp || !user.resetOtpExpiry || user.resetOtpExpiry < new Date()) {
       return res.status(400).json({ message: 'OTP is invalid or expired' });
@@ -602,6 +813,8 @@ router.post('/verify-otp', async (req, res) => {
 
     const hashedProvidedOtp = hashPassword(otp);
     if (user.resetOtp !== hashedProvidedOtp) {
+      user.resetOtpAttempts += 1;
+      await user.save();
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
@@ -613,15 +826,22 @@ router.post('/verify-otp', async (req, res) => {
 });
 
 // Reset Password Route
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', otpLimiter, async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ message: 'All fields are required' });
     }
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      return res.status(400).json({ message: 'Password must be between 8 and 128 characters' });
+    }
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(400).json({ message: 'OTP is invalid or expired' });
+
+    if (user.resetOtpAttempts >= 5) {
+      return res.status(429).json({ message: 'Too many invalid OTP attempts' });
+    }
 
     if (!user.resetOtp || !user.resetOtpExpiry || user.resetOtpExpiry < new Date()) {
       return res.status(400).json({ message: 'OTP is invalid or expired' });
@@ -630,14 +850,18 @@ router.post('/reset-password', async (req, res) => {
     // Verify OTP
     const hashedProvidedOtp = hashPassword(otp);
     if (user.resetOtp !== hashedProvidedOtp) {
+      user.resetOtpAttempts += 1;
+      await user.save();
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
     // Update Password
     user.password = hashPassword(newPassword);
+    user.tokenVersion += 1;
     user.resetOtp = null;
     user.resetOtpExpiry = null;
     user.resetOtpLastSent = null;
+    user.resetOtpAttempts = 0;
     await user.save();
 
     res.json({ message: 'Password reset successfully. You can now log in.' });

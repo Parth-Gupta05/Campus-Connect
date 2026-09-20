@@ -326,12 +326,12 @@ const refreshMetrics = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check timeout: 30 minutes (Temporarily disabled for testing)
-    const THIRTY_MINUTES_MS = 0; // 30 * 60 * 1000;
+    // Keep external metrics providers from being queried more than once every two hours.
+    const REFRESH_LOCK_MS = 2 * 60 * 60 * 1000;
     if (user.lastScrapedAt) {
       const timeSinceLastScrape = Date.now() - new Date(user.lastScrapedAt).getTime();
-      if (timeSinceLastScrape < THIRTY_MINUTES_MS) {
-        const remainingMinutes = Math.ceil((THIRTY_MINUTES_MS - timeSinceLastScrape) / 60000);
+      if (timeSinceLastScrape < REFRESH_LOCK_MS) {
+        const remainingMinutes = Math.ceil((REFRESH_LOCK_MS - timeSinceLastScrape) / 60000);
         return res.status(429).json({ 
           message: `Please wait ${remainingMinutes} minutes before refreshing again.`
         });

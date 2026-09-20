@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import ImageCropperModal from '../components/ImageCropperModal';
 import PdfViewerModal from '../components/PdfViewerModal';
+import RichTextEditor from '../components/RichTextEditor';
+import RichContentRenderer from '../components/RichContentRenderer';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { calculateProfileCompleteness } from '../utils/profileUtils';
@@ -410,6 +412,7 @@ function ProfileSetupOverlay({ onComplete, user }) {
 function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initialSectionId }) {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('all');
+  const [about, setAbout] = useState(profile?.resumeDetails?.about || '');
   const [skillsStr, setSkillsStr] = useState(profile?.resumeDetails?.skills?.join(', ') || '');
   const [portfolioUrl, setPortfolioUrl] = useState(profile?.resumeDetails?.portfolioUrl || '');
   const [githubUsername, setGithubUsername] = useState(profile?.githubUsername || '');
@@ -491,6 +494,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
     setLoading(true);
     try {
       const payload = {
+        about,
         portfolioUrl,
         skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean),
         education,
@@ -546,6 +550,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
 
   const tabs = [
     { id: 'all', label: 'All Sections' },
+    { id: 'about', label: 'About' },
     { id: 'handles', label: 'Profiles & Handles' },
     { id: 'skills', label: 'Skills' },
     { id: 'education', label: `Education (${education.length})` },
@@ -651,6 +656,27 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
 
           {/* Form Sections */}
           <form id="resume-editor-form" onSubmit={handleSave} className="space-y-6 text-xs font-sans">
+
+            {/* About */}
+            {(activeTab === 'all' || activeTab === 'about') && (
+              <div id="section-about" className="rounded-xl border border-gray-400 bg-background-200 p-5 space-y-4">
+                <div className="flex items-center gap-2 border-b border-gray-400/70 pb-3">
+                  <div className="w-6 h-6 rounded-md bg-background-100 border border-gray-400 flex items-center justify-center text-gray-900">
+                    <MessageSquare className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-xs font-semibold text-gray-1000">About Me</h3>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-gray-900 font-medium">Short professional introduction</label>
+                  <RichTextEditor
+                    content={about}
+                    onChange={setAbout}
+                    placeholder="Share your background, interests, and the kind of work you want to pursue."
+                  />
+                  <div className="text-right text-[10px] font-mono text-gray-600">{about.replace(/<[^>]*>/g, '').length}/2000</div>
+                </div>
+              </div>
+            )}
             
             {/* Online Profiles */}
             {(activeTab === 'all' || activeTab === 'handles') && (
@@ -1393,6 +1419,7 @@ export default function StudentProfile() {
   const education = profile.resumeDetails?.education || [];
   const projects = profile.resumeDetails?.projects || [];
   const achievements = profile.resumeDetails?.achievements || [];
+  const about = profile.resumeDetails?.about || '';
   const portfolioUrl = profile.resumeDetails?.portfolioUrl || '';
   const manualCerts = profile.resumeDetails?.certificates || [];
   const scrapedCerts = profile.scrapedData?.linkedin?.certifications || [];
@@ -1992,6 +2019,26 @@ export default function StudentProfile() {
                   <span className="text-[11px] font-mono uppercase tracking-wider text-gray-600">Degrees</span>
                   <span className="text-xl font-bold font-sans text-gray-1000 mt-1">{education.length}</span>
                 </div>
+              </div>
+
+              {/* About Me */}
+              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                    <MessageSquare className="w-3.5 h-3.5" strokeWidth={1.5} /> About Me
+                  </h3>
+                  <button
+                    onClick={() => setShowEditor('section-about')}
+                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
+                  >
+                    Edit About &rarr;
+                  </button>
+                </div>
+                {about ? (
+                  <RichContentRenderer htmlContent={about} className="text-gray-700" />
+                ) : (
+                  <p className="text-xs text-gray-600 font-mono py-2">No About section added yet.</p>
+                )}
               </div>
 
               {/* Skills Tags Cloud */}

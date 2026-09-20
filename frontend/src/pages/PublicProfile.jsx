@@ -10,6 +10,7 @@ import Prism from '../components/Prism';
 import { ActivityCalendar } from 'react-activity-calendar';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import PdfViewerModal from '../components/PdfViewerModal';
+import RichContentRenderer from '../components/RichContentRenderer';
 import { ProfileThemeProvider } from '../profile/ProfileThemeProvider';
 import { AnimatedGridPattern } from '../components/backgrounds/animated-grid-pattern';
 import { InteractiveGridPattern } from '../components/backgrounds/interactive-grid-pattern';
@@ -29,7 +30,6 @@ import {
   Calendar,
   MapPin,
   Building2,
-  CheckCircle2,
   ChevronRight,
   ShieldCheck,
   Code2,
@@ -74,7 +74,7 @@ const CountUp = ({ end }) => {
             >
               <span className="opacity-0">0</span>
               {[...Array(10)].map((_, j) => (
-                <span key={j} className="text-[var(--profile-text)]">{j}</span>
+                <span key={j} className="text-current">{j}</span>
               ))}
             </span>
           </span>
@@ -166,6 +166,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
   const projects = profile.resumeDetails?.projects || [];
   const achievements = profile.resumeDetails?.achievements || [];
   const certificates = profile.resumeDetails?.certificates || [];
+  const about = profile.resumeDetails?.about || profile.about || profile.scrapedData?.linkedin?.about || '';
 
   const activeCustomization = previewCustomization || profile.profileCustomization || {};
   const privacy = activeCustomization.metricsPrivacy || {};
@@ -178,11 +179,6 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
         sgpa: r.sgpa
       }))
     : [];
-
-  const requiredSems = Math.max(0, (profile.currentSem || 1) - 1);
-  const isVaultComplete = profile.semesterRecords?.length >= requiredSems && 
-                          profile.pastEducation?.some(e => e.level === '10th') && 
-                          profile.pastEducation?.some(e => e.level === '12th' || e.level === 'Diploma');
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -293,12 +289,6 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
             )}
             
             <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8 pb-20">
-            {isVaultComplete && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 w-fit">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Verified Academic Records</span>
-              </div>
-            )}
             {/* Profile Header */}
             <section className="profile-card relative overflow-hidden mt-4">
               {/* Banner Texture Layer */}
@@ -529,6 +519,14 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
             </div>
           )}
 
+          {/* About Me Section */}
+          {visibility.showAbout !== false && about && (
+            <div className="profile-card p-6 space-y-3">
+              <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">About Me</h2>
+              <RichContentRenderer htmlContent={about} className="text-[var(--profile-muted-text)]" />
+            </div>
+          )}
+
           {/* SGPA Progression Chart */}
           {hasSemesterRecords && visibility.showAcademicProgression !== false && (
             <div className="profile-card p-6 flex flex-col min-h-[280px]">
@@ -589,16 +587,6 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-            </div>
-          )}
-
-          {/* About Me Section */}
-          {visibility.showAbout !== false && (profile.about || profile.scrapedData?.linkedin?.about) && (
-            <div className="profile-card p-6 space-y-3">
-              <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">About Me</h2>
-              <p className="text-xs md:text-sm text-[var(--profile-muted-text)] leading-relaxed font-sans whitespace-pre-wrap">
-                {profile.about || profile.scrapedData?.linkedin?.about}
-              </p>
             </div>
           )}
 

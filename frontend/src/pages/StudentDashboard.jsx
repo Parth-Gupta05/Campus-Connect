@@ -55,6 +55,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import PdfViewerModal from '../components/PdfViewerModal';
 import AcademicVaultModal from '../components/AcademicVaultModal';
 
+const METRICS_REFRESH_LOCK_MS = 2 * 60 * 60 * 1000;
+
 const CountUp = ({ end }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -94,6 +96,44 @@ const CountUp = ({ end }) => {
   );
 };
 
+const getDocumentThumbnailUrl = (url) => {
+  if (!url) return '';
+  const [path, query = ''] = url.split('?');
+  if (!path.toLowerCase().endsWith('.pdf')) return url;
+  return `${path.substring(0, path.lastIndexOf('.'))}.jpg${query ? `?${query}` : ''}`;
+};
+
+const VaultDocumentThumbnail = ({ url, title, onPreview }) => {
+  const [hasError, setHasError] = useState(false);
+  const thumbnailUrl = getDocumentThumbnailUrl(url);
+
+  return (
+    <button
+      type="button"
+      onClick={onPreview}
+      className="relative block aspect-[16/10] w-full overflow-hidden rounded-none border-0 border-b border-gray-400 bg-background-200 text-left cursor-pointer group"
+      title={`Preview ${title}`}
+    >
+      {thumbnailUrl && !hasError ? (
+        <img
+          src={thumbnailUrl}
+          alt={`${title} preview`}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <span className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-background-100 to-background-200 text-gray-600">
+          <FileText className="h-8 w-8" />
+          <span className="text-[10px] font-mono uppercase tracking-wider">Preview unavailable</span>
+        </span>
+      )}
+      <span className="absolute bottom-2 right-2 rounded-md bg-gray-1000/80 px-2 py-1 text-[10px] font-semibold text-background-100 opacity-0 transition-opacity group-hover:opacity-100">
+        Preview
+      </span>
+    </button>
+  );
+};
+
 function RepoModal({ repo, onClose }) {
   useEffect(() => {
     if (repo) {
@@ -121,13 +161,6 @@ function RepoModal({ repo, onClose }) {
             </h2>
             <p className="text-xs text-gray-700 line-clamp-2">{repo.description || 'No description provided.'}</p>
           </div>
-          <button 
-            onClick={onClose} 
-            aria-label="Close modal"
-            className="text-gray-700 hover:text-gray-1000 transition-colors p-1.5 hover:bg-gray-200 rounded-md flex items-center justify-center shrink-0 cursor-pointer"
-          >
-            <X className="w-4 h-4" strokeWidth={1.5} />
-          </button>
         </div>
         
         {/* Repo Meta Strip */}
@@ -288,6 +321,7 @@ export default function StudentDashboard() {
   const [editingResumeId, setEditingResumeId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [settingPrimaryId, setSettingPrimaryId] = useState(null);
+  const [refreshLockRemaining, setRefreshLockRemaining] = useState(0);
 
   // Upload Form state
   const [uploadFile, setUploadFile] = useState(null);
@@ -375,6 +409,7 @@ export default function StudentDashboard() {
   }, [activeHeatmap, profile?.githubUsername, profile?.githubVerified]);
 
   const handleRefreshMetrics = async () => {
+    if (refreshLockRemaining > 0) return;
     setRefreshing(true);
     try {
       const res = await axios.post('/user/refresh-metrics');
@@ -386,6 +421,30 @@ export default function StudentDashboard() {
       setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    const updateRefreshLock = () => {
+      const lastScrapedAt = profile?.lastScrapedAt;
+      if (!lastScrapedAt) {
+        setRefreshLockRemaining(0);
+        return;
+      }
+
+      const remaining = Math.max(
+        0,
+        METRICS_REFRESH_LOCK_MS - (Date.now() - new Date(lastScrapedAt).getTime())
+      );
+      setRefreshLockRemaining(remaining);
+    };
+
+    updateRefreshLock();
+    const intervalId = window.setInterval(updateRefreshLock, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [profile?.lastScrapedAt]);
+
+  const refreshLockLabel = refreshLockRemaining > 0
+    ? `${Math.floor(refreshLockRemaining / 3600000)}h ${Math.ceil((refreshLockRemaining % 3600000) / 60000)}m`
+    : '';
 
   const handleApproveAchievement = async (title) => {
     try {
@@ -711,11 +770,12 @@ export default function StudentDashboard() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleRefreshMetrics}
-                  disabled={refreshing}
-                  className="h-8 px-3 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-100 hover:border-gray-500 text-xs font-medium text-gray-900 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  disabled={refreshing || refreshLockRemaining > 0}
+                  className="h-8 px-3 rounded-md border border-gray-400 bg-background-100 hover:bg-gray-100 hover:border-gray-500 text-xs font-medium text-gray-900 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:cursor-not-allowed disabled:opacity-50"
+                  title={refreshLockRemaining > 0 ? `Metrics refresh available in ${refreshLockLabel}` : 'Refresh metrics'}
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} strokeWidth={1.5} />
-                  <span>Refresh Metrics</span>
+                  <span>{refreshLockRemaining > 0 ? `Refresh locked · ${refreshLockLabel}` : 'Refresh Metrics'}</span>
                 </button>
                 <Link
                   to="/profile"
@@ -1637,7 +1697,7 @@ export default function StudentDashboard() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {profile.pendingAchievements.map((ach, idx) => (
                       <div key={idx} className="p-4 rounded-lg bg-background-100 border border-gray-400 flex flex-col gap-2">
                         <div className="text-xs font-semibold text-gray-1000">{ach.title}</div>
@@ -1839,22 +1899,31 @@ export default function StudentDashboard() {
                 </div>
 
                 {resumes.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {resumes.map((resume, idx) => {
                       const isEditing = editingResumeId === resume._id;
                       const isPrimary = resume.isPrimary;
                       return (
                         <div
                           key={resume._id || idx}
-                          className={`rounded-xl border p-5 flex flex-col justify-between transition-all duration-150 ${
+                          className={`rounded-xl border overflow-hidden flex flex-col justify-between transition-all duration-150 group ${
                             isPrimary
-                              ? 'border-emerald-500/50 bg-background-200 shadow-xs'
-                              : 'border-gray-400 bg-background-200 hover:border-gray-500 shadow-2xs'
+                              ? 'border-emerald-500/50 bg-background-100 shadow-xs'
+                              : 'border-gray-400 bg-background-100 hover:border-gray-600 shadow-2xs'
                           }`}
                         >
                           <div>
+                            <VaultDocumentThumbnail
+                              url={resume.fileUrl}
+                              title={resume.fileName || `Resume #${idx + 1}`}
+                              onPreview={() => {
+                                setSelectedPdfUrl(resume.fileUrl);
+                                setSelectedPdfTitle(resume.fileName);
+                              }}
+                            />
+
                             {/* Card Top Strip */}
-                            <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="p-4 flex items-start justify-between gap-3">
                               <div className="flex items-center gap-3 min-w-0 flex-1">
                                 <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 flex items-center justify-center shrink-0">
                                   <FileText className="w-5 h-5" />
@@ -1927,7 +1996,7 @@ export default function StudentDashboard() {
                                     type="button"
                                     disabled={settingPrimaryId === resume._id}
                                     onClick={() => handleSetPrimaryResume(resume._id)}
-                                    className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-400 hover:border-gray-500 font-mono text-[9px] uppercase font-semibold text-gray-700 hover:text-gray-1000 cursor-pointer transition-colors"
+                                    className="h-8 px-3 rounded-lg border border-gray-400 bg-background-100 hover:bg-gray-200 text-gray-1000 text-xs font-semibold transition-colors cursor-pointer"
                                   >
                                     {settingPrimaryId === resume._id ? 'Updating...' : 'Set Primary'}
                                   </button>
@@ -1937,7 +2006,8 @@ export default function StudentDashboard() {
                           </div>
 
                           {/* Card Actions Footer */}
-                          <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-300 dark:border-gray-800">
+                          <div className="p-4 pt-0">
+                            <div className="pt-3 border-t border-gray-400 flex items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5">
                               <button
                                 type="button"
@@ -1971,6 +2041,7 @@ export default function StudentDashboard() {
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -2036,8 +2107,13 @@ export default function StudentDashboard() {
                         ? (7.1 * record.sgpa + 12).toFixed(1)
                         : (7.4 * record.sgpa + 12).toFixed(1);
                       return (
-                        <div key={idx} className="p-4 bg-background-100 rounded-xl border border-gray-400 flex flex-col justify-between">
-                          <div>
+                        <div key={idx} className="bg-background-100 rounded-xl border border-gray-400 overflow-hidden flex flex-col justify-between shadow-2xs">
+                          <VaultDocumentThumbnail
+                            url={record.documentUrl}
+                            title={`Semester ${record.semester} Marksheet`}
+                            onPreview={() => { setSelectedPdfUrl(record.documentUrl); setSelectedPdfTitle(`Semester ${record.semester} Marksheet`); }}
+                          />
+                          <div className="p-4 flex flex-col flex-1">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">Semester {record.semester}</span>
                               <span className="flex items-center gap-1 text-[10px] text-green-600 font-semibold bg-green-500/10 px-2 py-0.5 rounded-full">
@@ -2046,13 +2122,13 @@ export default function StudentDashboard() {
                             </div>
                             <div className="text-2xl font-bold text-gray-1000 font-sans">{record.sgpa.toFixed(2)} <span className="text-xs font-normal text-gray-600">SGPA</span></div>
                             <div className="text-xs text-gray-600 mt-1 font-mono">≈ {pct}% <span className="text-[10px]">(equiv.)</span></div>
-                          </div>
                           <button
                             onClick={() => { setSelectedPdfUrl(record.documentUrl); setSelectedPdfTitle(`Semester ${record.semester} Marksheet`); }}
                             className="mt-4 w-full py-2 bg-background-200 hover:bg-gray-200 border border-gray-400 rounded-lg text-xs font-semibold text-gray-900 transition-colors flex items-center justify-center gap-1.5"
                           >
                             <Eye className="w-3.5 h-3.5" /> View Marksheet
                           </button>
+                        </div>
                         </div>
                       );
                     })}
@@ -2066,8 +2142,13 @@ export default function StudentDashboard() {
                   <h4 className="text-xs font-semibold text-gray-1000 mb-3 border-b border-gray-400 pb-2 uppercase tracking-wider">Past Education</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {profile.pastEducation.map((record, idx) => (
-                      <div key={idx} className="p-4 bg-background-100 rounded-xl border border-gray-400 flex flex-col justify-between">
-                        <div>
+                      <div key={idx} className="bg-background-100 rounded-xl border border-gray-400 overflow-hidden flex flex-col justify-between shadow-2xs">
+                        <VaultDocumentThumbnail
+                          url={record.documentUrl}
+                          title={`${record.level} Marksheet`}
+                          onPreview={() => { setSelectedPdfUrl(record.documentUrl); setSelectedPdfTitle(`${record.level} Marksheet`); }}
+                        />
+                        <div className="p-4 flex flex-col flex-1">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">{record.level}</span>
                             <span className="flex items-center gap-1 text-[10px] text-green-600 font-semibold bg-green-500/10 px-2 py-0.5 rounded-full">
@@ -2077,13 +2158,13 @@ export default function StudentDashboard() {
                           <div className="text-sm font-semibold text-gray-1000 tracking-tight">{record.institution}</div>
                           <div className="text-xs text-gray-600 mt-1">Passing Year: {record.passingYear}</div>
                           <div className="text-lg font-bold text-gray-1000 mt-2 font-sans">{record.score}%</div>
-                        </div>
-                        <button
+                          <button
                           onClick={() => { setSelectedPdfUrl(record.documentUrl); setSelectedPdfTitle(`${record.level} Marksheet`); }}
                           className="mt-4 w-full py-2 bg-background-200 hover:bg-gray-200 border border-gray-400 rounded-lg text-xs font-semibold text-gray-900 transition-colors flex items-center justify-center gap-1.5"
-                        >
-                          <Eye className="w-3.5 h-3.5" /> View Document
-                        </button>
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View Document
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

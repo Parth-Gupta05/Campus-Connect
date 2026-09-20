@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['student', 'admin'],
     default: 'student',
   },
+  tokenVersion: {
+    type: Number,
+    default: 0,
+  },
   name: {
     type: String,
     default: '',
@@ -100,6 +104,14 @@ const UserSchema = new mongoose.Schema({
   resetOtpLastSent: {
     type: Date,
     default: null,
+  },
+  resetOtpAttempts: {
+    type: Number,
+    default: 0,
+  },
+  linkEmailOtpAttempts: {
+    type: Number,
+    default: 0,
   },
   scrapedData: {
     type: Object,
@@ -183,7 +195,7 @@ const UserSchema = new mongoose.Schema({
       },
       texture: {
         type: String,
-        enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix', 'shape-waves', 'prism'],
+        enum: ['none', 'animated-grid', 'interactive-grid', 'hexagon', 'striped', 'light-rays', 'noise', 'glyph-matrix', 'shape-waves', '3d-prism'],
         default: 'none'
       }
     },
