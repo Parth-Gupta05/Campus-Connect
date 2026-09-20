@@ -9,6 +9,7 @@ const {
   updatePortfolio, 
   uploadAvatar, 
   uploadCertFile, 
+  uploadVaultDocument,
   getResumePdf, 
   approveAchievement, 
   discardAchievement, 
@@ -67,6 +68,7 @@ router.put('/portfolio', updatePortfolio);
 router.post('/parse-resume', uploadResumeMiddleware, uploadAndParseResume);
 router.post('/upload-avatar', upload.single('avatar'), uploadAvatar);
 router.post('/upload-cert-file', upload.single('file'), uploadCertFile);
+router.post('/academic-vault/document', upload.single('file'), uploadVaultDocument);
 router.post('/achievements/approve', approveAchievement);
 router.post('/achievements/discard', discardAchievement);
 router.post('/achievements/manual', addManualAchievement);

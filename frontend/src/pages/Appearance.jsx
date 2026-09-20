@@ -326,6 +326,7 @@ export default function Appearance() {
                     { key: 'showEducation', label: 'Education' },
                     { key: 'showProjects', label: 'Projects' },
                     { key: 'showCertificates', label: 'Certifications' },
+                    { key: 'showAcademicProgression', label: 'Academic Progression Graph' },
                   ].map(item => (
                     <label key={item.key} className="flex items-center justify-between text-sm p-2 hover:bg-background-200 rounded-md cursor-pointer">
                       <span>{item.label}</span>

@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import Prism from '../components/Prism';
 import { ActivityCalendar } from 'react-activity-calendar';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import PdfViewerModal from '../components/PdfViewerModal';
 import { ProfileThemeProvider } from '../profile/ProfileThemeProvider';
 import { AnimatedGridPattern } from '../components/backgrounds/animated-grid-pattern';
@@ -38,7 +39,8 @@ import {
   Download,
   AlertTriangle,
   FileText,
-  Trophy
+  Trophy,
+  CheckCheck
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
@@ -165,6 +167,35 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
   const achievements = profile.resumeDetails?.achievements || [];
   const certificates = profile.resumeDetails?.certificates || [];
 
+  const activeCustomization = previewCustomization || profile.profileCustomization || {};
+  const privacy = activeCustomization.metricsPrivacy || {};
+  const showLeetcodeAchievements = privacy.leetcodeAchievements === true;
+
+  const hasSemesterRecords = profile.semesterRecords && profile.semesterRecords.length > 0;
+  const sgpaChartData = hasSemesterRecords 
+    ? [...profile.semesterRecords].sort((a, b) => a.semester - b.semester).map(r => ({
+        name: `Sem ${r.semester}`,
+        sgpa: r.sgpa
+      }))
+    : [];
+
+  const requiredSems = Math.max(0, (profile.currentSem || 1) - 1);
+  const isVaultComplete = profile.semesterRecords?.length >= requiredSems && 
+                          profile.pastEducation?.some(e => e.level === '10th') && 
+                          profile.pastEducation?.some(e => e.level === '12th' || e.level === 'Diploma');
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="p-2 rounded bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] shadow-md text-xs">
+          <p className="font-semibold text-[var(--profile-text)]">{label}</p>
+          <p className="text-[var(--profile-accent)]">SGPA: {payload[0].value}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   const githubHeatmap = profile?.scrapedData?.githubHeatmap || [];
   const leetcode = profile?.scrapedData?.leetcode;
   
@@ -231,9 +262,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
   const studentCgpa = profile.cgpa || '';
   const resumes = profile.resumes || [];
 
-  const activeCustomization = previewCustomization || profile.profileCustomization || {};
   const visibility = activeCustomization.visibility || {};
-  const privacy = activeCustomization.metricsPrivacy || {};
 
   // Determine which blocks in the top strip to show
   const showProblemsSolved = visibility.showLeetcode !== false && profile.leetcodeVerified;
@@ -264,6 +293,12 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
             )}
             
             <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8 pb-20">
+            {isVaultComplete && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 w-fit">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Verified Academic Records</span>
+              </div>
+            )}
             {/* Profile Header */}
             <section className="profile-card relative overflow-hidden mt-4">
               {/* Banner Texture Layer */}
@@ -486,6 +521,69 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* SGPA Progression Chart */}
+          {hasSemesterRecords && visibility.showAcademicProgression !== false && (
+            <div className="profile-card p-6 flex flex-col min-h-[280px]">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Academic Progression</h3>
+                  <p className="text-xs text-[var(--profile-muted-text)] mt-1 font-sans">Semester-wise Grade Point Average</p>
+                </div>
+                {(() => {
+                  const avgSgpa = sgpaChartData.reduce((s, d) => s + d.sgpa, 0) / sgpaChartData.length;
+                  const pct = avgSgpa < 7 ? (7.1 * avgSgpa + 12).toFixed(1) : (7.4 * avgSgpa + 12).toFixed(1);
+                  return (
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-[var(--profile-accent)] font-sans">{avgSgpa.toFixed(2)}</div>
+                      <div className="text-[10px] font-mono text-[var(--profile-muted-text)]">Avg CGPA · ≈{pct}%</div>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="w-full" style={{ height: 220 }}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={sgpaChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--profile-border)" opacity={0.5} />
+                    <XAxis 
+                      dataKey="name" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 11, fill: 'var(--profile-muted-text)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }} 
+                      dy={10}
+                    />
+                    <YAxis 
+                      domain={[0, 10]} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 11, fill: 'var(--profile-muted-text)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
+                      dx={-10}
+                    />
+                    <RechartsTooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'var(--profile-bg)', 
+                        borderColor: 'var(--profile-border)',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        color: 'var(--profile-text)'
+                      }}
+                      itemStyle={{ color: 'var(--profile-accent)', fontWeight: 600 }}
+                      cursor={{ stroke: 'var(--profile-border)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="sgpa" 
+                      name="SGPA"
+                      stroke="var(--profile-accent)" 
+                      strokeWidth={2}
+                      dot={{ r: 4, fill: 'var(--profile-bg)', stroke: 'var(--profile-accent)', strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: 'var(--profile-accent)', stroke: 'var(--profile-bg)', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           )}
 

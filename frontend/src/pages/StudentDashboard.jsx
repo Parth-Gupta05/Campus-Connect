@@ -53,6 +53,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import PdfViewerModal from '../components/PdfViewerModal';
+import AcademicVaultModal from '../components/AcademicVaultModal';
 
 const CountUp = ({ end }) => {
   const [mounted, setMounted] = useState(false);
@@ -278,7 +279,8 @@ export default function StudentDashboard() {
   const [resumes, setResumes] = useState([]);
   const [resumesLoading, setResumesLoading] = useState(false);
   const [selectedPdfUrl, setSelectedPdfUrl] = useState(null);
-  const [selectedPdfTitle, setSelectedPdfTitle] = useState('Resume PDF');
+  const [selectedPdfTitle, setSelectedPdfTitle] = useState('Document');
+  const [showAcademicVaultModal, setShowAcademicVaultModal] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [deleteModalResume, setDeleteModalResume] = useState(null);
@@ -574,6 +576,12 @@ export default function StudentDashboard() {
   const hasIncompleteCerts = allCertificates.length === 0 ? false : allCertificates.some(cert => !cert.isComplete);
   const hasCertificates = allCertificates.length > 0;
 
+  // Academic Vault completion for profile strength
+  const requiredVaultSems = Math.max(0, (profile?.currentSem || 1) - 1);
+  const uploadedVaultSems = profile?.semesterRecords?.length || 0;
+  const vaultPastEdu = profile?.pastEducation?.map(e => e.level) || [];
+  const isVaultComplete = uploadedVaultSems >= requiredVaultSems && vaultPastEdu.includes('10th') && (vaultPastEdu.includes('12th') || vaultPastEdu.includes('Diploma'));
+
   const missingSections = [];
   if (skills.length === 0) missingSections.push('Skills');
   if (experience.length === 0) missingSections.push('Experience');
@@ -582,15 +590,17 @@ export default function StudentDashboard() {
   if (achievements.length === 0) missingSections.push('Achievements');
   if (!portfolioUrl) missingSections.push('Portfolio');
   if (!hasCertificates || hasIncompleteCerts) missingSections.push('Certificates');
+  if (!isVaultComplete) missingSections.push('Academic Vault');
 
   let profileStrength = 10;
   if (skills.length > 0) profileStrength += 15;
-  if (experience.length > 0) profileStrength += 15;
-  if (education.length > 0) profileStrength += 15;
+  if (experience.length > 0) profileStrength += 10;
+  if (education.length > 0) profileStrength += 10;
   if (projects.length > 0) profileStrength += 15;
-  if (achievements.length > 0) profileStrength += 10;
-  if (portfolioUrl) profileStrength += 10;
-  if (hasCertificates && !hasIncompleteCerts) profileStrength += 10;
+  if (achievements.length > 0) profileStrength += 5;
+  if (portfolioUrl) profileStrength += 5;
+  if (hasCertificates && !hasIncompleteCerts) profileStrength += 5;
+  if (isVaultComplete) profileStrength += 15; // 15% for Academic Vault
 
   // LeetCode platform totals & normalization
   const LC_TOTAL_EASY = 964;
@@ -776,6 +786,19 @@ export default function StudentDashboard() {
                 }`}>
                   {resumes.length}/5
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('academic-vault')}
+                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'academic-vault'
+                    ? 'border-gray-1000 text-gray-1000 font-semibold'
+                    : 'border-transparent text-gray-700 hover:text-gray-1000'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <span>Academic Vault</span>
+                {!isVaultComplete && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
               </button>
             </div>
           </section>
@@ -1984,6 +2007,102 @@ export default function StudentDashboard() {
             </div>
           )}
 
+          {/* ================================================================
+              TAB: ACADEMIC VAULT
+          ================================================================ */}
+          {activeTab === 'academic-vault' && (
+            <div className="space-y-6 pb-20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-gray-1000 tracking-tight">Academic Vault</h2>
+                  <p className="text-xs text-gray-600 mt-1">Official university marksheets and past education records.</p>
+                </div>
+                <button
+                  onClick={() => setShowAcademicVaultModal(true)}
+                  className="h-8 px-4 bg-gray-1000 text-background-100 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Record
+                </button>
+              </div>
+
+              {/* Semester Records */}
+              {profile?.semesterRecords && profile.semesterRecords.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-1000 mb-3 border-b border-gray-400 pb-2 uppercase tracking-wider">University Semesters</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...profile.semesterRecords].sort((a,b) => b.semester - a.semester).map((record, idx) => {
+                      const pct = record.sgpa < 7
+                        ? (7.1 * record.sgpa + 12).toFixed(1)
+                        : (7.4 * record.sgpa + 12).toFixed(1);
+                      return (
+                        <div key={idx} className="p-4 bg-background-100 rounded-xl border border-gray-400 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">Semester {record.semester}</span>
+                              <span className="flex items-center gap-1 text-[10px] text-green-600 font-semibold bg-green-500/10 px-2 py-0.5 rounded-full">
+                                <CheckCircle2 className="w-3 h-3" /> Verified
+                              </span>
+                            </div>
+                            <div className="text-2xl font-bold text-gray-1000 font-sans">{record.sgpa.toFixed(2)} <span className="text-xs font-normal text-gray-600">SGPA</span></div>
+                            <div className="text-xs text-gray-600 mt-1 font-mono">≈ {pct}% <span className="text-[10px]">(equiv.)</span></div>
+                          </div>
+                          <button
+                            onClick={() => { setSelectedPdfUrl(record.documentUrl); setSelectedPdfTitle(`Semester ${record.semester} Marksheet`); }}
+                            className="mt-4 w-full py-2 bg-background-200 hover:bg-gray-200 border border-gray-400 rounded-lg text-xs font-semibold text-gray-900 transition-colors flex items-center justify-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View Marksheet
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Past Education Records */}
+              {profile?.pastEducation && profile.pastEducation.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-xs font-semibold text-gray-1000 mb-3 border-b border-gray-400 pb-2 uppercase tracking-wider">Past Education</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {profile.pastEducation.map((record, idx) => (
+                      <div key={idx} className="p-4 bg-background-100 rounded-xl border border-gray-400 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">{record.level}</span>
+                            <span className="flex items-center gap-1 text-[10px] text-green-600 font-semibold bg-green-500/10 px-2 py-0.5 rounded-full">
+                              <CheckCircle2 className="w-3 h-3" /> Verified
+                            </span>
+                          </div>
+                          <div className="text-sm font-semibold text-gray-1000 tracking-tight">{record.institution}</div>
+                          <div className="text-xs text-gray-600 mt-1">Passing Year: {record.passingYear}</div>
+                          <div className="text-lg font-bold text-gray-1000 mt-2 font-sans">{record.score}%</div>
+                        </div>
+                        <button
+                          onClick={() => { setSelectedPdfUrl(record.documentUrl); setSelectedPdfTitle(`${record.level} Marksheet`); }}
+                          className="mt-4 w-full py-2 bg-background-200 hover:bg-gray-200 border border-gray-400 rounded-lg text-xs font-semibold text-gray-900 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> View Document
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!profile?.semesterRecords?.length && !profile?.pastEducation?.length && (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <Layers className="w-10 h-10 text-gray-400 mb-4" />
+                  <h4 className="text-sm font-bold text-gray-1000">Academic Vault is Empty</h4>
+                  <p className="text-xs text-gray-600 mt-1 max-w-xs">Upload your official marksheets to verify your academic records.</p>
+                  <button onClick={() => setShowAcademicVaultModal(true)} className="mt-5 h-8 px-5 bg-gray-1000 text-background-100 rounded-lg text-xs font-medium hover:opacity-90">
+                    Get Started
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
 
@@ -2224,6 +2343,21 @@ export default function StudentDashboard() {
           url={selectedPdfUrl}
           title={selectedPdfTitle}
           onClose={() => setSelectedPdfUrl(null)}
+        />
+      )}
+
+      {/* Academic Vault Modal */}
+      {showAcademicVaultModal && profile && (
+        <AcademicVaultModal
+          isOpen={showAcademicVaultModal}
+          onClose={() => setShowAcademicVaultModal(false)}
+          onDismiss={() => setShowAcademicVaultModal(false)}
+          profile={profile}
+          resumeEducation={profile.resumeDetails?.education || []}
+          onVaultUpdated={(updatedProfile) => {
+            setProfile(updatedProfile);
+            setShowAcademicVaultModal(false);
+          }}
         />
       )}
     </>

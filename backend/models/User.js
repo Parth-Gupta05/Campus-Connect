@@ -146,6 +146,19 @@ const UserSchema = new mongoose.Schema({
     }],
     achievements: [mongoose.Schema.Types.Mixed]
   },
+  pastEducation: [{
+    level: { type: String, required: true }, // e.g., '10th', '12th', 'Diploma'
+    institution: { type: String, required: true },
+    passingYear: { type: String, required: true },
+    score: { type: String, required: true }, // Percentage or CGPA
+    documentUrl: { type: String, required: true }
+  }],
+  semesterRecords: [{
+    semester: { type: Number, required: true },
+    sgpa: { type: Number, required: true },
+    cgpa: { type: Number },
+    documentUrl: { type: String, required: true }
+  }],
   profileCustomization: {
     appearance: {
       preset: {
@@ -181,7 +194,8 @@ const UserSchema = new mongoose.Schema({
       showExperience: { type: Boolean, default: true },
       showEducation: { type: Boolean, default: true },
       showProjects: { type: Boolean, default: true },
-      showCertificates: { type: Boolean, default: true }
+      showCertificates: { type: Boolean, default: true },
+      showAcademicProgression: { type: Boolean, default: true }
     },
     metricsPrivacy: {
       githubHeatmap: { type: Boolean, default: true },

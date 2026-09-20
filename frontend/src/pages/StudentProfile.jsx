@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import ImageCropperModal from '../components/ImageCropperModal';
 import PdfViewerModal from '../components/PdfViewerModal';
+import AcademicVaultModal from '../components/AcademicVaultModal';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { calculateProfileCompleteness } from '../utils/profileUtils';
@@ -1214,6 +1215,29 @@ export default function StudentProfile() {
   const [linkingLoading, setLinkingLoading] = useState(false);
   const [linkingOtpRequired, setLinkingOtpRequired] = useState(false);
   const [linkingOtp, setLinkingOtp] = useState('');
+  const [showAcademicVaultModal, setShowAcademicVaultModal] = useState(false);
+  const [vaultDismissedThisSession, setVaultDismissedThisSession] = useState(false);
+
+  useEffect(() => {
+    if (profile && !loading && !vaultDismissedThisSession) {
+      const requiredSems = Math.max(0, (profile.currentSem || 1) - 1);
+      const uploadedSems = profile.semesterRecords?.length || 0;
+      const pastEdu = profile.pastEducation?.map(e => e.level) || [];
+      const has10th = pastEdu.includes('10th');
+      const has12thOrDiploma = pastEdu.includes('12th') || pastEdu.includes('Diploma');
+      const isVaultIncomplete = uploadedSems < requiredSems || !has10th || !has12thOrDiploma;
+      
+      // Only auto-trigger the vault AFTER the student has set up their resume
+      // (resume parser prefills education data that we use for vault prefilling)
+      const hasResumeData = profile.resumeDetails?.education?.length > 0;
+      
+      if (isVaultIncomplete && hasResumeData) {
+        setShowAcademicVaultModal(true);
+      } else {
+        setShowAcademicVaultModal(false);
+      }
+    }
+  }, [profile, loading, vaultDismissedThisSession]);
 
   const handleLinkAccount = async () => {
     if (!linkingInput || !linkingInput.trim()) return;
@@ -1350,6 +1374,7 @@ export default function StudentProfile() {
     verifyingPlatform ||
     avatarCropSrc ||
     linkingAccount ||
+    showAcademicVaultModal ||
     (profile && (!profile.isProfileComplete || !profile.email || !profile.uid))
   );
 
@@ -1505,6 +1530,30 @@ export default function StudentProfile() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Academic Vault Modal (Compulsory) */}
+      {showAcademicVaultModal && profile && (
+        <AcademicVaultModal 
+          isOpen={showAcademicVaultModal}
+          onClose={() => setShowAcademicVaultModal(false)}
+          onDismiss={() => {
+            setVaultDismissedThisSession(true);
+            setShowAcademicVaultModal(false);
+          }}
+          profile={profile}
+          resumeEducation={profile.resumeDetails?.education || []}
+          onVaultUpdated={(updatedProfile) => {
+            setProfile(updatedProfile);
+            
+            const requiredSems = Math.max(0, (updatedProfile.currentSem || 1) - 1);
+            const uploadedSems = updatedProfile.semesterRecords?.length || 0;
+            const pastEdu = updatedProfile.pastEducation?.map(e => e.level) || [];
+            const isComplete = uploadedSems >= requiredSems && pastEdu.includes('10th') && (pastEdu.includes('12th') || pastEdu.includes('Diploma'));
+            
+            if (isComplete) setShowAcademicVaultModal(false);
+          }}
+        />
       )}
 
       {/* Achievement Details Modal */}
@@ -1965,6 +2014,18 @@ export default function StudentProfile() {
             >
               <ShieldCheck className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span>Verification</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('vault')}
+              className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'vault'
+                  ? 'border-gray-1000 text-gray-1000 font-semibold'
+                  : 'border-transparent text-gray-700 hover:text-gray-1000'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <span>Academic Vault</span>
             </button>
           </div>
 
@@ -2498,6 +2559,83 @@ export default function StudentProfile() {
                 </div>
               )}
 
+            </div>
+          )}
+
+          {/* =============================================================================
+              TAB 5: ACADEMIC VAULT
+          ============================================================================= */}
+          {activeTab === 'vault' && (
+            <div className="space-y-6 animate-fade-in pb-20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-1000 tracking-tight">Academic Vault</h3>
+                  <p className="text-xs text-gray-600 mt-1">Manage your official university marksheets and past education records.</p>
+                </div>
+                <button 
+                  onClick={() => setShowAcademicVaultModal(true)}
+                  className="h-8 px-4 bg-gray-1000 text-background-100 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-2xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Record
+                </button>
+              </div>
+
+              {profile.semesterRecords && profile.semesterRecords.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-1000 mb-3 border-b border-gray-400 pb-2">University Semesters</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...profile.semesterRecords].sort((a,b) => b.semester - a.semester).map((record, idx) => (
+                      <div key={idx} className="p-4 bg-background-100 rounded-xl border border-gray-400 flex flex-col justify-between group">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">Semester {record.semester}</span>
+                            <div className="flex items-center gap-1 text-[10px] text-green-600 font-semibold bg-green-500/10 px-2 py-0.5 rounded-full">
+                              <CheckCircle2 className="w-3 h-3" /> Verified
+                            </div>
+                          </div>
+                          <div className="text-2xl font-bold text-gray-1000 font-sans">{record.sgpa.toFixed(2)} <span className="text-xs font-normal text-gray-600">SGPA</span></div>
+                        </div>
+                        <a 
+                          href={record.documentUrl} target="_blank" rel="noopener noreferrer"
+                          className="mt-4 w-full py-2 bg-background-200 hover:bg-gray-200 border border-gray-400 rounded-lg text-xs font-semibold text-gray-900 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> View Marksheet
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {profile.pastEducation && profile.pastEducation.length > 0 && (
+                <div className="mt-8">
+                  <h4 className="text-xs font-semibold text-gray-1000 mb-3 border-b border-gray-400 pb-2">Past Education</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...profile.pastEducation].map((record, idx) => (
+                      <div key={idx} className="p-4 bg-background-100 rounded-xl border border-gray-400 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-mono text-gray-600 uppercase tracking-wider">{record.level}</span>
+                            <div className="flex items-center gap-1 text-[10px] text-green-600 font-semibold bg-green-500/10 px-2 py-0.5 rounded-full">
+                              <CheckCircle2 className="w-3 h-3" /> Verified
+                            </div>
+                          </div>
+                          <div className="text-base font-semibold text-gray-1000 tracking-tight">{record.institution}</div>
+                          <div className="text-xs text-gray-600 mt-1">Passing Year: {record.passingYear}</div>
+                          <div className="text-lg font-bold text-gray-1000 mt-2 font-sans">{record.score}</div>
+                        </div>
+                        <a 
+                          href={record.documentUrl} target="_blank" rel="noopener noreferrer"
+                          className="mt-4 w-full py-2 bg-background-200 hover:bg-gray-200 border border-gray-400 rounded-lg text-xs font-semibold text-gray-900 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> View Document
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

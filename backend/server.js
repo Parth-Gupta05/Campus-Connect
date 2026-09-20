@@ -34,8 +34,7 @@ app.use(cookieParser());
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('Connected to MongoDB');
-    // Start Cron Jobs after DB connect
-    require('./cron/attendanceCron');
+    // Cron Jobs removed from server.js to run independently
   })
   .catch((err) => console.error('MongoDB connection error:', err));
 
