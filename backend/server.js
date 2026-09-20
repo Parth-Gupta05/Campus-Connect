@@ -19,6 +19,9 @@ const placementRoutes = require('./routes/placementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const aicteRoutes = require('./routes/aicteRoutes');
 
+// Initialize Cron Jobs
+require('./cron/assessmentProcessor');
+
 const app = express();
 const port = process.env.PORT || 5000;
 

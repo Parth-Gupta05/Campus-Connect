@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import ImageCropperModal from '../components/ImageCropperModal';
 import PdfViewerModal from '../components/PdfViewerModal';
+import AnimatedModal from '../components/ui/AnimatedModal';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { calculateProfileCompleteness } from '../utils/profileUtils';
@@ -39,7 +40,9 @@ import {
   Upload,
   AlertTriangle,
   Code2,
-  CheckCheck
+  CheckCheck,
+  FileSpreadsheet,
+  Download
 } from 'lucide-react';
 import { parseUID, generateUID, BRANCHES, calculateYearFromSem } from '../utils/uidUtils';
 
@@ -551,7 +554,8 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
     { id: 'education', label: `Education (${education.length})` },
     { id: 'experience', label: `Experience (${experience.length})` },
     { id: 'projects', label: `Projects (${projects.length})` },
-    { id: 'achievements', label: `Honors (${achievements.length})` }
+    { id: 'achievements', label: `Honors (${achievements.length})` },
+    { id: 'assessments', label: `Assessments (${profile?.assessments?.length || 0})` }
   ];
 
   return (
@@ -1089,7 +1093,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                             <input 
                               type="date" 
                               className="w-full px-2.5 py-1.5 border border-gray-400 rounded-md bg-background-200 text-gray-1000 mt-1 font-mono focus:outline-none focus:border-gray-900" 
-                              value={ach.date?.split('T')[0] || ''} 
+                              value={ach.date ? String(ach.date).split('T')[0] : ''} 
                               onChange={e => updateAchieve(idx, 'date', e.target.value)} 
                             />
                           </div>
@@ -1388,14 +1392,14 @@ export default function StudentProfile() {
   }
 
   // Calculate metrics and missing sections
-  const skills = profile.resumeDetails?.skills || [];
-  const experience = profile.resumeDetails?.experience || [];
-  const education = profile.resumeDetails?.education || [];
-  const projects = profile.resumeDetails?.projects || [];
-  const achievements = profile.resumeDetails?.achievements || [];
+  const skills = Array.isArray(profile.resumeDetails?.skills) ? profile.resumeDetails.skills : [];
+  const experience = Array.isArray(profile.resumeDetails?.experience) ? profile.resumeDetails.experience : [];
+  const education = Array.isArray(profile.resumeDetails?.education) ? profile.resumeDetails.education : [];
+  const projects = Array.isArray(profile.resumeDetails?.projects) ? profile.resumeDetails.projects : [];
+  const achievements = Array.isArray(profile.resumeDetails?.achievements) ? profile.resumeDetails.achievements : [];
   const portfolioUrl = profile.resumeDetails?.portfolioUrl || '';
-  const manualCerts = profile.resumeDetails?.certificates || [];
-  const scrapedCerts = profile.scrapedData?.linkedin?.certifications || [];
+  const manualCerts = Array.isArray(profile.resumeDetails?.certificates) ? profile.resumeDetails.certificates : [];
+  const scrapedCerts = Array.isArray(profile.scrapedData?.linkedin?.certifications) ? profile.scrapedData.linkedin.certifications : [];
   
   const certificatesMap = new Map();
   scrapedCerts.forEach(cert => certificatesMap.set(cert.title, { isComplete: false }));
@@ -1679,6 +1683,7 @@ export default function StudentProfile() {
           </div>
         </div>
       )}
+
 
       {/* Main Container */}
       <main className="flex-1 min-w-0">
@@ -2205,8 +2210,40 @@ export default function StudentProfile() {
                 )}
               </div>
 
+              {/* Placement Assessments */}
+              {profile?.assessments?.length > 0 && (
+                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                    <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" strokeWidth={1.5} /> Placement Assessments
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {profile.assessments.map((assessment, index) => (
+                      <div key={index} className="flex flex-col justify-between gap-3 p-4 rounded-xl border border-gray-300 bg-background-100 shadow-xs hover:border-gray-400 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+                            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <h4 className="text-xs font-semibold text-gray-1000 line-clamp-2" title={assessment.title}>{assessment.title}</h4>
+                        </div>
+                        <a 
+                          href={assessment.fileUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center gap-1.5 whitespace-nowrap mt-2 sm:self-end"
+                        >
+                          <Download className="w-3 h-3" /> Download Report
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* LinkedIn Certifications Summary */}
-              {profile.scrapedData?.linkedin?.certifications?.length > 0 && (
+              {Array.isArray(profile.scrapedData?.linkedin?.certifications) && profile.scrapedData.linkedin.certifications.length > 0 && (
                 <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
                   <div className="flex items-center justify-between border-b border-gray-400 pb-3">
                     <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">

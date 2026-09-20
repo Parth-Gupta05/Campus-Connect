@@ -649,10 +649,30 @@ export default function Opportunities() {
                               </span>
                             ))}
                             {opp.requiredSkills.length > 3 && (
-                              <span className="text-[10px] font-mono text-gray-800 self-center">
+                              <span className="text-[10px] text-gray-600 font-mono self-center">
                                 +{opp.requiredSkills.length - 3}
                               </span>
                             )}
+                          </div>
+                        )}
+
+                        {/* Requirement Preview */}
+                        {opp.requirements?.length > 0 && (
+                          <div className="flex flex-col gap-1 mt-2.5 pt-2.5 border-t border-gray-400/60">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <CheckCircle2 className="w-3 h-3 text-gray-600" />
+                              <span className="text-[10px] font-semibold text-gray-800 uppercase tracking-wider">Requirements</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {opp.requirements.slice(0, 2).map((req, i) => (
+                                <span key={i} className="text-[9px] font-mono bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 px-1.5 py-0.5 rounded truncate max-w-[120px]">
+                                  {req.criterion.replace('_', ' ')}
+                                </span>
+                              ))}
+                              {opp.requirements.length > 2 && (
+                                <span className="text-[9px] font-mono text-gray-600">+{opp.requirements.length - 2} more</span>
+                              )}
+                            </div>
                           </div>
                         )}
 
@@ -925,6 +945,52 @@ export default function Opportunities() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Eligibility Requirements */}
+                  {selectedOpp.requirements && selectedOpp.requirements.length > 0 && (
+                    <div className="space-y-2.5">
+                      <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-gray-1000 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-gray-500" />
+                        <span>Eligibility Requirements</span>
+                      </h3>
+                      <div className="flex flex-col gap-2">
+                        {selectedOpp.requirements.map((req, i) => {
+                          const getOperatorText = (op) => {
+                            switch (op) {
+                              case 'gte': return 'At least';
+                              case 'lte': return 'At most';
+                              case 'eq': return 'Exactly';
+                              case 'gt': return 'Greater than';
+                              case 'lt': return 'Less than';
+                              case 'in': return 'Must be one of';
+                              default: return op;
+                            }
+                          };
+                          const getCriterionLabel = (crit) => {
+                            const labels = {
+                              'cgpa': 'CGPA',
+                              '10th_percent': '10th Percentage',
+                              '12th_percent': '12th Percentage',
+                              'active_backlogs': 'Active Backlogs',
+                              'branch': 'Allowed Branches'
+                            };
+                            return labels[crit] || crit.replace('_', ' ');
+                          };
+                          const valText = Array.isArray(req.value) ? req.value.join(', ') : req.value;
+                          return (
+                            <div key={i} className="flex items-start gap-2 bg-background-200/60 p-3 rounded-lg border border-gray-400">
+                              <span className="text-[11px] font-bold text-gray-800 tracking-tight uppercase mt-0.5 min-w-[120px]">
+                                {getCriterionLabel(req.criterion)}:
+                              </span>
+                              <span className="text-xs font-mono text-gray-1000 font-semibold px-2 py-0.5 rounded border border-gray-300 bg-background-100">
+                                {getOperatorText(req.operator)} {valText}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Footer Meta & Application Portal */}
                   <div className="pt-4 border-t border-gray-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-700">

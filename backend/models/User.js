@@ -146,6 +146,18 @@ const UserSchema = new mongoose.Schema({
     }],
     achievements: [mongoose.Schema.Types.Mixed]
   },
+  skillVector: {
+    type: [Number],
+    default: []
+  },
+  academicVector: {
+    type: [Number],
+    default: []
+  },
+  assessments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'AssessmentUpload'
+  }],
   profileCustomization: {
     appearance: {
       preset: {

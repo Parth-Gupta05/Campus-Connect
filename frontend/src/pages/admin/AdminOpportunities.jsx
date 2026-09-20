@@ -286,6 +286,11 @@ export default function AdminOpportunities() {
                             {opp.experienceLevel}
                           </span>
                         )}
+                        {opp.jobDomainSpecificity !== undefined && (
+                          <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-[10px] font-mono text-purple-700 dark:text-purple-400 font-bold tracking-tight" title="Domain Specificity Strictness">
+                            Domain Strictness: {Math.round(opp.jobDomainSpecificity * 100)}%
+                          </span>
+                        )}
                       </div>
 
                       <button
