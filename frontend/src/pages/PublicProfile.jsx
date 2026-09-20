@@ -395,6 +395,11 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       />
                     </div>
                   )}
+                  {activeCustomization.appearance.texture === '3d-prism' && (
+                    <div className="absolute inset-y-0 right-0 w-1/2">
+                      <Prism />
+                    </div>
+                  )}
                 </div>
               )}
               

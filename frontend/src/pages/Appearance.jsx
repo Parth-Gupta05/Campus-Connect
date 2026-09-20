@@ -28,7 +28,8 @@ const TEXTURE_STYLES = [
   { id: 'light-rays', label: 'Light Rays', desc: 'Smooth rotating gradients' },
   { id: 'noise', label: 'Noise Texture', desc: 'Subtle TV static overlay' },
   { id: 'glyph-matrix', label: 'Glyph Matrix', desc: 'Falling digital letters' },
-  { id: 'shape-waves', label: 'Shape Waves', desc: 'Interactive fluid waves' }
+  { id: 'shape-waves', label: 'Shape Waves', desc: 'Interactive fluid waves' },
+  { id: '3d-prism', label: '3D Prism', desc: 'Rotating 3D Prism' },
 ];
 
 const MOTION_STYLES = [
