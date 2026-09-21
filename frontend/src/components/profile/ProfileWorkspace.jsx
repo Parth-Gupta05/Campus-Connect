@@ -1,14 +1,24 @@
 import React, { useState, useEffect, useContext } from 'react';
+import ExperienceSection from './ExperienceSection';
+import EducationSection from './EducationSection';
+import ProjectsSection from './ProjectsSection';
+import SkillsSection from './SkillsSection';
+import AboutSection from './AboutSection';
+import AchievementsSection from './AchievementsSection';
+import PlacementsSection from './PlacementsSection';
+import VerificationSection from './VerificationSection';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import ImageCropperModal from '../components/ImageCropperModal';
-import PdfViewerModal from '../components/PdfViewerModal';
-import AnimatedModal from '../components/ui/AnimatedModal';
-import RichTextEditor from '../components/RichTextEditor';
-import RichContentRenderer from '../components/RichContentRenderer';
-import { AuthContext } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { calculateProfileCompleteness } from '../utils/profileUtils';
+import ImageCropperModal from '../ImageCropperModal';
+import PdfViewerModal from '../PdfViewerModal';
+import AnimatedModal from '../ui/AnimatedModal';
+import RichTextEditor from '../RichTextEditor';
+import RichContentRenderer from '../RichContentRenderer';
+import { AuthContext } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { calculateProfileCompleteness } from '../../utils/profileUtils';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiLeetcode } from 'react-icons/si';
 import {
@@ -46,7 +56,7 @@ import {
   FileSpreadsheet,
   Download
 } from 'lucide-react';
-import { parseUID, generateUID, BRANCHES, calculateYearFromSem } from '../utils/uidUtils';
+import { parseUID, generateUID, BRANCHES, calculateYearFromSem } from '../../utils/uidUtils';
 
 const formatExternalUrl = (url) => {
   if (!url) return '#';
@@ -1997,7 +2007,7 @@ export default function StudentProfile() {
           {/* ===================================================================
               TAB 1: PORTFOLIO & CAREER (CLEAN, NO CLUTTER)
               =================================================================== */}
-          {activeTab === 'portfolio' && (
+          {activeDashboardTab === 'portfolio' && (
             <div className="space-y-8 animate-in fade-in duration-150">
 
               {/* 4-Column Quick Metric Strip */}
@@ -2021,176 +2031,19 @@ export default function StudentProfile() {
               </div>
 
               {/* About Me */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
-                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                    <MessageSquare className="w-3.5 h-3.5" strokeWidth={1.5} /> About Me
-                  </h3>
-                  <button
-                    onClick={() => setShowEditor('section-about')}
-                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
-                  >
-                    Edit About &rarr;
-                  </button>
-                </div>
-                {about ? (
-                  <RichContentRenderer htmlContent={about} className="text-gray-700" />
-                ) : (
-                  <p className="text-xs text-gray-600 font-mono py-2">No About section added yet.</p>
-                )}
-              </div>
+              <AboutSection about={about} onEdit={() => setShowEditor('section-about')} />
 
               {/* Skills Tags Cloud */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                    <Code2 className="w-3.5 h-3.5" strokeWidth={1.5} /> Verified Technical Skills
-                  </h3>
-                  <button
-                    onClick={() => setShowEditor('section-skills')}
-                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
-                  >
-                    Manage Skills &rarr;
-                  </button>
-                </div>
-
-                {skills.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {skills.map((skill, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-md bg-background-100 border border-gray-400 text-xs font-mono text-gray-900 font-medium hover:border-gray-500 transition-colors"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-600 font-mono py-4">No skills registered. Click Update Resume to add skills.</p>
-                )}
-              </div>
+              <SkillsSection skills={skills} onEdit={() => setShowEditor('section-skills')} />
 
               {/* Work Experience Timeline */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
-                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                    <Briefcase className="w-3.5 h-3.5" strokeWidth={1.5} /> Work Experience
-                  </h3>
-                  <button
-                    onClick={() => setShowEditor('section-experience')}
-                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
-                  >
-                    + Add Role
-                  </button>
-                </div>
-
-                {experience.length > 0 ? (
-                  <div className="relative border-l border-gray-400 ml-3 space-y-6 pt-2 pb-1">
-                    {experience.map((exp, idx) => (
-                      <div key={idx} className="relative pl-6 space-y-1">
-                        <div className="absolute w-2.5 h-2.5 bg-gray-1000 rounded-full -left-[5px] top-1.5 ring-4 ring-background-200" />
-                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                          <h4 className="text-sm font-semibold text-gray-1000">{exp.role}</h4>
-                          <span className="text-[11px] font-mono text-gray-600">
-                            {exp.startDate} – {exp.endDate || 'Present'}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-700 font-mono">{exp.company}</p>
-                        {exp.description && (
-                          <p className="text-xs text-gray-700 font-sans leading-relaxed pt-1 whitespace-pre-line">
-                            {exp.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-600 font-mono py-4">No work experience added yet.</p>
-                )}
-              </div>
+              <ExperienceSection experience={experience} onEdit={() => setShowEditor('section-experience')} />
 
               {/* Education Background */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
-                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                    <GraduationCap className="w-3.5 h-3.5" strokeWidth={1.5} /> Academic Background
-                  </h3>
-                  <button
-                    onClick={() => setShowEditor('section-education')}
-                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
-                  >
-                    + Add Degree
-                  </button>
-                </div>
-
-                {education.length > 0 ? (
-                  <div className="divide-y divide-gray-400">
-                    {education.map((edu, idx) => (
-                      <div key={idx} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                          <div className="text-xs font-semibold text-gray-1000">{edu.degree}</div>
-                          <div className="text-xs text-gray-700 font-sans mt-0.5">{edu.institution}</div>
-                        </div>
-                        <span className="text-[11px] font-mono text-gray-600 shrink-0">
-                          {edu.startYear} – {edu.endYear || 'Present'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-600 font-mono py-4">No educational history registered.</p>
-                )}
-              </div>
+              <EducationSection education={education} onEdit={() => setShowEditor('section-education')} />
 
               {/* Featured Projects Grid */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
-                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                    <FolderGit2 className="w-3.5 h-3.5" strokeWidth={1.5} /> Featured Projects
-                  </h3>
-                  <button
-                    onClick={() => setShowEditor('section-projects')}
-                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
-                  >
-                    + Add Project
-                  </button>
-                </div>
-
-                {projects.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {projects.map((proj, idx) => (
-                      <div
-                        key={idx}
-                        className="p-4 rounded-lg border border-gray-400 bg-background-100 flex flex-col justify-between space-y-3 hover:border-gray-500 transition-colors"
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <h4 className="text-xs font-semibold text-gray-1000 truncate">{proj.title}</h4>
-                            {proj.link && (
-                              <a
-                                href={formatExternalUrl(proj.link)}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-gray-600 hover:text-gray-1000 transition-colors p-1"
-                                title="Open project link"
-                              >
-                                <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.5} />
-                              </a>
-                            )}
-                          </div>
-                          {proj.description && (
-                            <p className="text-xs text-gray-700 font-sans line-clamp-3 leading-relaxed">
-                              {proj.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-600 font-mono py-4">No projects listed. Update your resume to showcase projects.</p>
-                )}
-              </div>
+              <ProjectsSection projects={projects} onEdit={() => setShowEditor('section-projects')} />
 
             </div>
           )}
@@ -2198,387 +2051,31 @@ export default function StudentProfile() {
           {/* ===================================================================
               TAB 2: HONORS & CREDENTIALS
               =================================================================== */}
-          {activeTab === 'honors' && (
-            <div className="space-y-8 animate-in fade-in duration-150">
-
-              {/* Achievements Grid */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                <div className="flex items-center justify-between border-b border-gray-400 pb-3">
-                  <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                    <Award className="w-3.5 h-3.5" strokeWidth={1.5} /> Verified Achievements &amp; Awards
-                  </h3>
-                  <button
-                    onClick={() => setShowEditor('section-achievements')}
-                    className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer"
-                  >
-                    + Add Achievement
-                  </button>
-                </div>
-
-                {achievements.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {achievements.map((ach, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => setSelectedAchievement(ach)}
-                        className="p-4 rounded-lg border border-gray-400 bg-background-100 hover:border-gray-500 cursor-pointer transition-colors flex flex-col justify-between space-y-3"
-                      >
-                        {ach.imageUrl && (
-                          <img
-                            src={ach.imageUrl}
-                            alt={ach.title}
-                            className="w-full h-36 object-contain bg-background-200 rounded-md border border-gray-400"
-                          />
-                        )}
-                        <div className="space-y-1">
-                          <div className="flex items-baseline justify-between gap-2">
-                            <h4 className="text-xs font-semibold text-gray-1000 truncate">{ach.title}</h4>
-                            <span className="text-[10px] font-mono text-gray-600 shrink-0">
-                              {ach.date ? new Date(ach.date).toLocaleDateString() : ''}
-                            </span>
-                          </div>
-                          {ach.description && (
-                            <p className="text-xs text-gray-700 font-sans line-clamp-2 leading-relaxed">
-                              {ach.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-600 font-mono py-6 text-center">No achievements added yet.</p>
-                )}
-              </div>
-
-
-
-              {/* LinkedIn Certifications Summary */}
-              {Array.isArray(profile.scrapedData?.linkedin?.certifications) && profile.scrapedData.linkedin.certifications.length > 0 && (
-                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                  <div className="flex items-center justify-between border-b border-gray-400 pb-3">
-                    <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                      <FaLinkedin className="text-[#0A66C2]" /> LinkedIn Certifications
-                    </h3>
-                    <Link to="/certificates" className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline">
-                      Manage All ({profile.scrapedData.linkedin.certifications.length}) &rarr;
-                    </Link>
-                  </div>
-
-                  <div className="divide-y divide-gray-400">
-                    {profile.scrapedData.linkedin.certifications.map((cert, i) => (
-                      <div key={i} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                          <div className="text-xs font-medium text-gray-1000">{cert.title}</div>
-                          <div className="text-[11px] text-gray-600 font-sans mt-0.5">{cert.issuedBy}</div>
-                        </div>
-                        {cert.link && (
-                          <a
-                            href={formatExternalUrl(cert.link)}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-[11px] font-mono text-gray-700 hover:text-gray-1000 hover:underline shrink-0 flex items-center gap-1"
-                          >
-                            <span>View Credential</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-            </div>
+          {activeDashboardTab === 'honors' && (
+            <AchievementsSection 
+              achievements={achievements} 
+              profile={profile} 
+              onEdit={() => setShowEditor('section-achievements')} 
+              setSelectedAchievement={setSelectedAchievement} 
+            />
           )}
 
           {/* ===================================================================
               TAB 3: PLACEMENT STORIES
               =================================================================== */}
-          {activeTab === 'placements' && (
-            <div className="space-y-6 animate-in fade-in duration-150">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-sm font-semibold text-gray-1000 tracking-tight">Interview Guides &amp; Placement Experiences</h2>
-                  <p className="text-xs text-gray-700 font-mono mt-0.5">
-                    Interview rounds, assessment questions, and hiring tips shared by {profile.name}
-                  </p>
-                </div>
-                <Link
-                  to="/placements/create"
-                  className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity flex items-center gap-1.5 self-start sm:self-auto cursor-pointer shadow-xs"
-                >
-                  <Plus className="w-3.5 h-3.5" strokeWidth={1.5} />
-                  <span>Write Placement Review</span>
-                </Link>
-              </div>
-
-              {/* Placement Assessments */}
-              {profile?.assessments?.length > 0 && (
-                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                  <div className="flex items-center justify-between border-b border-gray-400 pb-3">
-                    <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
-                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" strokeWidth={1.5} /> Placement Assessments
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {profile.assessments.map((assessment, index) => (
-                      <div key={index} className="flex flex-col justify-between gap-3 p-4 rounded-xl border border-gray-300 bg-background-100 shadow-xs hover:border-gray-400 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-                            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                          </div>
-                          <h4 className="text-xs font-semibold text-gray-1000 line-clamp-2" title={assessment.title}>{assessment.title}</h4>
-                        </div>
-                        <a
-                          href={assessment.fileUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center gap-1.5 whitespace-nowrap mt-2 sm:self-end"
-                        >
-                          <Download className="w-3 h-3" /> Download Report
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {userPlacementPosts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {userPlacementPosts.map((post) => (
-                    <div
-                      key={post._id}
-                      className="rounded-xl border border-gray-400 bg-background-200 p-5 shadow-2xs hover:border-gray-500 transition-colors flex flex-col justify-between space-y-4"
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 p-1 flex items-center justify-center font-bold text-xs text-gray-1000 shrink-0 overflow-hidden shadow-2xs">
-                              {post.company?.logoUrl || post.company?.name ? (
-                                <>
-                                  <img
-                                    src={post.company?.logoUrl || `https://logo.clearbit.com/${post.company.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`}
-                                    alt={post.company?.name}
-                                    className="w-full h-full object-contain"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.style.display = 'none';
-                                      if (e.target.nextSibling) e.target.nextSibling.style.display = 'inline';
-                                    }}
-                                  />
-                                  <span className="hidden">
-                                    {post.company?.name?.charAt(0)?.toUpperCase() || 'C'}
-                                  </span>
-                                </>
-                              ) : (
-                                post.company?.name?.charAt(0)?.toUpperCase() || 'C'
-                              )}
-                            </div>
-                            <div className="truncate">
-                              <h3 className="text-xs font-semibold text-gray-1000 truncate">{post.company?.name}</h3>
-                              <span className="text-[11px] text-gray-600 font-mono">{post.role}</span>
-                            </div>
-                          </div>
-
-                          {post.outcome === 'selected' && (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-medium shrink-0">
-                              Selected
-                            </span>
-                          )}
-                        </div>
-
-                        <Link to={`/placements/${post._id}`} className="block group">
-                          <h4 className="text-xs font-medium text-gray-1000 group-hover:underline line-clamp-2 leading-relaxed">
-                            {post.title}
-                          </h4>
-                        </Link>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-400 text-[11px] font-mono text-gray-600">
-                        <span>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3" />
-                            <span>{post.commentCount || 0}</span>
-                          </span>
-                          <Link to={`/placements/${post._id}`} className="text-gray-900 font-medium hover:underline">
-                            Read &rarr;
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-xl border border-gray-400 bg-background-200 p-8 text-center space-y-3">
-                  <p className="text-xs text-gray-700 font-mono">No placement experiences published yet.</p>
-                  <Link
-                    to="/placements/create"
-                    className="inline-flex items-center gap-1 text-xs text-gray-1000 font-semibold underline"
-                  >
-                    Share your first interview round with the campus community &rarr;
-                  </Link>
-                </div>
-              )}
-            </div>
+          {activeDashboardTab === 'placements' && (
+            <PlacementsSection profile={profile} userPlacementPosts={userPlacementPosts} />
           )}
 
           {/* ===================================================================
               TAB 4: CONNECTED IDENTITIES & VERIFICATION
               =================================================================== */}
-          {activeTab === 'identities' && (
-            <div className="space-y-6 animate-in fade-in duration-150">
-
-              {/* Core Account Identities Card */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                <div className="flex items-center gap-3 border-b border-gray-400 pb-4">
-                  <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4 text-gray-1000" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-1000">Core Account Identities</h3>
-                    <p className="text-[11px] text-gray-600 font-sans">Manage your primary identifiers and recovery methods</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-1">
-                  {/* Email */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <div className="text-xs font-semibold text-gray-1000">Personal Email</div>
-                      <div className="text-[11px] text-gray-600 font-mono">{profile.email || 'Not connected'}</div>
-                    </div>
-                    {!profile.email && (
-                      <button onClick={() => setLinkingAccount('email')} className="text-xs font-mono text-gray-700 hover:text-gray-1000 underline cursor-pointer">Link Email</button>
-                    )}
-                  </div>
-
-                  {/* University Email */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <div className="text-xs font-semibold text-gray-1000">University Email</div>
-                      <div className="text-[11px] text-gray-600 font-mono">{profile.universityEmail || 'Not connected'}</div>
-                    </div>
-                    {!profile.universityEmail && (
-                      <button onClick={() => setLinkingAccount('universityEmail')} className="text-xs font-mono text-gray-700 hover:text-gray-1000 underline cursor-pointer">Link University Email</button>
-                    )}
-                  </div>
-
-                  {/* UID */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <div className="text-xs font-semibold text-gray-1000">Student UID</div>
-                      <div className="text-[11px] text-gray-600 font-mono">{profile.uid || 'Not connected'}</div>
-                    </div>
-                    {!profile.uid && (
-                      <button onClick={() => setLinkingAccount('uid')} className="text-xs font-mono text-gray-700 hover:text-gray-1000 underline cursor-pointer">Link UID</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* GitHub Card */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-400 pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-background-100 border border-gray-400 flex items-center justify-center">
-                      <FaGithub className="w-4 h-4 text-gray-1000" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-1000">GitHub Identity Verification</h3>
-                      <p className="text-[11px] text-gray-600 font-mono">
-                        {profile.githubUsername ? `@${profile.githubUsername}` : 'Not connected'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    {profile.githubVerified ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-medium">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Verified Account</span>
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleGenerateCodeAndVerify('github')}
-                        className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity cursor-pointer shadow-xs"
-                      >
-                        Verify Ownership
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <p className="text-xs text-gray-700 font-sans leading-relaxed">
-                  Verifying your GitHub identity certifies your public repositories, contributions heatmap, and starred works on the Campus Connect recruiter leaderboard.
-                </p>
-              </div>
-
-              {/* LeetCode Card */}
-              <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-400 pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#ffa116]/10 border border-[#ffa116]/30 flex items-center justify-center">
-                      <SiLeetcode className="w-4 h-4 text-[#ffa116]" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-1000">LeetCode Identity Verification</h3>
-                      <p className="text-[11px] text-gray-600 font-mono">
-                        {profile.leetcodeUsername ? `@${profile.leetcodeUsername}` : 'Not connected'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    {profile.leetcodeVerified ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-medium">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Verified Account</span>
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleGenerateCodeAndVerify('leetcode')}
-                        className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity cursor-pointer shadow-xs"
-                      >
-                        Verify Ownership
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <p className="text-xs text-gray-700 font-sans leading-relaxed">
-                  Verifying your LeetCode identity confirms your contest rating, global ranking, and difficulty breakdown statistics for student analytics and recruiter discovery.
-                </p>
-              </div>
-
-              {/* LinkedIn Overview Card */}
-              {profile.scrapedData?.linkedin && (
-                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-                  <div className="flex items-center gap-3 border-b border-gray-400 pb-4">
-                    <div className="w-8 h-8 rounded-lg bg-[#0A66C2]/10 border border-[#0A66C2]/30 flex items-center justify-center">
-                      <FaLinkedin className="w-4 h-4 text-[#0A66C2]" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-1000">
-                        {profile.scrapedData.linkedin.firstName} {profile.scrapedData.linkedin.lastName}
-                      </h3>
-                      <p className="text-[11px] text-gray-600 font-sans">{profile.scrapedData.linkedin.headline}</p>
-                    </div>
-                  </div>
-
-                  {profile.scrapedData.linkedin.about && (
-                    <p className="text-xs text-gray-700 font-sans leading-relaxed whitespace-pre-line">
-                      {profile.scrapedData.linkedin.about}
-                    </p>
-                  )}
-                </div>
-              )}
-
-            </div>
+          {activeDashboardTab === 'identities' && (
+            <VerificationSection 
+              profile={profile} 
+              setLinkingAccount={setLinkingAccount} 
+              handleGenerateCodeAndVerify={handleGenerateCodeAndVerify} 
+            />
           )}
 
         </div>

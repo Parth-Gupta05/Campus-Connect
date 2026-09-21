@@ -75,3 +75,11 @@ export const calculateProfileCompleteness = (profile) => {
 
   return { profileStrength, missingSections };
 };
+
+export const formatExternalUrl = (url) => {
+  if (!url) return '';
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return 'https://' + url;
+  }
+  return url;
+};

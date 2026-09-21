@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Award,
@@ -18,12 +18,6 @@ const STUDENT_ITEMS = [
   { to: '/clubs', label: 'Clubs', icon: Users, isActive: (path) => path.startsWith('/clubs') },
   { to: '/events', label: 'Events', icon: Calendar, end: true },
   { to: '/certificates', label: 'Certs', icon: GraduationCap, end: true },
-  {
-    to: '/profile',
-    label: 'Profile',
-    icon: User,
-    isActive: (path) => path === '/profile' || path === '/appearance',
-  },
 ];
 
 const CLUB_ITEMS = [
@@ -31,20 +25,19 @@ const CLUB_ITEMS = [
 ];
 
 function NavItem({ to, label, icon: Icon, end, isActive: isActiveFn }) {
+  const location = useLocation();
+  const isMatch = isActiveFn ? isActiveFn(location.pathname) : null;
+
   return (
     <NavLink
       to={to}
       end={end}
-      isActive={
-        isActiveFn
-          ? (_match, { pathname }) => isActiveFn(pathname)
-          : undefined
-      }
-      className={({ isActive }) =>
-        `flex flex-col items-center justify-center gap-0.5 min-w-[4.25rem] px-2 py-1 rounded-md transition-colors shrink-0 ${
-          isActive ? 'text-gray-1000' : 'text-gray-600 hover:text-gray-1000'
-        }`
-      }
+      className={({ isActive }) => {
+        const active = isMatch !== null ? isMatch : isActive;
+        return `flex flex-col items-center justify-center gap-0.5 min-w-[4.25rem] px-2 py-1 rounded-md transition-colors shrink-0 ${
+          active ? 'text-gray-1000' : 'text-gray-600 hover:text-gray-1000'
+        }`;
+      }}
     >
       <Icon className="w-4 h-4" strokeWidth={1.5} />
       <span className="text-[10px] font-medium leading-none">{label}</span>

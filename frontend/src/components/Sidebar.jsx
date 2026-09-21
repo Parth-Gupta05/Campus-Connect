@@ -48,8 +48,10 @@ export default function Sidebar() {
         setIsSidebarOpen(saved === 'true');
       }
     };
+
     window.addEventListener('cc_sidebar_toggle', handleSync);
     window.addEventListener('storage', handleSync);
+
     return () => {
       window.removeEventListener('cc_sidebar_toggle', handleSync);
       window.removeEventListener('storage', handleSync);
@@ -128,7 +130,6 @@ export default function Sidebar() {
 
   const studentLinks = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { name: 'Profile', icon: User, path: '/profile' },
     { name: 'Appearance', icon: Palette, path: '/appearance' },
     { name: 'Placements', icon: Award, path: '/placements' },
     { name: 'Clubs', icon: Users, path: '/clubs' },
@@ -151,7 +152,7 @@ export default function Sidebar() {
 
   return (
     <aside 
-      className={`hidden md:flex flex-col bg-background-100 border-r border-gray-400 h-screen sticky top-0 shrink-0 overflow-hidden transition-[width] duration-300 ease-geist will-change-[width] ${
+      className={`hidden md:flex flex-col bg-background-100 border-r border-gray-400 h-full md:h-screen shrink-0 overflow-hidden transition-[width] duration-300 ease-geist will-change-[width] ${
         isSidebarOpen ? 'w-64' : 'w-16'
       } z-40 select-none`}
     >
@@ -189,7 +190,7 @@ export default function Sidebar() {
       </div>
 
       {/* Nav List */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-1 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-3 space-y-1 custom-scrollbar">
         {links.map((link) => {
           const isActive = location.pathname === link.path;
           const showDot = (link.name === 'Certificates' && hasIncompleteCerts) || (link.name === 'Events' && hasUncheckedEvents);
@@ -204,7 +205,7 @@ export default function Sidebar() {
                 isSidebarOpen ? 'px-3' : 'px-0 justify-center'
               } ${
                 isActive 
-                  ? 'bg-gray-200 text-gray-1000 font-medium' 
+                  ? 'bg-gray-200 text-gray-1000 font-medium shadow-xs border border-gray-300 dark:border-gray-600' 
                   : 'text-gray-900 hover:text-gray-1000 hover:bg-gray-100'
               }`}
             >
@@ -236,7 +237,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer controls: Logout */}
-      <div className="p-2 border-t border-gray-400 shrink-0 overflow-hidden">
+      <div className="p-3 border-t border-gray-400 shrink-0 overflow-hidden">
         {/* Animated Logout Button */}
         <button 
           onClick={handleLogout} 

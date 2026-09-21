@@ -53,6 +53,9 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import PdfViewerModal from '../components/PdfViewerModal';
 import AcademicVaultModal from '../components/AcademicVaultModal';
+import ProfileWorkspace from '../components/profile/ProfileWorkspace';
+import { FolderGit2, MessageSquare } from 'lucide-react';
+
 
 const METRICS_REFRESH_LOCK_MS = 2 * 60 * 60 * 1000;
 
@@ -776,13 +779,15 @@ export default function StudentDashboard() {
                   <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} strokeWidth={1.5} />
                   <span>{refreshLockRemaining > 0 ? `Refresh locked · ${refreshLockLabel}` : 'Refresh Metrics'}</span>
                 </button>
-                <Link
-                  to="/profile"
+                <a
+                  href={`/student/${profile?.uid}`}
+                  target="_blank"
+                  rel="noreferrer"
                   className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity flex items-center gap-1 shadow-xs"
                 >
-                  <span>Profile</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
+                  <span>Public Profile</span>
+                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                </a>
               </div>
             </div>
 
@@ -916,9 +921,9 @@ export default function StudentDashboard() {
                     <AlertTriangle className="w-4 h-4 shrink-0" strokeWidth={1.5} />
                     <span>Your portfolio is missing {missingSections.join(', ')}. Complete them to increase visibility.</span>
                   </div>
-                  <Link to="/profile" className="text-amber-500 font-semibold hover:underline shrink-0 flex items-center gap-1">
+                  <button onClick={() => setActiveTab('identities')} className="text-amber-500 font-semibold hover:underline shrink-0 flex items-center gap-1 cursor-pointer">
                     Update Profile &rarr;
-                  </Link>
+                  </button>
                 </div>
               )}
 
@@ -969,9 +974,9 @@ export default function StudentDashboard() {
                           <FaGithub className="w-6 h-6 text-gray-500" />
                           <span className="font-semibold text-gray-900">GitHub Profile Not Linked</span>
                           <p className="text-[11px] text-gray-600 max-w-sm">Connect your GitHub handle in your student profile to display commit activity.</p>
-                          <Link to="/profile" className="mt-1 text-xs font-sans text-blue-600 dark:text-blue-400 hover:underline">
+                          <button onClick={() => setActiveTab('identities')} className="mt-1 text-xs font-sans text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
                             Link GitHub in Profile &rarr;
-                          </Link>
+                          </button>
                         </div>
                       ) : !profile?.githubVerified ? (
                         <div className="py-10 px-4 text-center flex flex-col items-center justify-center gap-2.5 max-w-md mx-auto">
@@ -988,7 +993,7 @@ export default function StudentDashboard() {
                             </p>
                           </div>
                           <Link 
-                            to="/profile" 
+                            onClick={() => setActiveTab('identities')}
                             className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity shadow-2xs cursor-pointer"
                           >
                             <ShieldCheck className="w-3.5 h-3.5" />
@@ -1021,9 +1026,9 @@ export default function StudentDashboard() {
                           <SiLeetcode className="w-6 h-6 text-[#ffa116]" />
                           <span className="font-semibold text-gray-900">LeetCode Account Not Linked</span>
                           <p className="text-[11px] text-gray-600 max-w-sm">Connect your LeetCode handle in your student profile to display submission activity.</p>
-                          <Link to="/profile" className="mt-1 text-xs font-sans text-blue-600 dark:text-blue-400 hover:underline">
+                          <button onClick={() => setActiveTab('identities')} className="mt-1 text-xs font-sans text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
                             Link LeetCode in Profile &rarr;
-                          </Link>
+                          </button>
                         </div>
                       ) : !profile?.leetcodeVerified ? (
                         <div className="py-10 px-4 text-center flex flex-col items-center justify-center gap-2.5 max-w-md mx-auto">
@@ -1040,7 +1045,7 @@ export default function StudentDashboard() {
                             </p>
                           </div>
                           <Link 
-                            to="/profile" 
+                            onClick={() => setActiveTab('identities')}
                             className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity shadow-2xs cursor-pointer"
                           >
                             <ShieldCheck className="w-3.5 h-3.5" />
@@ -1700,9 +1705,9 @@ export default function StudentDashboard() {
               <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600">Verified Technical Skills</h3>
-                  <Link to="/profile" className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline">
+                  <button onClick={() => setActiveTab('portfolio')} className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer">
                     Edit Skills &rarr;
-                  </Link>
+                  </button>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {skills.length > 0 ? (

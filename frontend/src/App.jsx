@@ -6,7 +6,6 @@ import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import StudentDashboard from './pages/StudentDashboard';
-import StudentProfile from './pages/StudentProfile';
 import PublicProfile from './pages/PublicProfile';
 import Appearance from './pages/Appearance';
 import Certificates from './pages/Certificates';
@@ -36,16 +35,16 @@ import AdminStudentEvaluation from './pages/admin/AdminStudentEvaluation';
 
 function AdminLayout({ children }) {
   return (
-    <div className="flex min-h-screen bg-background-100 text-gray-1000 selection:bg-gray-1000 selection:text-background-100 font-sans transition-colors duration-200">
+    <div className="flex flex-col md:flex-row min-h-screen md:h-screen md:overflow-hidden bg-background-100 text-gray-1000 selection:bg-gray-1000 selection:text-background-100 font-sans transition-colors duration-200">
       <AdminSidebar />
-      <div className="flex-1 min-w-0 flex flex-col bg-background-100">
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen md:min-h-0 md:h-full overflow-hidden bg-background-100">
         <Topbar showSearch={false} />
         <nav className="md:hidden flex items-center gap-1 overflow-x-auto border-b border-gray-400 bg-background-100 px-3 py-2 no-scrollbar">
           <Link to="/admin/opportunities" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200">Opportunities</Link>
           <Link to="/admin/students" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200">Students</Link>
           <Link to="/admin/clubs" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200">Clubs &amp; AICTE</Link>
         </nav>
-        <main className="flex-1 min-w-0 flex flex-col overflow-x-hidden pb-[env(safe-area-inset-bottom,0px)]">
+        <main className="flex-1 min-w-0 md:overflow-y-auto overflow-x-hidden pb-[env(safe-area-inset-bottom,0px)] md:pb-0">
           {children}
         </main>
       </div>
@@ -61,12 +60,12 @@ function MainLayout({ children }) {
   const showMobileNav = user && user.role !== 'admin';
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100 transition-colors duration-200">
+    <div className="flex flex-col md:flex-row min-h-screen md:h-screen md:overflow-hidden bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100 transition-colors duration-200">
       <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen overflow-hidden">
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen md:min-h-0 md:h-full overflow-hidden">
         <Topbar showSearch={showSearch} />
         <main
-          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden ${
+          className={`flex-1 min-w-0 md:overflow-y-auto overflow-x-hidden ${
             showMobileNav ? 'pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0' : ''
           }`}
         >
@@ -98,13 +97,7 @@ function App() {
                 </ProtectedRoute>
               } />
               
-              <Route path="/profile" element={
-                <ProtectedRoute allowedRoles={['student']}>
-                  <MainLayout>
-                    <StudentProfile />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
+
 
               <Route path="/appearance" element={
                 <ProtectedRoute allowedRoles={['student']}>
