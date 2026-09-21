@@ -139,7 +139,7 @@ export default function SignIn() {
   return (
     <div className="min-h-screen bg-background-200 text-gray-1000 flex flex-col justify-between selection:bg-gray-1000 selection:text-background-100 transition-colors duration-200 geist-bg-grid relative overflow-hidden">
       {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[750px] max-w-none geist-auth-glow pointer-events-none -z-0" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(1000px,100vw)] h-[min(750px,80vh)] geist-auth-glow pointer-events-none -z-0" />
 
       {/* Top Header Bar */}
       <header className="h-14 border-b border-gray-400 bg-background-100/80 backdrop-blur-md px-6 flex items-center justify-between z-10">

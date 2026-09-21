@@ -9,6 +9,45 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  pre,
+  table {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* ==========================================================================
    Geist Design System Tokens (Official Vercel Spec)
    ========================================================================== */
@@ -304,6 +343,60 @@ body {
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--ds-gray-400) transparent;
+}
+
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* AICTE diary sheet: screen = scale-to-fit; print = full physical size */
+@media print {
+  .aicte-print-modal-backdrop {
+    position: static !important;
+    inset: auto !important;
+    background: #fff !important;
+    backdrop-filter: none !important;
+  }
+
+  .aicte-sheet-preview-host {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .aicte-sheet-scale-box {
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .aicte-sheet-canvas {
+    position: static !important;
+    transform: none !important;
+    width: 794px !important;
+    height: auto !important;
+    gap: 0 !important;
+  }
+
+  .aicte-sheet-page {
+    width: 794px !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+    page-break-inside: avoid;
+  }
 }
 
 /* ==========================================================================

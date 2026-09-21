@@ -530,13 +530,56 @@ export default function AicteDiaryView() {
   );
 }
 
+/** Fixed print canvas (A4 @ 96dpi). Screen preview scales this block to fit — no inner scroll. */
+const AICTE_PAGE_WIDTH_PX = 794;
+const AICTE_PAGE_HEIGHT_PX = 1123;
+const AICTE_PAGE_GAP_PX = 48;
+const AICTE_SHEET_WIDTH_PX = AICTE_PAGE_WIDTH_PX;
+const AICTE_SHEET_HEIGHT_PX = AICTE_PAGE_HEIGHT_PX * 2 + AICTE_PAGE_GAP_PX;
+
 /**
  * PrintAicteSheetModal
  * Renders the exact physical booklet layout matching Gallery_20260914_114722_260914_114751.pdf
  * (Page 22: 10-row activity table; Page 23: 5-row description table)
  */
 function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose }) {
-  const printRef = useRef();
+  const printRef = useRef(null);
+  const previewHostRef = useRef(null);
+  const [previewScale, setPreviewScale] = useState(0.5);
+
+  useEffect(() => {
+    const host = previewHostRef.current;
+    if (!host) return;
+
+    const updateScale = () => {
+      const pad = 16;
+      const w = host.clientWidth - pad;
+      const h = host.clientHeight - pad;
+      if (w <= 0 || h <= 0) return;
+      const next = Math.min(w / AICTE_SHEET_WIDTH_PX, h / AICTE_SHEET_HEIGHT_PX);
+      setPreviewScale(Math.max(0.08, next));
+    };
+
+    updateScale();
+    const ro = new ResizeObserver(updateScale);
+    ro.observe(host);
+    window.addEventListener('resize', updateScale);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateScale);
+    };
+  }, []);
+
+  useEffect(() => {
+    const prevBody = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevBody;
+      document.documentElement.style.overflow = prevHtml;
+    };
+  }, []);
 
   const handlePrint = () => {
     window.print();
@@ -557,46 +600,73 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
   const totalSelectedHours = selectedEvents.reduce((acc, e) => acc + (e.recordedHours || 0), 0);
   const totalSelectedPoints = selectedEvents.reduce((acc, e) => acc + (e.pointsAwarded || 0), 0);
 
+  const scaledW = AICTE_SHEET_WIDTH_PX * previewScale;
+  const scaledH = AICTE_SHEET_HEIGHT_PX * previewScale;
+
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-[200] flex justify-center items-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
-      <div className="bg-white text-black w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+    <div className="aicte-print-modal-backdrop fixed inset-0 bg-black/75 backdrop-blur-md z-[200] flex flex-col sm:justify-center sm:items-center p-0 sm:p-4 overscroll-contain print:static print:bg-white print:p-0">
+      <div className="bg-gray-900 sm:bg-white text-black w-full sm:max-w-5xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[100dvh] max-h-[100dvh] sm:h-[min(92dvh,calc(100dvh-2rem))] sm:max-h-[min(92dvh,calc(100dvh-2rem))] print:h-auto print:max-h-none print:shadow-none print:rounded-none">
         
         {/* Modal Toolbar (hidden when printing) */}
-        <div className="print:hidden p-4 bg-gray-900 border-b border-gray-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Printer className="w-5 h-5 text-gray-300" />
-            <h3 className="font-bold text-white text-sm">
-              Print Official AICTE Activity Diary Sheet
+        <div className="print:hidden px-3 py-2.5 sm:p-4 bg-gray-900 border-b border-gray-800 flex items-center justify-between gap-2 shrink-0 min-w-0 pt-[max(0.625rem,env(safe-area-inset-top))]">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Printer className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 shrink-0" />
+            <h3 className="font-bold text-white text-xs sm:text-sm truncate">
+              AICTE Activity Diary Sheet
             </h3>
-            <span className="text-xs font-mono text-gray-400">
-              (Matches Physical Booklet Layout)
+            <span className="hidden md:inline text-xs font-mono text-gray-400 shrink-0">
+              (Physical booklet layout)
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
+              type="button"
               onClick={handlePrint}
-              className="px-4 py-1.5 bg-white text-black text-xs font-medium rounded-md hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="h-8 px-2.5 sm:px-4 sm:py-1.5 bg-white text-black text-xs font-medium rounded-md hover:bg-gray-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print to PDF / Paper</span>
+              <span className="hidden xs:inline sm:inline">Print / PDF</span>
             </button>
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
+              className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white rounded-md hover:bg-gray-800 transition-colors cursor-pointer"
+              aria-label="Close preview"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Printable Booklet Canvas (Exact Layout from PDF) */}
-        <div ref={printRef} className="p-6 sm:p-8 overflow-y-auto font-serif text-black bg-white space-y-12 print:p-0">
+        {/* Scaled preview — entire fixed canvas fits in viewport (no scrollbars) */}
+        <div
+          ref={previewHostRef}
+          className="aicte-sheet-preview-host flex-1 min-h-0 overflow-hidden bg-gray-200 flex items-center justify-center p-2 sm:p-4 print:overflow-visible print:p-0 print:bg-white"
+        >
+          <div
+            className="aicte-sheet-scale-box relative shrink-0 print:w-auto print:h-auto"
+            style={{ width: scaledW, height: scaledH }}
+          >
+            <div
+              ref={printRef}
+              className="aicte-sheet-canvas absolute top-0 left-0 font-serif text-black bg-white box-border flex flex-col print:static print:transform-none"
+              style={{
+                width: AICTE_SHEET_WIDTH_PX,
+                height: AICTE_SHEET_HEIGHT_PX,
+                gap: AICTE_PAGE_GAP_PX,
+                transform: `scale(${previewScale})`,
+                transformOrigin: 'top left',
+              }}
+            >
           
           {/* =========================================================
               PAGE 1: ACTIVITY LOG TABLE (PAGE 22 IN BOOKLET)
               ========================================================= */}
-          <div className="border-2 border-orange-600 p-6 rounded-lg relative min-h-[700px] flex flex-col justify-between print:min-h-screen print:border-none print:p-4">
+          <div
+            className="aicte-sheet-page border-2 border-orange-600 p-6 rounded-lg relative flex flex-col justify-between overflow-hidden shrink-0 print:min-h-screen print:h-auto print:border-none print:rounded-none print:p-4 print:break-after-page"
+            style={{ width: AICTE_PAGE_WIDTH_PX, height: AICTE_PAGE_HEIGHT_PX }}
+          >
             <div>
               {/* Header Box */}
               <div className="flex justify-between items-start border-b-2 border-black pb-3 mb-4">
@@ -685,7 +755,10 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
           {/* =========================================================
               PAGE 2: ACTIVITY DESCRIPTION BOXES (PAGE 23 IN BOOKLET)
               ========================================================= */}
-          <div className="border-2 border-orange-600 p-6 rounded-lg relative min-h-[700px] flex flex-col justify-between print:min-h-screen print:border-none print:p-4 print:break-before-page">
+          <div
+            className="aicte-sheet-page border-2 border-orange-600 p-6 rounded-lg relative flex flex-col justify-between overflow-hidden shrink-0 print:min-h-screen print:h-auto print:border-none print:rounded-none print:p-4 print:break-before-page"
+            style={{ width: AICTE_PAGE_WIDTH_PX, height: AICTE_PAGE_HEIGHT_PX }}
+          >
             <div>
               {/* Header Box */}
               <div className="flex justify-between items-start border-b-2 border-black pb-3 mb-4">
@@ -743,6 +816,8 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
             </div>
           </div>
 
+            </div>
+          </div>
         </div>
 
       </div>

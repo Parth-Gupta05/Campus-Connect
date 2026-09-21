@@ -178,9 +178,9 @@ export default function Appearance() {
   // ProfileThemeProvider will wrap the preview container and inject the CSS variables directly.
   
   return (
-    <div className="flex-1 flex overflow-hidden h-[calc(100vh-56px)]">
+    <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden md:h-[calc(100vh-56px)]">
       {/* Settings Panel (Left) */}
-          <div className="w-[400px] border-r border-gray-300 bg-background-100 overflow-y-auto shrink-0 flex flex-col">
+          <div className="w-full md:w-[min(400px,100%)] max-h-[45vh] sm:max-h-[52vh] md:max-h-none border-b md:border-b-0 md:border-r border-gray-300 bg-background-100 overflow-y-auto shrink-0 flex flex-col">
             <div className="p-6 border-b border-gray-300 flex items-center justify-between sticky top-0 bg-background-100/90 backdrop-blur-md z-10">
               <div>
                 <h1 className="text-xl font-bold tracking-tight">Appearance</h1>
@@ -390,7 +390,7 @@ export default function Appearance() {
           </div>
 
           {/* Live Preview (Right) */}
-          <div className="flex-1 bg-gray-200/50 dark:bg-gray-950 overflow-y-auto relative isolate">
+          <div className="flex-1 min-w-0 min-h-[70vh] bg-gray-200/50 dark:bg-gray-950 overflow-y-auto relative isolate">
             <div className="sticky top-0 p-3 bg-gray-100/80 backdrop-blur-sm border-b border-gray-300 text-xs font-mono text-gray-500 flex items-center justify-center z-50">
               Live Preview (Read Only)
             </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import NotificationSidebar from './NotificationSidebar';
 import { Search, Bell, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import BrandLogo from './BrandLogo';
 import ThemeSwitcher from './ui/ThemeSwitcher';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -64,9 +66,17 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
 
   return (
     <>
-      <header className={`flex bg-background-100/80 backdrop-blur-md border-b border-gray-400 items-center px-4 sm:px-6 h-14 z-40 sticky top-0 w-full transition-colors ${showSearch ? 'justify-between' : 'justify-end'}`}>
+      <header className={`flex bg-background-100/80 backdrop-blur-md border-b border-gray-400 items-center gap-2 px-4 sm:px-6 h-14 z-40 sticky top-0 w-full min-w-0 transition-colors ${showSearch ? 'justify-between' : 'justify-end'}`}>
         {showSearch && (
-          <div className="relative w-full max-w-[180px] sm:max-w-xs lg:max-w-md flex-1 mr-4" ref={searchRef}>
+          <>
+          <Link
+            to="/dashboard"
+            className="md:hidden flex items-center gap-1.5 shrink-0 text-gray-1000"
+            aria-label="Campus Connect home"
+          >
+            <BrandLogo className="w-7 h-7 shrink-0" />
+          </Link>
+          <div className="relative w-full min-w-0 max-w-[180px] sm:max-w-xs lg:max-w-md flex-1 sm:mr-4" ref={searchRef}>
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none" strokeWidth={1.5} />
             <input 
               className="w-full pl-9 pr-12 py-1.5 text-sm bg-background-200 border border-gray-400 rounded-lg focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 font-sans text-gray-1000 placeholder:text-gray-600 transition-colors" 
@@ -123,9 +133,10 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
               </div>
             )}
           </div>
+          </>
         )}
         
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <ThemeSwitcher small={true} />
 
           {isAuthenticated && (

@@ -890,41 +890,43 @@ export default function Certificates() {
           />
         ) : (
           <div 
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-150"
+            className="fixed inset-0 z-[140] flex items-stretch sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md overscroll-contain animate-in fade-in duration-150"
             onClick={(e) => {
               if (e.target === e.currentTarget) setViewingDoc(null);
             }}
           >
-            <div className="bg-background-100 border border-gray-400 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
-              <div className="p-4 border-b border-gray-400 flex items-center justify-between bg-background-200/50">
-                <span className="text-xs font-mono font-bold text-gray-1000 line-clamp-1">
+            <div className="bg-background-100 border-0 sm:border border-gray-400 rounded-none sm:rounded-2xl w-full sm:max-w-2xl h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[min(90dvh,calc(100dvh-2rem))] overflow-hidden shadow-none sm:shadow-2xl flex flex-col min-h-0 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
+              <div className="px-3 py-2.5 sm:p-4 border-b border-gray-400 flex items-center justify-between gap-2 bg-background-200/50 shrink-0 min-w-0">
+                <span className="text-xs font-mono font-bold text-gray-1000 truncate min-w-0 flex-1" title={viewingDoc.title}>
                   {viewingDoc.title}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 shrink-0">
                   <a
                     href={viewingDoc.url}
                     target="_blank"
                     rel="noreferrer"
                     onClick={() => setViewingDoc(null)}
-                    className="text-gray-600 hover:text-gray-1000 p-1 rounded-md"
+                    className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-1000 hover:bg-gray-200 rounded-md"
                     title="Open in new tab"
+                    aria-label="Open in new tab"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
                   <button
                     type="button"
                     onClick={() => setViewingDoc(null)}
-                    className="text-gray-600 hover:text-gray-1000 p-1 rounded-md cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-1000 hover:bg-gray-200 rounded-md cursor-pointer"
+                    aria-label="Close"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              <div className="p-4 overflow-y-auto flex items-center justify-center bg-background-200">
+              <div className="flex-1 min-h-0 p-2 sm:p-4 overflow-y-auto overflow-x-hidden flex items-center justify-center bg-background-200">
                 <img
                   src={viewingDoc.url}
                   alt={viewingDoc.title}
-                  className="max-h-[70vh] w-auto object-contain rounded-lg shadow-sm"
+                  className="max-h-full max-w-full w-auto h-auto object-contain rounded-lg shadow-sm"
                 />
               </div>
             </div>

@@ -15,7 +15,7 @@ export default function PageHeader({
     <div className={`space-y-4 pb-2 border-b border-gray-400 ${className}`}>
       {/* Top Strip: Category / Breadcrumb + Title + Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
+        <div className="min-w-0 flex-1">
           {category && (
             <div className="text-[10px] font-mono font-semibold uppercase tracking-wider text-gray-600 mb-1 select-none">
               {category}
@@ -32,7 +32,7 @@ export default function PageHeader({
         </div>
 
         {actions && (
-          <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+          <div className="flex w-full sm:w-auto flex-wrap items-center justify-start sm:justify-end gap-2 shrink-0 self-start sm:self-center">
             {actions}
           </div>
         )}

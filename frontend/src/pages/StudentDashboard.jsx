@@ -31,8 +31,6 @@ import {
   FileText, 
   CheckCircle2, 
   LayoutDashboard, 
-  Compass, 
-  User, 
   Loader2,
   Terminal,
   Layers,
@@ -964,7 +962,6 @@ export default function StudentDashboard() {
                 </div>
 
                 <div className="w-full overflow-x-auto py-2 custom-scrollbar">
-                  <div className="min-w-[780px] flex justify-center py-2">
                     {activeHeatmap === 'github' ? (
                       !profile?.githubUsername ? (
                         <div className="py-10 text-xs text-gray-600 font-mono text-center flex flex-col items-center justify-center gap-2">
@@ -998,6 +995,7 @@ export default function StudentDashboard() {
                           </Link>
                         </div>
                       ) : githubHeatmap && githubHeatmap.length > 0 ? (
+                        <div className="min-w-[780px] w-max mx-auto flex justify-center py-2">
                         <ActivityCalendar
                           data={githubHeatmap}
                           colorScheme={resolvedTheme === 'dark' ? 'dark' : 'light'}
@@ -1008,6 +1006,7 @@ export default function StudentDashboard() {
                           showWeekdayLabels
                           labels={{ totalCount: '{{count}} contributions in the past year' }}
                         />
+                        </div>
                       ) : heatmapLoading ? (
                         <div className="py-10 text-xs text-gray-600 font-mono flex items-center gap-2">
                           <Loader2 className="w-4 h-4 animate-spin" /> Loading verified contributions...
@@ -1048,6 +1047,7 @@ export default function StudentDashboard() {
                           </Link>
                         </div>
                       ) : leetcode ? (
+                        <div className="min-w-[780px] w-max mx-auto flex justify-center py-2">
                         <ActivityCalendar
                           data={calendarData}
                           colorScheme={resolvedTheme === 'dark' ? 'dark' : 'light'}
@@ -1058,11 +1058,11 @@ export default function StudentDashboard() {
                           showWeekdayLabels
                           labels={{ totalCount: '{{count}} submissions in the past year' }}
                         />
+                        </div>
                       ) : (
                         <div className="py-10 text-xs text-gray-600 font-mono">No LeetCode activity recorded.</div>
                       )
                     )}
-                  </div>
                 </div>
               </div>
 
@@ -2186,26 +2186,6 @@ export default function StudentDashboard() {
 
         </div>
 
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden bg-background-100/95 backdrop-blur-md fixed bottom-0 w-full flex justify-around items-center h-14 border-t border-gray-400 z-40">
-        <Link className="flex flex-col items-center gap-0.5 text-gray-1000" to="/dashboard">
-          <LayoutDashboard className="w-4 h-4" strokeWidth={1.5} />
-          <span className="text-[10px] font-medium">Dash</span>
-        </Link>
-        <Link className="flex flex-col items-center gap-0.5 text-gray-600 hover:text-gray-1000" to="/opportunities">
-          <Compass className="w-4 h-4" strokeWidth={1.5} />
-          <span className="text-[10px] font-medium">Jobs</span>
-        </Link>
-        <Link className="flex flex-col items-center gap-0.5 text-gray-600 hover:text-gray-1000" to="/events">
-          <Calendar className="w-4 h-4" strokeWidth={1.5} />
-          <span className="text-[10px] font-medium">Events</span>
-        </Link>
-        <Link className="flex flex-col items-center gap-0.5 text-gray-600 hover:text-gray-1000" to="/profile">
-          <User className="w-4 h-4" strokeWidth={1.5} />
-          <span className="text-[10px] font-medium">Profile</span>
-        </Link>
-      </nav>
 
       {/* Upload to Resume Vault Modal */}
       {uploadModalOpen && (

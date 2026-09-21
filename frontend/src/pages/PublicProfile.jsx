@@ -626,9 +626,9 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
               </div>
 
               <div className="w-full overflow-x-auto py-2 custom-scrollbar">
-                <div className="min-w-[780px] flex justify-center py-2">
                   {(activeHeatmap === 'github' && privacy.githubHeatmap !== false) || (privacy.leetcodeHeatmap === false) ? (
                     githubHeatmap.length > 0 ? (
+                      <div className="min-w-[780px] w-max mx-auto flex justify-center py-2">
                       <ActivityCalendar
                         data={githubHeatmap}
                         colorScheme="light"
@@ -639,6 +639,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                         showWeekdayLabels
                         labels={{ totalCount: '{{count}} contributions in the past year' }}
                       />
+                      </div>
                     ) : (
                       <div className="py-10 text-xs text-[var(--profile-muted-text)] font-mono text-center flex flex-col items-center justify-center gap-2">
                         <FaGithub className="w-6 h-6 text-[var(--profile-muted-text)]" />
@@ -647,6 +648,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                     )
                   ) : (
                     calendarData.length > 0 ? (
+                      <div className="min-w-[780px] w-max mx-auto flex justify-center py-2">
                       <ActivityCalendar
                         data={calendarData}
                         colorScheme="light"
@@ -657,6 +659,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                         showWeekdayLabels
                         labels={{ totalCount: '{{count}} submissions in the past year' }}
                       />
+                      </div>
                     ) : (
                       <div className="py-10 text-xs text-[var(--profile-muted-text)] font-mono text-center flex flex-col items-center justify-center gap-2">
                         <SiLeetcode className="w-6 h-6 text-[#ffa116]" />
@@ -664,7 +667,6 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       </div>
                     )
                   )}
-                </div>
               </div>
             </div>
           )}

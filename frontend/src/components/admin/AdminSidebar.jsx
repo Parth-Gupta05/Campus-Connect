@@ -69,7 +69,7 @@ export default function AdminSidebar() {
 
   return (
     <aside 
-      className={`bg-background-100 border-r border-gray-400 h-screen sticky top-0 flex flex-col z-50 shrink-0 overflow-hidden transition-[width] duration-300 ease-geist will-change-[width] select-none ${
+      className={`hidden md:flex bg-background-100 border-r border-gray-400 h-screen sticky top-0 flex-col z-50 shrink-0 overflow-hidden transition-[width] duration-300 ease-geist will-change-[width] select-none ${
         isSidebarOpen ? 'w-64' : 'w-16'
       }`}
     >
