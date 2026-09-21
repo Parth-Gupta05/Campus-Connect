@@ -14,7 +14,11 @@ const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
       .select('-password')
-      .populate('resumes');
+      .populate('resumes')
+      .populate({
+        path: 'assessments',
+        select: 'title fileUrl'
+      });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -41,6 +45,10 @@ const getPublicProfile = async (req, res) => {
     const user = await User.findOne({ uid: normalizedUid })
       .select('-password -resetOtp -verificationCode -pendingAchievements')
       .populate('resumes')
+      .populate({
+        path: 'assessments',
+        select: 'title fileUrl'
+      })
       .lean();
       
     if (!user) {
@@ -286,6 +294,16 @@ const scrapeAndCacheMetrics = async (user) => {
 
   user.markModified('scrapedData');
   user.lastScrapedAt = new Date();
+
+  // Generate Platform Baseline and Merge
+  const { calculatePlatformBaseline, mergeWithVerifiedBoost } = require('../utils/vectorEngine');
+  const platformBaseline = calculatePlatformBaseline(user.scrapedData);
+  if (!user.academicVector || user.academicVector.length !== 9) {
+      user.academicVector = Array(9).fill(-1);
+      user.markModified('academicVector');
+  }
+  user.skillVector = mergeWithVerifiedBoost(user.academicVector, platformBaseline);
+  user.markModified('skillVector');
   await user.save();
   return user;
 };

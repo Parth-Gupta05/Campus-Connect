@@ -30,6 +30,9 @@ import AdminOpportunityDetail from './pages/admin/AdminOpportunityDetail';
 import AdminStudents from './pages/admin/AdminStudents';
 import AdminStudentDetail from './pages/admin/AdminStudentDetail';
 import AdminClubs from './pages/admin/AdminClubs';
+import AdminAssessments from './pages/admin/AdminAssessments';
+import AssessmentDetail from './pages/admin/AssessmentDetail';
+import AdminStudentEvaluation from './pages/admin/AdminStudentEvaluation';
 
 function AdminLayout({ children }) {
   return (
@@ -237,6 +240,30 @@ function App() {
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminLayout>
                     <AdminClubs />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/evaluations/assessments" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminLayout>
+                    <AdminAssessments />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/evaluations/assessments/:id" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminLayout>
+                    <AssessmentDetail />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/evaluations/global" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminLayout>
+                    <AdminStudentEvaluation />
                   </AdminLayout>
                 </ProtectedRoute>
               } />

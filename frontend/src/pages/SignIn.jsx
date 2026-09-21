@@ -30,9 +30,18 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login } = useContext(AuthContext);
+  const { user, login } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') navigate('/admin');
+      else if (user.role === 'club') navigate('/club');
+      else navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   // Forgot Password States
   const [showForgotModal, setShowForgotModal] = useState(false);

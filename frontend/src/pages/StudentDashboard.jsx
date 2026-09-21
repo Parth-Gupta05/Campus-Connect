@@ -43,6 +43,7 @@ import {
   Upload,
   Trash2,
   Download,
+  FileSpreadsheet,
   Eye,
   Plus,
   Edit3,
@@ -1263,6 +1264,37 @@ export default function StudentDashboard() {
                   )}
                 </div>
               </div>
+              {/* Placement Assessments */}
+              {user?.assessments?.length > 0 && (
+                <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs mt-8">
+                  <div className="flex items-center justify-between border-b border-gray-400 pb-3">
+                    <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600 flex items-center gap-2">
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" strokeWidth={1.5} /> Placement Assessments ({user.assessments.length})
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {user.assessments.map((assessment, index) => (
+                      <div key={index} className="flex flex-col justify-between gap-3 p-4 rounded-xl border border-gray-300 bg-background-100 shadow-xs hover:border-gray-400 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+                            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <h4 className="text-xs font-semibold text-gray-1000 line-clamp-2" title={assessment.title}>{assessment.title}</h4>
+                        </div>
+                        <a 
+                          href={assessment.fileUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center gap-1.5 whitespace-nowrap mt-2 sm:self-end w-max"
+                        >
+                          <Download className="w-3 h-3" /> Download Report
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </div>
           )}

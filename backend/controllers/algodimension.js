@@ -151,12 +151,12 @@ const evaluateApplicantMatch = async (userId, opportunityId) => {
         const opportunity = await Opportunity.findById(opportunityId);
         if (!opportunity) throw new Error('Opportunity record not found');
 
-        // If opportunity job vector is missing, compute it on-the-fly
         if (!opportunity.jobVector || opportunity.jobVector.length === 0) {
             console.log(`[MATCH EVAL] Opportunity ${opportunityId} missing vector. Generating on-the-fly...`);
-            const rawVector = await generateRequirementVector(opportunity);
+            const { vector: rawVector, jobDomainSpecificity } = await generateRequirementVector(opportunity);
             const normalizedVector = normalizeRequirementVector(rawVector);
             opportunity.jobVector = Object.values(normalizedVector);
+            opportunity.jobDomainSpecificity = jobDomainSpecificity / 100;
             opportunity.vectorProcessed = true;
             await opportunity.save();
         }
@@ -206,17 +206,99 @@ const evaluateApplicantMatch = async (userId, opportunityId) => {
             }
         }
 
-        // 7 & 8. Compute cosine similarity with Opportunity.jobVector & Calculate matchScore
-        const similarity = calculateCosineSimilarity(resumeVector, opportunity.jobVector);
+        // 7. Calculate Domain Relevance and Pruning Multiplier
+        let candidateDomainRelevance = 0;
+        let pruningMultiplier = 1;
+        let prunedResumeVector = [...resumeVector];
+
+        if (opportunity.jobDomainSpecificity !== undefined && opportunity.jobDomainSpecificity > 0) {
+            candidateDomainRelevance = await evaluateCandidateDomainRelevance(opportunity, parsedResumeData);
+            
+            const J = opportunity.jobDomainSpecificity;
+            const C_curved = Math.sqrt(candidateDomainRelevance);
+            pruningMultiplier = 1 - (J * (1 - C_curved));
+
+            // Prune domain-sensitive dimensions: Tech Skills (0), Problem Solving (1), Analytical (2), Domain Depth (7)
+            prunedResumeVector[0] *= pruningMultiplier;
+            prunedResumeVector[1] *= pruningMultiplier;
+            prunedResumeVector[2] *= pruningMultiplier;
+            prunedResumeVector[7] *= pruningMultiplier;
+        }
+
+        // 8. Compute cosine similarity with Opportunity.jobVector & Calculate matchScore
+        const similarity = calculateCosineSimilarity(prunedResumeVector, opportunity.jobVector);
         const matchScore = Math.min(Math.max(Math.round(similarity * 100), 0), 100);
 
-        // 9. Populate matchDetails
+        // 9. Evaluate Requirements
+        let failedRequirements = [];
+        if (opportunity.requirements && opportunity.requirements.length > 0) {
+            const education = user.resumeDetails?.education || [];
+            const cgpaStr = user.cgpa || education.find(e => e?.level === 'Undergraduate' || e?.level === 'Undergrad Degree')?.grade || education.find(e => e?.level === 'Undergraduate' || e?.level === 'Undergrad Degree')?.cgpa || '0';
+            const userCgpa = parseFloat(cgpaStr) || 0;
+
+            const tenthEdu = education.find(e => e?.level === '10th' || e?.level === 'High School (10th Std)');
+            const user10th = parseFloat(tenthEdu?.grade || tenthEdu?.score || '0');
+
+            const twelfthEdu = education.find(e => e?.level === '12th / Diploma' || e?.level === '12th' || e?.level === '11th and 12th or Diploma');
+            const user12th = parseFloat(twelfthEdu?.grade || twelfthEdu?.score || '0');
+
+            const userBacklogs = user.activeBacklogs || 0; 
+            const userBranch = user.branch || '';
+            
+            const getValueForCriterion = (criterion) => {
+                if (criterion === 'cgpa') return userCgpa;
+                if (criterion === '10th_percent') return user10th;
+                if (criterion === '12th_percent') return user12th;
+                if (criterion === 'active_backlogs') return userBacklogs;
+                if (criterion === 'branch') return userBranch;
+                return null;
+            };
+
+            for (let reqObj of opportunity.requirements) {
+                const userValue = getValueForCriterion(reqObj.criterion);
+                if (userValue === null) continue;
+
+                let passed = true;
+                
+                if (reqObj.operator === 'in') {
+                    const allowedValues = Array.isArray(reqObj.value) ? reqObj.value : [reqObj.value];
+                    passed = allowedValues.some(val => val.toString().toLowerCase() === userValue.toString().toLowerCase());
+                } else {
+                    const requiredValue = parseFloat(reqObj.value);
+                    const numericUserVal = parseFloat(userValue) || 0;
+                    switch (reqObj.operator) {
+                        case 'gte': passed = numericUserVal >= requiredValue; break;
+                        case 'lte': passed = numericUserVal <= requiredValue; break;
+                        case 'eq':  passed = numericUserVal == requiredValue; break;
+                        case 'gt':  passed = numericUserVal > requiredValue; break;
+                        case 'lt':  passed = numericUserVal < requiredValue; break;
+                    }
+                }
+
+                if (!passed) {
+                    let reason = `Failed requirement: ${reqObj.criterion.replace('_', ' ')} must be ${reqObj.operator} ${reqObj.value} (Your value: ${userValue})`;
+                    if (reqObj.operator === 'in') {
+                         reason = `Your branch '${userValue}' is not allowed for this opportunity. Allowed branches: ${Array.isArray(reqObj.value) ? reqObj.value.join(', ') : reqObj.value}`;
+                    }
+                    failedRequirements.push(reason);
+                }
+            }
+        }
+
+        // 10. Populate matchDetails
         applicant.matchScore = matchScore;
         applicant.matchScoreCalculated = true;
+        applicant.requirementsReview = failedRequirements;
+        if (failedRequirements.length > 0) {
+            applicant.status = 'rejected';
+        }
+
         applicant.matchDetails = {
             vectorSimilarity: similarity,
             skillMatchScore: matchScore,
-            reasoning: `Matched based on rule-based algorithmic analysis of technical proficiency, problem-solving history, and longitudinal engagement metrics. Similarity score mapped to ${matchScore}%.`
+            candidateDomainRelevance: candidateDomainRelevance,
+            pruningMultiplier: pruningMultiplier,
+            reasoning: 'Matched based on rule-based algorithmic analysis.'
         };
 
         // 10. Save and Return the updated Applicant document
@@ -273,12 +355,12 @@ const calculateOpportunityCompatibility = async (userId, opportunityId, resumeId
         const opportunity = await Opportunity.findById(opportunityId);
         if (!opportunity) throw new Error('Opportunity not found');
 
-        // 1. Ensure opportunity requirement vector exists
         if (!opportunity.jobVector || opportunity.jobVector.length === 0) {
             console.log(`[COMPATIBILITY] Generating jobVector on-the-fly for ${opportunityId}...`);
-            const rawVector = await generateRequirementVector(opportunity);
+            const { vector: rawVector, jobDomainSpecificity } = await generateRequirementVector(opportunity);
             const normalizedVector = normalizeRequirementVector(rawVector);
             opportunity.jobVector = Object.values(normalizedVector);
+            opportunity.jobDomainSpecificity = jobDomainSpecificity / 100;
             opportunity.vectorProcessed = true;
             await opportunity.save();
         }
@@ -323,15 +405,39 @@ const calculateOpportunityCompatibility = async (userId, opportunityId, resumeId
             }
         }
 
-        // 3. Compute cosine similarity & matchScore
-        const similarity = calculateCosineSimilarity(resumeVector, opportunity.jobVector);
-        const matchScore = Math.min(Math.max(Math.round(similarity * 100), 0), 100);
-
-        // 4. Skills match breakdown
+        // 3. Skills match breakdown (Used for Keyword-based Domain Relevance)
         const candidateSkills = new Set((parsedResumeData.skills || []).map(s => (s || '').toLowerCase().trim()));
         const reqSkills = opportunity.requiredSkills || [];
         const matchingSkills = reqSkills.filter(s => candidateSkills.has((s || '').toLowerCase().trim()));
         const missingSkills = reqSkills.filter(s => !candidateSkills.has((s || '').toLowerCase().trim()));
+
+        // 4. Calculate Domain Relevance and Pruning Multiplier
+        let candidateDomainRelevance = reqSkills.length > 0 ? matchingSkills.length / reqSkills.length : 1;
+        let pruningMultiplier = 1;
+        let prunedResumeVector = [...resumeVector];
+
+        if (opportunity.jobDomainSpecificity !== undefined && opportunity.jobDomainSpecificity > 0) {
+            const J = opportunity.jobDomainSpecificity;
+            const C_curved = Math.sqrt(candidateDomainRelevance);
+            pruningMultiplier = 1 - (J * (1 - C_curved));
+
+            console.log("\n[PRUNING DEBUG] Job Domain Specificity (J):", J);
+            console.log("[PRUNING DEBUG] Candidate Domain Relevance (Keyword Match):", candidateDomainRelevance);
+            console.log("[PRUNING DEBUG] Pruning Multiplier (M):", pruningMultiplier.toFixed(2));
+            console.log("[PRUNING DEBUG] Original Candidate Vector:", resumeVector.map(v => v.toFixed(2)));
+
+            prunedResumeVector[0] *= pruningMultiplier;
+            prunedResumeVector[1] *= pruningMultiplier;
+            prunedResumeVector[2] *= pruningMultiplier;
+            prunedResumeVector[7] *= pruningMultiplier;
+            
+            console.log("[PRUNING DEBUG] Pruned Candidate Vector:", prunedResumeVector.map(v => v.toFixed(2)));
+            console.log("[PRUNING DEBUG] Job Vector:", opportunity.jobVector.map(v => v.toFixed(2)));
+        }
+
+        // 5. Compute cosine similarity & matchScore
+        const similarity = calculateCosineSimilarity(prunedResumeVector, opportunity.jobVector);
+        const matchScore = Math.min(Math.max(Math.round(similarity * 100), 0), 100);
 
         let reasoning = '';
         if (matchScore >= 80) {
@@ -344,7 +450,8 @@ const calculateOpportunityCompatibility = async (userId, opportunityId, resumeId
             reasoning = 'Lower compatibility based on current parsed skills. Consider highlighting related domain projects.';
         }
 
-        // 5. If user already applied, keep the applicant record updated too
+
+        // 6. If user already applied, keep the applicant record updated too
         const existingApp = await Applicant.findOne({ userId, opportunityId });
         if (existingApp) {
             existingApp.matchScore = matchScore;
@@ -352,6 +459,8 @@ const calculateOpportunityCompatibility = async (userId, opportunityId, resumeId
             existingApp.matchDetails = {
                 vectorSimilarity: similarity,
                 skillMatchScore: matchScore,
+                candidateDomainRelevance,
+                pruningMultiplier,
                 reasoning
             };
             await existingApp.save();
@@ -360,6 +469,8 @@ const calculateOpportunityCompatibility = async (userId, opportunityId, resumeId
         return {
             matchScore,
             similarity: Number(similarity.toFixed(3)),
+            candidateDomainRelevance,
+            pruningMultiplier,
             matchingSkills,
             missingSkills,
             totalRequired: reqSkills.length,
@@ -377,6 +488,45 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
     model: "gemini-3.6-flash"
 });
+
+async function evaluateCandidateDomainRelevance(opportunity, parsedResumeData) {
+    const prompt = `
+You are an AI assistant responsible for analyzing job candidates for a Smart Campus Talent Matching Platform.
+
+Your task is to evaluate the candidate's domain relevance to the specific opportunity domain.
+Rate the relevance from 0.0 to 1.0, where:
+0.0 means the candidate has NO relevant projects/skills for this specific job's domain.
+1.0 means the candidate is highly specialized and experienced in the exact domain required by the job.
+
+Base your judgement on the overlap between the opportunity required skills/description and the candidate's skills and projects.
+
+Opportunity Title: ${opportunity.title}
+Opportunity Required Skills: ${opportunity.requiredSkills ? opportunity.requiredSkills.join(", ") : ''}
+Job Description: ${opportunity.jobDescription}
+
+Candidate Skills: ${(parsedResumeData.skills || []).join(", ")}
+Candidate Projects: 
+${(parsedResumeData.projects || []).map(p => `- ${p.title}: ${p.description}`).join('\n')}
+
+Return ONLY valid JSON in this exact structure:
+{
+  "candidateDomainRelevance": number
+}
+Do not return markdown or code fences.
+`;
+    try {
+        const result = await model.generateContent(prompt);
+        let responseText = result.response.text().trim();
+        if (responseText.startsWith('\`\`\`')) {
+            responseText = responseText.replace(/^\`\`\`(json)?/, '').replace(/\`\`\`$/, '').trim();
+        }
+        const parsed = JSON.parse(responseText);
+        return parsed.candidateDomainRelevance || 0;
+    } catch (e) {
+        console.error("Error evaluating candidate domain relevance:", e);
+        return 0; // default to 0 on failure
+    }
+}
 
 async function generateRequirementVector(opportunity) {
 
@@ -397,6 +547,10 @@ The requirement vector consists of the following 10 dimensions.
 8. Domain Specialization
 9. Consistency (Long-Term Learning / Continuous Participation)
 10. Achievement Level
+
+In addition to the 10 dimensions, also calculate 'jobDomainSpecificity' (0 to 100). 
+If this is a highly specialized role (like DevOps, ML Engineer), score it high (81-100). 
+If it's a generalist role (Management Trainee, Junior Analyst), score it low (0-30).
 
 For EACH dimension assign a score between 0 and 100.
 
@@ -432,19 +586,22 @@ ${opportunity.requiredSkills.join(", ")}
 Job Description:
 ${opportunity.jobDescription}
 
-Return ONLY valid JSON.
+Return ONLY valid JSON in this exact structure:
 
 {
-  "technicalSkills": number,
-  "problemSolving": number,
-  "analyticalAbility": number,
-  "communicationSkills": number,
-  "teamworkCollaboration": number,
-  "leadership": number,
-  "initiativeEngagement": number,
-  "domainSpecialization": number,
-  "consistency": number,
-  "achievementLevel": number
+  "vector": {
+    "technicalSkills": number,
+    "problemSolving": number,
+    "analyticalAbility": number,
+    "communicationSkills": number,
+    "teamworkCollaboration": number,
+    "leadership": number,
+    "initiativeEngagement": number,
+    "domainSpecialization": number,
+    "consistency": number,
+    "achievementLevel": number
+  },
+  "jobDomainSpecificity": number
 }
 
 Do not return explanations.
@@ -454,12 +611,19 @@ Return JSON only.
 `;
 
     const result = await model.generateContent(prompt);
+    
+    // Clean up potential markdown code fences from the response
+    let responseText = result.response.text().trim();
+    if (responseText.startsWith('\`\`\`')) {
+        responseText = responseText.replace(/^\`\`\`(json)?/, '').replace(/\`\`\`$/, '').trim();
+    }
 
-    const response = result.response.text();
+    const parsed = JSON.parse(responseText);
 
-    const vector = JSON.parse(response);
-
-    return vector;
+    return { 
+        vector: parsed.vector, 
+        jobDomainSpecificity: parsed.jobDomainSpecificity 
+    };
 }
 
 function normalizeRequirementVector(vector) {
@@ -492,7 +656,7 @@ const createOpportunityVector = async (req, res) => {
         }
 
         // Generate requirement vector using Gemini
-        const rawVector = await generateRequirementVector(opportunity);
+        const { vector: rawVector, jobDomainSpecificity } = await generateRequirementVector(opportunity);
 
         // Normalize requirement vector scores (0 to 1)
         const normalizedVector = normalizeRequirementVector(rawVector);
@@ -502,6 +666,7 @@ const createOpportunityVector = async (req, res) => {
 
         // Update opportunity document
         opportunity.jobVector = vectorArray;
+        opportunity.jobDomainSpecificity = jobDomainSpecificity / 100;
         opportunity.vectorProcessed = true;
         await opportunity.save();
 
@@ -511,6 +676,7 @@ const createOpportunityVector = async (req, res) => {
             opportunityId: opportunity._id,
             vectorProcessed: opportunity.vectorProcessed,
             jobVector: opportunity.jobVector,
+            jobDomainSpecificity: opportunity.jobDomainSpecificity,
             normalizedVector
         });
     } catch (error) {

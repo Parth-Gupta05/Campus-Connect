@@ -27,9 +27,9 @@ export const calculateProfileCompleteness = (profile) => {
   for (const requiredLevel of requiredLevels) {
     const found = education.find(e => 
       e.level === requiredLevel && 
-      e.institution && e.institution.trim() !== '' && 
-      e.startYear && e.startYear.trim() !== '' &&
-      e.endYear && e.endYear.trim() !== ''
+      e.institution && String(e.institution).trim() !== '' && 
+      e.startYear && String(e.startYear).trim() !== '' &&
+      e.endYear && String(e.endYear).trim() !== ''
     );
     if (!found) {
       hasAllRequiredEducation = false;
@@ -59,9 +59,9 @@ export const calculateProfileCompleteness = (profile) => {
     // Partial points for education fields filled
     const validEduCount = education.filter(e => 
       requiredLevels.includes(e.level) && 
-      e.institution && e.institution.trim() !== '' && 
-      e.startYear && e.startYear.trim() !== '' &&
-      e.endYear && e.endYear.trim() !== ''
+      e.institution && String(e.institution).trim() !== '' && 
+      e.startYear && String(e.startYear).trim() !== '' &&
+      e.endYear && String(e.endYear).trim() !== ''
     ).length;
     profileStrength += (validEduCount * 8); // e.g. 8 + 8 + 8 = 24 roughly
   }

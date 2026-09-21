@@ -9,6 +9,11 @@ const crypto = require('crypto');
 const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 const { resolveMemberTier } = require('../utils/aicteCalculator');
 const { createNotification } = require('../utils/notificationService');
+const multer = require('multer');
+const { uploadAssessmentFile, getAssessmentUploads, getStudentEvaluations, getAssessmentById } = require('../controllers/evaluationController');
+
+// Multer setup for temporary storage before Cloudinary
+const upload = multer({ dest: 'uploads/' });
 
 // Helper to hash password matching authRoutes.js
 const hashPassword = (password) => {
@@ -20,7 +25,7 @@ const hashPassword = (password) => {
 // @access  Admin
 router.post('/opportunities', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { title, company, companyLogo, companyDomain, location, opportunityType, jobDescription, requiredSkills, experienceLevel, stipendOrSalary, applyLink, deadline } = req.body;
+    const { title, company, companyLogo, companyDomain, location, opportunityType, jobDescription, requiredSkills, experienceLevel, stipendOrSalary, applyLink, deadline, requirements } = req.body;
 
     const newOpportunity = new Opportunity({
       title,
@@ -35,6 +40,7 @@ router.post('/opportunities', authMiddleware, adminMiddleware, async (req, res) 
       stipendOrSalary,
       applyLink,
       deadline,
+      requirements: requirements || [],
       postedBy: req.user.id
     });
 
@@ -581,5 +587,25 @@ router.delete('/clubs/:clubId', authMiddleware, adminMiddleware, async (req, res
     res.status(500).json({ message: 'Server error deleting club' });
   }
 });
+
+// @route   POST /api/admin/evaluation/upload
+// @desc    Upload an assessment excel file for background processing
+// @access  Admin
+router.post('/evaluation/upload', authMiddleware, adminMiddleware, upload.single('file'), uploadAssessmentFile);
+
+// @route   GET /api/admin/evaluation/uploads
+// @desc    Get all uploaded assessment files
+// @access  Admin
+router.get('/evaluation/uploads', authMiddleware, adminMiddleware, getAssessmentUploads);
+
+// @route   GET /api/admin/evaluation/uploads/:id
+// @desc    Get a single assessment with its raw results
+// @access  Admin
+router.get('/evaluation/uploads/:id', authMiddleware, adminMiddleware, getAssessmentById);
+
+// @route   GET /api/admin/evaluation/students
+// @desc    Get all students with their evaluated skill vectors and assessments
+// @access  Admin
+router.get('/evaluation/students', authMiddleware, adminMiddleware, getStudentEvaluations);
 
 module.exports = router;

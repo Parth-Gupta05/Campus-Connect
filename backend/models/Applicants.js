@@ -31,6 +31,8 @@ const ApplicantSchema = new mongoose.Schema(
     matchDetails: {
       vectorSimilarity: { type: Number, default: 0 },
       skillMatchScore: { type: Number, default: 0 },
+      candidateDomainRelevance: { type: Number, default: 0 },
+      pruningMultiplier: { type: Number, default: 1 },
       reasoning: { type: String, default: '' },
     },
     // Application status tracking
@@ -46,6 +48,10 @@ const ApplicantSchema = new mongoose.Schema(
       ref: 'Resume',
       required: false,
     },
+    // Detailed reasons for requirement rejection
+    requirementsReview: [{
+      type: String
+    }],
     // Admin / Employer notes & feedback
     adminNotes: {
       type: String,

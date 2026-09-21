@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Briefcase, Users, LogOut, PanelLeft, ShieldAlert, Building2, Loader2 } from 'lucide-react';
+import { Briefcase, Users, LogOut, PanelLeft, ShieldAlert, Building2, Loader2, FileSpreadsheet, TrendingUp } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 
@@ -65,6 +65,8 @@ export default function AdminSidebar() {
     { to: '/admin/opportunities', label: 'Opportunities', icon: Briefcase },
     { to: '/admin/students', label: 'Students Directory', icon: Users },
     { to: '/admin/clubs', label: 'Clubs & AICTE Units', icon: Building2 },
+    { to: '/admin/evaluations/assessments', label: 'Assessments', icon: FileSpreadsheet },
+    { to: '/admin/evaluations/global', label: 'Global Skill Matrix', icon: TrendingUp },
   ];
 
   return (

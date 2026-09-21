@@ -47,6 +47,13 @@ const OpportunitySchema = new mongoose.Schema(
       default: false,
       index: true,
     },
+    // The strictness/specialization level of the job domain
+    jobDomainSpecificity: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 1,
+    },
     requiredSkills: {
       type: [String],
       default: [],
@@ -77,6 +84,21 @@ const OpportunitySchema = new mongoose.Schema(
       default: true,
       index: true,
     },
+    requirements: [{
+      criterion: { 
+        type: String, 
+        required: true 
+      },
+      operator: { 
+        type: String, 
+        required: true,
+        enum: ['gte', 'lte', 'eq', 'gt', 'lt', 'in']
+      },
+      value: { 
+        type: mongoose.Schema.Types.Mixed, 
+        required: true 
+      }
+    }],
   },
   {
     timestamps: true,
