@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
-import { useContext } from 'react';
+import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useContext, useState } from 'react';
 import { AuthContext } from './context/AuthContext';
 import MobileStudentNav from './components/MobileStudentNav';
 import LandingPage from './pages/LandingPage';
@@ -7,7 +7,7 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import StudentDashboard from './pages/StudentDashboard';
 import PublicProfile from './pages/PublicProfile';
-import Appearance from './pages/Appearance';
+import Profile from './pages/Profile';
 import Certificates from './pages/Certificates';
 import Opportunities from './pages/Opportunities';
 import ClubDashboard from './pages/ClubDashboard';
@@ -18,7 +18,7 @@ import PlacementFeed from './pages/PlacementFeed';
 import PlacementPostDetail from './pages/PlacementPostDetail';
 import CreatePlacementPost from './pages/CreatePlacementPost';
 import { AuthProvider } from './context/AuthContext';
-import { ToastProvider } from './context/ToastContext';
+import { ToastProvider, useToast } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Topbar from './components/Topbar';
@@ -32,17 +32,51 @@ import AdminClubs from './pages/admin/AdminClubs';
 import AdminAssessments from './pages/admin/AdminAssessments';
 import AssessmentDetail from './pages/admin/AssessmentDetail';
 import AdminStudentEvaluation from './pages/admin/AdminStudentEvaluation';
+import { LogOut, Loader2 } from 'lucide-react';
 
 function AdminLayout({ children }) {
+  const { logout } = useContext(AuthContext);
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      showToast('Logged out successfully', 'success');
+      navigate('/signin', { replace: true });
+    } catch (err) {
+      showToast('Failed to log out', 'error');
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen md:h-screen md:overflow-hidden bg-background-100 text-gray-1000 selection:bg-gray-1000 selection:text-background-100 font-sans transition-colors duration-200">
       <AdminSidebar />
       <div className="flex-1 min-w-0 flex flex-col min-h-screen md:min-h-0 md:h-full overflow-hidden bg-background-100">
         <Topbar showSearch={false} />
-        <nav className="md:hidden flex items-center gap-1 overflow-x-auto border-b border-gray-400 bg-background-100 px-3 py-2 no-scrollbar">
-          <Link to="/admin/opportunities" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200">Opportunities</Link>
-          <Link to="/admin/students" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200">Students</Link>
-          <Link to="/admin/clubs" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200">Clubs &amp; AICTE</Link>
+        <nav className="md:hidden flex items-center gap-1 overflow-x-auto border-b border-gray-400 bg-background-100 px-2.5 py-2 no-scrollbar">
+          <Link to="/admin/opportunities" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200 whitespace-nowrap">Opportunities</Link>
+          <Link to="/admin/students" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200 whitespace-nowrap">Students</Link>
+          <Link to="/admin/clubs" className="shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-200 whitespace-nowrap">Clubs &amp; AICTE</Link>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            aria-label="Log out"
+            className="ml-auto shrink-0 inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap transition-colors"
+          >
+            {isLoggingOut ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" strokeWidth={1.5} />
+            ) : (
+              <LogOut className="w-3.5 h-3.5" strokeWidth={1.5} />
+            )}
+            <span>Log out</span>
+          </button>
         </nav>
         <main className="flex-1 min-w-0 md:overflow-y-auto overflow-x-hidden pb-[env(safe-area-inset-bottom,0px)] md:pb-0">
           {children}
@@ -99,10 +133,10 @@ function App() {
               
 
 
-              <Route path="/appearance" element={
+              <Route path="/profile" element={
                 <ProtectedRoute allowedRoles={['student']}>
                   <MainLayout>
-                    <Appearance />
+                    <Profile />
                   </MainLayout>
                 </ProtectedRoute>
               } />
