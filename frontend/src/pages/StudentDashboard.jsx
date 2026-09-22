@@ -272,7 +272,7 @@ export default function StudentDashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'coding' | 'campus' | 'vault'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'profile' | 'coding' | 'campus' | 'vault'
   
   const displayName = useMemo(() => {
     const fullName = profile?.name || user?.name || user?.email?.split('@')[0] || 'Student';
@@ -807,6 +807,18 @@ export default function StudentDashboard() {
               </button>
               <button
                 type="button"
+                onClick={() => setActiveTab('profile')}
+                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'profile'
+                    ? 'border-gray-1000 text-gray-1000 font-semibold'
+                    : 'border-transparent text-gray-700 hover:text-gray-1000'
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <span>Profile</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setActiveTab('coding')}
                 className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   activeTab === 'coding'
@@ -868,6 +880,11 @@ export default function StudentDashboard() {
           </section>
 
           {/* ===================================================================
+              PROFILE: IDENTITY, PORTFOLIO, CREDENTIALS & VERIFICATION
+              =================================================================== */}
+          {activeTab === 'profile' && <ProfileWorkspace />}
+
+          {/* ===================================================================
               TAB 1: OVERVIEW (CLEAN & SPACIOUS)
               =================================================================== */}
           {activeTab === 'overview' && (
@@ -921,7 +938,7 @@ export default function StudentDashboard() {
                     <AlertTriangle className="w-4 h-4 shrink-0" strokeWidth={1.5} />
                     <span>Your portfolio is missing {missingSections.join(', ')}. Complete them to increase visibility.</span>
                   </div>
-                  <button onClick={() => setActiveTab('identities')} className="text-amber-500 font-semibold hover:underline shrink-0 flex items-center gap-1 cursor-pointer">
+                  <button onClick={() => setActiveTab('profile')} className="text-amber-500 font-semibold hover:underline shrink-0 flex items-center gap-1 cursor-pointer">
                     Update Profile &rarr;
                   </button>
                 </div>
@@ -974,7 +991,7 @@ export default function StudentDashboard() {
                           <FaGithub className="w-6 h-6 text-gray-500" />
                           <span className="font-semibold text-gray-900">GitHub Profile Not Linked</span>
                           <p className="text-[11px] text-gray-600 max-w-sm">Connect your GitHub handle in your student profile to display commit activity.</p>
-                          <button onClick={() => setActiveTab('identities')} className="mt-1 text-xs font-sans text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                          <button onClick={() => setActiveTab('profile')} className="mt-1 text-xs font-sans text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
                             Link GitHub in Profile &rarr;
                           </button>
                         </div>
@@ -993,7 +1010,7 @@ export default function StudentDashboard() {
                             </p>
                           </div>
                           <Link 
-                            onClick={() => setActiveTab('identities')}
+                            onClick={() => setActiveTab('profile')}
                             className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity shadow-2xs cursor-pointer"
                           >
                             <ShieldCheck className="w-3.5 h-3.5" />
@@ -1026,7 +1043,7 @@ export default function StudentDashboard() {
                           <SiLeetcode className="w-6 h-6 text-[#ffa116]" />
                           <span className="font-semibold text-gray-900">LeetCode Account Not Linked</span>
                           <p className="text-[11px] text-gray-600 max-w-sm">Connect your LeetCode handle in your student profile to display submission activity.</p>
-                          <button onClick={() => setActiveTab('identities')} className="mt-1 text-xs font-sans text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                          <button onClick={() => setActiveTab('profile')} className="mt-1 text-xs font-sans text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
                             Link LeetCode in Profile &rarr;
                           </button>
                         </div>
@@ -1045,7 +1062,7 @@ export default function StudentDashboard() {
                             </p>
                           </div>
                           <Link 
-                            onClick={() => setActiveTab('identities')}
+                            onClick={() => setActiveTab('profile')}
                             className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-1000 text-background-100 text-xs font-medium hover:opacity-90 transition-opacity shadow-2xs cursor-pointer"
                           >
                             <ShieldCheck className="w-3.5 h-3.5" />
@@ -1705,7 +1722,7 @@ export default function StudentDashboard() {
               <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-mono uppercase tracking-wider text-gray-600">Verified Technical Skills</h3>
-                  <button onClick={() => setActiveTab('portfolio')} className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer">
+                  <button onClick={() => setActiveTab('profile')} className="text-xs text-gray-700 hover:text-gray-1000 font-mono hover:underline cursor-pointer">
                     Edit Skills &rarr;
                   </button>
                 </div>

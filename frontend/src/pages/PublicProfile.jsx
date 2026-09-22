@@ -36,11 +36,9 @@ import {
   Lock,
   Layers,
   Star,
-  Download,
   AlertTriangle,
   FileText,
   Trophy,
-  FileSpreadsheet,
   CheckCheck
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
@@ -280,9 +278,9 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
 
   return (
     <ProfileThemeProvider customization={activeCustomization}>
-      <div className={`flex min-h-screen bg-[var(--profile-bg)] text-[var(--profile-text)] selection:bg-[var(--profile-accent)] selection:text-[var(--profile-bg)] ${isAuthenticated && !previewUid ? 'flex-col md:flex-row' : ''}`}>
+      <div className={`flex min-h-screen bg-[var(--profile-bg)] text-[var(--profile-text)] selection:bg-[var(--profile-accent)] selection:text-[var(--profile-bg)] ${isAuthenticated && !previewUid ? 'flex-col md:flex-row md:h-screen md:overflow-hidden' : ''}`}>
         {isAuthenticated && !previewUid && <Sidebar />}
-        <main className="flex-1 min-w-0 bg-transparent relative isolate">
+        <main className={`flex-1 min-w-0 bg-transparent relative isolate ${isAuthenticated && !previewUid ? 'md:overflow-y-auto' : ''}`}>
           <div className="profile-pattern-overlay" />
           <div className="relative z-10">
             {!previewUid && (
@@ -936,31 +934,6 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                     </div>
                   )}
                 </div>
-              )}
-
-              {/* Placement Assessments */}
-              {profile.assessments && profile.assessments.length > 0 && (
-                <section className="profile-card p-6">
-                  <div className="flex items-center gap-2 mb-5">
-                    <FileSpreadsheet className="w-4 h-4 text-[var(--profile-muted-text)]" />
-                    <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Placement Assessments</h2>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {profile.assessments.map((assessment, i) => (
-                      <div key={`assessment-${i}`} className="flex gap-3.5 p-4 rounded-xl border border-[var(--profile-card-border)] bg-[var(--profile-bg)] shadow-sm transition-all hover:border-[var(--profile-text)] items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] flex items-center justify-center shrink-0">
-                            <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
-                          </div>
-                          <h3 className="text-sm font-medium text-[var(--profile-text)] truncate max-w-[200px]" title={assessment.title}>{assessment.title}</h3>
-                        </div>
-                        <a href={assessment.fileUrl} target="_blank" rel="noreferrer" className="text-xs font-mono text-emerald-600 hover:bg-emerald-500/10 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 border border-emerald-500/20 whitespace-nowrap">
-                          Download <Download className="w-3 h-3" />
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </section>
               )}
 
               {/* Achievements & Certifications */}

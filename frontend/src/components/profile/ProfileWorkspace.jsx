@@ -2007,7 +2007,7 @@ export default function StudentProfile() {
           {/* ===================================================================
               TAB 1: PORTFOLIO & CAREER (CLEAN, NO CLUTTER)
               =================================================================== */}
-          {activeDashboardTab === 'portfolio' && (
+          {activeTab === 'portfolio' && (
             <div className="space-y-8 animate-in fade-in duration-150">
 
               {/* 4-Column Quick Metric Strip */}
@@ -2051,7 +2051,7 @@ export default function StudentProfile() {
           {/* ===================================================================
               TAB 2: HONORS & CREDENTIALS
               =================================================================== */}
-          {activeDashboardTab === 'honors' && (
+          {activeTab === 'honors' && (
             <AchievementsSection 
               achievements={achievements} 
               profile={profile} 
@@ -2063,14 +2063,14 @@ export default function StudentProfile() {
           {/* ===================================================================
               TAB 3: PLACEMENT STORIES
               =================================================================== */}
-          {activeDashboardTab === 'placements' && (
+          {activeTab === 'placements' && (
             <PlacementsSection profile={profile} userPlacementPosts={userPlacementPosts} />
           )}
 
           {/* ===================================================================
               TAB 4: CONNECTED IDENTITIES & VERIFICATION
               =================================================================== */}
-          {activeDashboardTab === 'identities' && (
+          {activeTab === 'identities' && (
             <VerificationSection 
               profile={profile} 
               setLinkingAccount={setLinkingAccount} 

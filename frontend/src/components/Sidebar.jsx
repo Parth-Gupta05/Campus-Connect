@@ -130,7 +130,7 @@ export default function Sidebar() {
 
   const studentLinks = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { name: 'Appearance', icon: Palette, path: '/appearance' },
+    { name: 'Profile', icon: Palette, path: '/profile' },
     { name: 'Placements', icon: Award, path: '/placements' },
     { name: 'Clubs', icon: Users, path: '/clubs' },
     { name: 'Opportunities', icon: Compass, path: '/opportunities' },
@@ -201,7 +201,7 @@ export default function Sidebar() {
               key={link.name}
               to={link.path} 
               title={!isSidebarOpen ? link.name : undefined}
-              className={`relative flex items-center h-10 rounded-lg text-sm transition-all duration-200 group ${
+              className={`relative flex items-center h-10 rounded-lg text-sm transition-[background-color,color,border-color] duration-150 group ${
                 isSidebarOpen ? 'px-3' : 'px-0 justify-center'
               } ${
                 isActive 
