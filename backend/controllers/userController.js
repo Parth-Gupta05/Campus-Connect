@@ -145,12 +145,14 @@ const updateProfileCustomization = async (req, res) => {
     
     // Visibility
     if (visibility) {
+      if (visibility.showAbout !== undefined) updatePayload.$set['profileCustomization.visibility.showAbout'] = visibility.showAbout;
       if (visibility.showGithub !== undefined) updatePayload.$set['profileCustomization.visibility.showGithub'] = visibility.showGithub;
       if (visibility.showLeetcode !== undefined) updatePayload.$set['profileCustomization.visibility.showLeetcode'] = visibility.showLeetcode;
       if (visibility.showExperience !== undefined) updatePayload.$set['profileCustomization.visibility.showExperience'] = visibility.showExperience;
       if (visibility.showEducation !== undefined) updatePayload.$set['profileCustomization.visibility.showEducation'] = visibility.showEducation;
       if (visibility.showProjects !== undefined) updatePayload.$set['profileCustomization.visibility.showProjects'] = visibility.showProjects;
       if (visibility.showCertificates !== undefined) updatePayload.$set['profileCustomization.visibility.showCertificates'] = visibility.showCertificates;
+      if (visibility.showAcademicProgression !== undefined) updatePayload.$set['profileCustomization.visibility.showAcademicProgression'] = visibility.showAcademicProgression;
     }
     
     // Metrics Privacy

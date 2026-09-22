@@ -325,24 +325,51 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-/* === Custom Thin Scrollbar === */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--ds-gray-400);
-  border-radius: 9999px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--ds-gray-600);
-}
-.custom-scrollbar {
+/* === Geist Scrollbars ===
+   Use the design-system tokens so native scrollbars match light and dark mode
+   in every scrolling surface, including the document and nested panels. */
+html,
+* {
   scrollbar-width: thin;
-  scrollbar-color: var(--ds-gray-400) transparent;
+  scrollbar-color: var(--ds-gray-500) var(--ds-background-100);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--ds-background-100);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--ds-gray-500);
+  border: 3px solid var(--ds-background-100);
+  border-radius: 9999px;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ds-gray-700);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: var(--ds-gray-800);
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--ds-background-100);
+}
+
+/* Compact scroll areas retain the same Geist treatment with a slimmer rail. */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  border-width: 2px;
 }
 
 .no-scrollbar,

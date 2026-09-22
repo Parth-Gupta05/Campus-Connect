@@ -552,11 +552,10 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
     if (!host) return;
 
     const updateScale = () => {
-      const pad = 16;
-      const w = host.clientWidth - pad;
-      const h = host.clientHeight - pad;
-      if (w <= 0 || h <= 0) return;
-      const next = Math.min(w / AICTE_SHEET_WIDTH_PX, h / AICTE_SHEET_HEIGHT_PX);
+      const horizontalPadding = host.clientWidth >= 640 ? 32 : 16;
+      const availableWidth = host.clientWidth - horizontalPadding;
+      if (availableWidth <= 0) return;
+      const next = availableWidth / AICTE_SHEET_WIDTH_PX;
       setPreviewScale(Math.max(0.08, next));
     };
 
@@ -642,7 +641,7 @@ function PrintAicteSheetModal({ student, selectedEvents, semesterLabel, onClose 
         {/* Scaled preview — entire fixed canvas fits in viewport (no scrollbars) */}
         <div
           ref={previewHostRef}
-          className="aicte-sheet-preview-host flex-1 min-h-0 overflow-hidden bg-gray-200 flex items-center justify-center p-2 sm:p-4 print:overflow-visible print:p-0 print:bg-white"
+          className="aicte-sheet-preview-host flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-gray-200 flex items-start justify-center p-2 sm:p-4 custom-scrollbar print:overflow-visible print:p-0 print:bg-white"
         >
           <div
             className="aicte-sheet-scale-box relative shrink-0 print:w-auto print:h-auto"
