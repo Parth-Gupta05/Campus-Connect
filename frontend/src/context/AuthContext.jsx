@@ -6,6 +6,31 @@ const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 axios.defaults.baseURL = `${apiUrl}/api`;
 axios.defaults.withCredentials = true; // Send cookies
 
+const STORAGE_KEY = 'accessToken';
+
+const getActiveStorage = () => {
+  if (localStorage.getItem(STORAGE_KEY)) return localStorage;
+  if (sessionStorage.getItem(STORAGE_KEY)) return sessionStorage;
+  return localStorage;
+};
+
+const readAccessToken = () => {
+  const token = localStorage.getItem(STORAGE_KEY);
+  if (token) return token;
+  return sessionStorage.getItem(STORAGE_KEY);
+};
+
+const writeAccessToken = (token, storage) => {
+  localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_KEY);
+  storage.setItem(STORAGE_KEY, token);
+};
+
+const clearAccessToken = () => {
+  localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_KEY);
+};
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -28,7 +53,7 @@ export const AuthProvider = ({ children }) => {
 
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('accessToken');
+        const token = readAccessToken();
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -57,7 +82,7 @@ export const AuthProvider = ({ children }) => {
             try {
               const res = await axios.post('/auth/refresh');
               const newToken = res.data.accessToken;
-              localStorage.setItem('accessToken', newToken);
+              writeAccessToken(newToken, getActiveStorage());
               
               const payload = JSON.parse(atob(newToken.split('.')[1]));
               setUser({ id: payload.id, role: payload.role });
@@ -69,7 +94,7 @@ export const AuthProvider = ({ children }) => {
               return axios(originalRequest);
             } catch (refreshError) {
               isRefreshing = false;
-              localStorage.removeItem('accessToken');
+              clearAccessToken();
               setUser(null);
               return Promise.reject(refreshError);
             }
@@ -86,7 +111,7 @@ export const AuthProvider = ({ children }) => {
         
         // If it's a 401 from the refresh endpoint itself
         if (error.response && error.response.status === 401 && originalRequest && originalRequest.url.includes('/auth/refresh')) {
-           localStorage.removeItem('accessToken');
+           clearAccessToken();
            setUser(null);
         }
 
@@ -105,10 +130,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       try {
         const res = await axios.post('/auth/refresh');
-        localStorage.setItem('accessToken', res.data.accessToken);
-        // We need to decode JWT to get user info, but for simplicity we'll just set a basic user object
-        // Real app would fetch /api/auth/me using the new token
-        // For now, decode the token payload manually
+        writeAccessToken(res.data.accessToken, getActiveStorage());
         const payload = JSON.parse(atob(res.data.accessToken.split('.')[1]));
         setUser({ id: payload.id, role: payload.role });
       } catch (err) {
@@ -123,7 +145,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (identifier, password, remember = false) => {
     const res = await axios.post('/auth/login', { identifier, password, remember });
-    localStorage.setItem('accessToken', res.data.accessToken);
+    writeAccessToken(res.data.accessToken, remember ? localStorage : sessionStorage);
     setUser(res.data.user);
     return res.data.user;
   };
@@ -134,7 +156,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error(err);
     }
-    localStorage.removeItem('accessToken');
+    clearAccessToken();
     setUser(null);
   };
 
