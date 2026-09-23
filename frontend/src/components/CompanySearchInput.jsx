@@ -235,19 +235,19 @@ export default function CompanySearchInput({ value, onChange, disabled }) {
               </div>
 
               {/* Upload/replace logo overlay on hover */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingLogo || disabled}
-                title={value.logoUrl ? 'Replace custom logo' : 'Upload custom logo'}
-                className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
-              >
-                {uploadingLogo ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-                ) : (
-                  <Camera className="w-3.5 h-3.5 text-white" />
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingLogo || disabled}
+                  title={value.logoUrl ? 'Replace custom logo' : 'Upload custom logo'}
+                  className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
+                >
+                  {uploadingLogo ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                  ) : (
+                    <Camera className="w-3.5 h-3.5 text-white" />
+                  )}
+                </button>
             </div>
 
             {/* Info details */}
@@ -275,24 +275,24 @@ export default function CompanySearchInput({ value, onChange, disabled }) {
                 ) : null}
 
                 {/* Upload or Change custom logo button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingLogo || disabled}
-                  className="text-[10px] font-sans font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 shrink-0 cursor-pointer"
-                >
-                  {uploadingLogo ? (
-                    <>
-                      <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                      <span>Uploading...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-2.5 h-2.5" />
-                      <span>{value.logoUrl ? 'Change logo' : 'Upload logo'}</span>
-                    </>
-                  )}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingLogo || disabled}
+                    className="text-[10px] font-sans font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 shrink-0 cursor-pointer"
+                  >
+                    {uploadingLogo ? (
+                      <>
+                        <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                        <span>Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-2.5 h-2.5" />
+                        <span>{value.logoUrl ? 'Change logo' : 'Upload logo'}</span>
+                      </>
+                    )}
+                  </button>
               </div>
             </div>
           </div>

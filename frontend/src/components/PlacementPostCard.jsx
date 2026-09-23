@@ -143,7 +143,7 @@ export default function PlacementPostCard({ post }) {
 
       <div className="relative z-10 flex flex-col flex-1">
         {/* Header: Company Info + Outcome/Difficulty */}
-        <div className="flex items-start justify-between gap-4 mb-3">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4 mb-3">
         <div className="flex items-center gap-3 min-w-0">
           {/* Company Logo */}
           <div className="w-10 h-10 rounded-lg bg-background-200 border border-gray-400 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">

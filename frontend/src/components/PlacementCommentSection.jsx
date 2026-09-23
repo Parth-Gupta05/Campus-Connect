@@ -58,41 +58,43 @@ export default function PlacementCommentSection({ postId, postAuthorId, commentC
   return (
     <div className="mt-8 pt-8 border-t border-gray-400">
       <div className="flex items-center gap-2 mb-6">
-        <MessageSquare className="w-5 h-5 text-gray-1000" />
-        <h3 className="text-base font-semibold text-gray-1000 tracking-tight">
-          Discussion &amp; Queries <span className="text-xs font-mono text-gray-600">({count})</span>
+        <h3 className="text-sm font-semibold text-gray-1000 tracking-tight flex items-center gap-2">
+          Discussion &amp; Queries 
+          <span className="px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-700 text-[10px] font-mono leading-none">
+            {count}
+          </span>
         </h3>
       </div>
 
       {/* Main Comment Input Form */}
       {user ? (
-        <form onSubmit={handleAddComment} className="flex items-start gap-3 mb-8">
-          <div className="w-9 h-9 rounded-full bg-background-200 border border-gray-400 text-gray-1000 flex items-center justify-center font-semibold text-xs shrink-0 shadow-2xs overflow-hidden">
+        <form onSubmit={handleAddComment} className="flex items-start gap-3 mb-10">
+          <div className="w-8 h-8 rounded-full bg-background-200 border border-gray-400 text-gray-1000 flex items-center justify-center font-semibold text-xs shrink-0 overflow-hidden">
             {user.avatarUrl ? (
               <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
             ) : (
               (user.name || 'U').charAt(0).toUpperCase()
             )}
           </div>
-          <div className="flex-1 min-w-0 flex flex-col gap-2">
+          <div className="flex-1 min-w-0 flex flex-col relative rounded-lg border border-gray-400 bg-background-100 focus-within:border-gray-600 focus-within:ring-1 focus-within:ring-gray-600 transition-all shadow-2xs group">
             <textarea
               rows={2}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Ask a question about the rounds, difficulty, or congratulate the student..."
-              className="w-full p-3 text-xs sm:text-sm rounded-lg border border-gray-400 bg-background-100 text-gray-1000 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-1000 focus:border-gray-1000 transition-all shadow-2xs resize-none"
+              placeholder="Ask a question or share your thoughts..."
+              className="w-full p-3 pb-10 text-xs sm:text-sm bg-transparent text-gray-1000 placeholder:text-gray-500 focus:outline-none resize-none"
             />
-            <div className="flex justify-end">
+            <div className="absolute bottom-2 right-2 flex justify-end">
               <button
                 type="submit"
                 disabled={submitting || !content.trim()}
-                className="px-4 py-2 bg-gray-1000 text-background-100 rounded-lg text-xs font-medium hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="h-7 px-3 bg-gray-1000 text-background-100 rounded-md text-xs font-medium hover:opacity-90 transition-all disabled:opacity-40 disabled:bg-gray-400 disabled:text-gray-700 flex items-center gap-1.5 cursor-pointer"
               >
                 {submitting ? (
-                  <div className="w-3.5 h-3.5 border-2 border-background-100 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-3 h-3 border-2 border-background-100 border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <Send className="w-3.5 h-3.5" /> Post Comment
+                    <Send className="w-3 h-3" /> Post
                   </>
                 )}
               </button>
@@ -100,27 +102,25 @@ export default function PlacementCommentSection({ postId, postAuthorId, commentC
           </div>
         </form>
       ) : (
-        <div className="p-4 rounded-lg bg-background-200 border border-gray-400 text-center text-xs text-gray-700 mb-6">
-          Please sign in to join the discussion and ask questions.
+        <div className="py-4 text-center text-xs text-gray-600 mb-6 font-medium">
+          Please sign in to join the discussion.
         </div>
       )}
 
       {/* Comments List */}
       {loading ? (
-        <div className="py-8 text-center text-xs text-gray-700 flex items-center justify-center gap-2 font-mono">
-          <div className="w-4 h-4 border-2 border-gray-1000 border-t-transparent rounded-full animate-spin"></div>
-          Loading discussion...
+        <div className="py-8 text-center text-xs text-gray-600 flex items-center justify-center gap-2 font-mono">
+          <div className="w-3.5 h-3.5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+          Loading...
         </div>
       ) : comments.length === 0 ? (
-        <div className="py-10 text-center text-gray-600 border border-dashed border-gray-400 rounded-xl bg-background-100/40">
-          <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40 text-gray-600" />
-          <p className="text-xs sm:text-sm font-semibold text-gray-1000">No queries or comments yet</p>
-          <p className="text-xs text-gray-600 mt-0.5">
-            Be the first to ask about the interview process!
-          </p>
+        <div className="py-12 text-center text-gray-500">
+          <MessageSquare className="w-6 h-6 mx-auto mb-3 opacity-30" strokeWidth={1.5} />
+          <p className="text-xs font-medium">No comments yet.</p>
+          <p className="text-[10px] text-gray-500 mt-1 font-mono">Be the first to start the discussion.</p>
         </div>
       ) : (
-        <div className="space-y-4 divide-y divide-gray-300 dark:divide-gray-800">
+        <div className="space-y-6">
           {comments.map((comment) => (
             <PlacementCommentItem
               key={comment._id}

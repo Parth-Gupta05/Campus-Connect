@@ -150,8 +150,8 @@ export default function AicteDiaryView() {
           
           {/* Left info & progress */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+              <span className="inline-flex w-fit shrink-0 whitespace-nowrap items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
                 <Award className="w-3.5 h-3.5" />
                 AICTE Activity Point Programme
               </span>
@@ -192,13 +192,13 @@ export default function AicteDiaryView() {
           </div>
 
           {/* Right Metrics Cards */}
-          <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
+          <div className="grid grid-cols-2 sm:flex sm:flex-nowrap gap-3 shrink-0 w-full lg:w-auto mt-2 lg:mt-0">
             
             {/* Category Breadth Badge */}
-            <div className="bg-background-200 border border-gray-400 p-3.5 rounded-xl min-w-[150px] flex flex-col justify-between">
+            <div className="bg-background-200 border border-gray-400 p-3.5 rounded-xl min-w-0 sm:min-w-[150px] flex flex-col justify-between">
               <div className="flex items-center justify-between text-gray-600 mb-1">
                 <span className="text-[11px] font-mono uppercase tracking-wider">Breadth</span>
-                <Layers className="w-4 h-4 text-indigo-500" />
+                <Layers className="w-4 h-4 text-indigo-500 shrink-0 ml-1" />
               </div>
               <div className="text-heading-20 font-bold text-gray-1000 font-mono">
                 {summary.distinctCategoriesCount} / 15
@@ -206,34 +206,34 @@ export default function AicteDiaryView() {
               <div className="mt-1 flex items-center gap-1 text-[11px] font-medium">
                 {summary.categoryRequirementSatisfied ? (
                   <span className="text-emerald-600 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Min 4 Satisfied
+                    <CheckCircle2 className="w-3 h-3 shrink-0" /> Min 4
                   </span>
                 ) : (
                   <span className="text-amber-600 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {4 - summary.distinctCategoriesCount} more needed
+                    <AlertCircle className="w-3 h-3 shrink-0" /> {4 - summary.distinctCategoriesCount} more
                   </span>
                 )}
               </div>
             </div>
 
             {/* Total Hours Badge */}
-            <div className="bg-background-200 border border-gray-400 p-3.5 rounded-xl min-w-[140px] flex flex-col justify-between">
+            <div className="bg-background-200 border border-gray-400 p-3.5 rounded-xl min-w-0 sm:min-w-[140px] flex flex-col justify-between">
               <div className="flex items-center justify-between text-gray-600 mb-1">
-                <span className="text-[11px] font-mono uppercase tracking-wider">Total Time</span>
-                <Clock className="w-4 h-4 text-blue-500" />
+                <span className="text-[11px] font-mono uppercase tracking-wider whitespace-nowrap">Total Time</span>
+                <Clock className="w-4 h-4 text-blue-500 shrink-0 ml-1" />
               </div>
               <div className="text-heading-20 font-bold text-gray-1000 font-mono">
                 {summary.totalHours} hrs
               </div>
               <span className="text-[11px] text-gray-600 font-mono mt-1">
-                {summary.totalEventsAttended} events attended
+                {summary.totalEventsAttended} events
               </span>
             </div>
 
             {/* Print Booklet Button */}
             <button
               onClick={() => setShowPrintModal(true)}
-              className="bg-gray-1000 text-background-100 hover:opacity-90 transition-opacity p-3.5 rounded-xl flex flex-col items-center justify-center gap-1.5 shadow-xs cursor-pointer min-w-[130px]"
+              className="col-span-2 sm:col-auto bg-gray-1000 text-background-100 hover:opacity-90 transition-opacity p-3.5 rounded-xl flex flex-col items-center justify-center gap-1.5 shadow-xs cursor-pointer min-w-0 sm:min-w-[130px]"
             >
               <Printer className="w-5 h-5 text-teal-400" />
               <span className="text-xs font-semibold">Print Diary Sheet</span>
@@ -380,132 +380,134 @@ export default function AicteDiaryView() {
           3. INTERACTIVE LEDGER TABLE WITH DIARY SELECTION
           =================================================================== */}
       <div className="rounded-xl border border-gray-400 bg-background-100 overflow-hidden shadow-xs">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-background-200 border-b border-gray-400 text-xs font-mono uppercase text-gray-700">
-            <tr>
-              <th className="p-3.5 w-10 text-center">Sheet</th>
-              <th className="p-3.5">Activity & Event</th>
-              <th className="p-3.5">Organizing Club</th>
-              <th className="p-3.5">Category</th>
-              <th className="p-3.5">Designation & Multiplier</th>
-              <th className="p-3.5 text-right">Hours</th>
-              <th className="p-3.5 text-right">Points</th>
-              <th className="p-3.5 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-300 dark:divide-gray-800 text-xs">
-            {filteredEvents.map((item, idx) => {
-              const isSelectedForDiary = selectedEventsForDiary.has(item.eventId);
-              const eventDateStr = item.date ? new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-
-              return (
-                <tr 
-                  key={item.eventId || idx}
-                  className={`transition-colors ${
-                    isSelectedForDiary 
-                      ? 'bg-blue-500/5 hover:bg-blue-500/10' 
-                      : 'hover:bg-background-200/50'
-                  }`}
-                >
-                  {/* Select Checkbox for Physical Diary */}
-                  <td className="p-3.5 text-center">
-                    <button
-                      onClick={() => toggleEventSelection(item.eventId)}
-                      className="cursor-pointer text-gray-600 hover:text-gray-1000 p-1"
-                      aria-label="Toggle inclusion in official printed diary sheet"
-                    >
-                      {isSelectedForDiary ? (
-                        <CheckSquare className="w-4 h-4 text-blue-600" />
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead className="bg-background-200 border-b border-gray-400 text-xs font-mono uppercase text-gray-700">
+              <tr>
+                <th className="p-3.5 w-10 text-center">Sheet</th>
+                <th className="p-3.5">Activity & Event</th>
+                <th className="p-3.5">Organizing Club</th>
+                <th className="p-3.5">Category</th>
+                <th className="p-3.5">Designation & Multiplier</th>
+                <th className="p-3.5 text-right">Hours</th>
+                <th className="p-3.5 text-right">Points</th>
+                <th className="p-3.5 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-300 dark:divide-gray-800 text-xs">
+              {filteredEvents.map((item, idx) => {
+                const isSelectedForDiary = selectedEventsForDiary.has(item.eventId);
+                const eventDateStr = item.date ? new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+  
+                return (
+                  <tr 
+                    key={item.eventId || idx}
+                    className={`transition-colors ${
+                      isSelectedForDiary 
+                        ? 'bg-blue-500/5 hover:bg-blue-500/10' 
+                        : 'hover:bg-background-200/50'
+                    }`}
+                  >
+                    {/* Select Checkbox for Physical Diary */}
+                    <td className="p-3.5 text-center">
+                      <button
+                        onClick={() => toggleEventSelection(item.eventId)}
+                        className="cursor-pointer text-gray-600 hover:text-gray-1000 p-1"
+                        aria-label="Toggle inclusion in official printed diary sheet"
+                      >
+                        {isSelectedForDiary ? (
+                          <CheckSquare className="w-4 h-4 text-blue-600" />
+                        ) : (
+                          <Square className="w-4 h-4 text-gray-400" />
+                        )}
+                      </button>
+                    </td>
+  
+                    {/* Activity Name & Date */}
+                    <td className="p-3.5">
+                      <div className="font-semibold text-gray-1000 text-sm">{item.title}</div>
+                      <div className="text-[11px] font-mono text-gray-600 mt-0.5 flex flex-wrap items-center gap-2">
+                        <span className="whitespace-nowrap">{eventDateStr}</span>
+                        <span className="hidden sm:inline">&bull;</span>
+                        <span className="px-1.5 py-0.5 rounded bg-background-200 text-gray-1000 border border-gray-400 whitespace-nowrap">
+                          {item.semesterLabel}
+                        </span>
+                      </div>
+                    </td>
+  
+                    {/* Conducting Club */}
+                    <td className="p-3.5">
+                      <div className="font-medium text-gray-900 flex items-center gap-1.5 whitespace-nowrap">
+                        <Building2 className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+                        <span>{item.clubName}</span>
+                      </div>
+                    </td>
+  
+                    {/* Nature of Activity (1-15) */}
+                    <td className="p-3.5">
+                      <span 
+                        title={item.categoryTitle}
+                        className="inline-block px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-gray-200 border border-gray-400 text-gray-900 max-w-[200px] truncate align-middle"
+                      >
+                        #{item.aicteCategory} {item.categoryShortTitle}
+                      </span>
+                    </td>
+  
+                    {/* Designation & Multiplier */}
+                    <td className="p-3.5 font-mono">
+                      {item.tier === 'Core' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 whitespace-nowrap">
+                          <Award className="w-3 h-3 shrink-0" />
+                          <span>{item.designation} (2x Core)</span>
+                        </span>
+                      ) : item.tier === 'WC' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 whitespace-nowrap">
+                          <Sparkles className="w-3 h-3 shrink-0" />
+                          <span>{item.designation} (2x WC)</span>
+                        </span>
                       ) : (
-                        <Square className="w-4 h-4 text-gray-400" />
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] text-gray-700 bg-gray-200 border border-gray-400 whitespace-nowrap">
+                          <span>{item.designation} (1x)</span>
+                        </span>
                       )}
-                    </button>
-                  </td>
-
-                  {/* Activity Name & Date */}
-                  <td className="p-3.5">
-                    <div className="font-semibold text-gray-1000 text-sm">{item.title}</div>
-                    <div className="text-[11px] font-mono text-gray-600 mt-0.5 flex flex-wrap items-center gap-2">
-                      <span className="whitespace-nowrap">{eventDateStr}</span>
-                      <span className="hidden sm:inline">&bull;</span>
-                      <span className="px-1.5 py-0.5 rounded bg-background-200 text-gray-1000 border border-gray-400 whitespace-nowrap">
-                        {item.semesterLabel}
+                    </td>
+  
+                    {/* Hours */}
+                    <td className="p-3.5 text-right font-mono text-gray-900 whitespace-nowrap">
+                      <span className="font-medium">{item.recordedHours} hrs</span>
+                      {item.multiplier > 1 && (
+                        <div className="text-[10px] text-gray-500">({item.durationHours}h &times; {item.multiplier})</div>
+                      )}
+                    </td>
+  
+                    {/* Points Awarded */}
+                    <td className="p-3.5 text-right font-mono">
+                      <span className="inline-flex items-center justify-center whitespace-nowrap px-2 py-0.5 rounded font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                        +{item.pointsAwarded} pts
                       </span>
-                    </div>
-                  </td>
-
-                  {/* Conducting Club */}
-                  <td className="p-3.5">
-                    <div className="font-medium text-gray-900 flex items-center gap-1.5">
-                      <Building2 className="w-3.5 h-3.5 text-gray-600 shrink-0" />
-                      <span>{item.clubName}</span>
-                    </div>
-                  </td>
-
-                  {/* Nature of Activity (1-15) */}
-                  <td className="p-3.5">
-                    <span 
-                      title={item.categoryTitle}
-                      className="inline-block px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-gray-200 border border-gray-400 text-gray-900 max-w-[140px] sm:max-w-[180px] truncate align-middle"
-                    >
-                      #{item.aicteCategory} {item.categoryShortTitle}
-                    </span>
-                  </td>
-
-                  {/* Designation & Multiplier */}
-                  <td className="p-3.5 font-mono">
-                    {item.tier === 'Core' ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 whitespace-nowrap">
-                        <Award className="w-3 h-3 shrink-0" />
-                        <span>{item.designation} (2x Core)</span>
+                    </td>
+  
+                    {/* Status */}
+                    <td className="p-3.5 text-right">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 whitespace-nowrap">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                        <span>{item.isAutoCore ? 'Auto (Core)' : 'Verified'}</span>
                       </span>
-                    ) : item.tier === 'WC' ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 whitespace-nowrap">
-                        <Sparkles className="w-3 h-3 shrink-0" />
-                        <span>{item.designation} (2x WC)</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] text-gray-700 bg-gray-200 border border-gray-400 whitespace-nowrap">
-                        <span>{item.designation} (1x)</span>
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Hours */}
-                  <td className="p-3.5 text-right font-mono text-gray-900">
-                    <span className="font-medium">{item.recordedHours} hrs</span>
-                    {item.multiplier > 1 && (
-                      <div className="text-[10px] text-gray-500">({item.durationHours}h &times; {item.multiplier})</div>
-                    )}
-                  </td>
-
-                  {/* Points Awarded */}
-                  <td className="p-3.5 text-right font-mono">
-                    <span className="inline-flex items-center justify-center whitespace-nowrap px-2 py-0.5 rounded font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 text-xs">
-                      +{item.pointsAwarded} pts
-                    </span>
-                  </td>
-
-                  {/* Status */}
-                  <td className="p-3.5 text-right">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 whitespace-nowrap">
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                      <span>{item.isAutoCore ? 'Auto (Core)' : 'Verified'}</span>
-                    </span>
+                    </td>
+                  </tr>
+                );
+              })}
+  
+              {filteredEvents.length === 0 && (
+                <tr>
+                  <td colSpan="8" className="p-12 text-center text-gray-600 font-mono text-xs">
+                    No activity point records found for this semester or category filter.
                   </td>
                 </tr>
-              );
-            })}
-
-            {filteredEvents.length === 0 && (
-              <tr>
-                <td colSpan="8" className="p-12 text-center text-gray-600 font-mono text-xs">
-                  No activity point records found for this semester or category filter.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Footer info bar */}
         <div className="p-3 px-6 bg-background-200 border-t border-gray-400 flex flex-wrap items-center justify-between text-[11px] font-mono text-gray-600 gap-2">

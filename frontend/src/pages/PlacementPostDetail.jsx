@@ -182,15 +182,15 @@ export default function PlacementPostDetail() {
       <div className="flex-1 min-w-0 bg-background-100">
         <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
           {/* Top Bar: Back & Author Controls */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <Link
               to="/placements"
-              className="inline-flex items-center gap-2 text-xs font-medium text-gray-700 hover:text-gray-1000 transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-medium text-gray-700 hover:text-gray-1000 transition-colors shrink-0"
             >
               <ArrowLeft className="w-4 h-4" /> Back to Feed
             </Link>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
               <span className="flex items-center gap-1.5 text-xs text-gray-600 font-mono mr-2">
                 <Eye className="w-3.5 h-3.5" /> {post.viewCount} views
               </span>
@@ -360,7 +360,7 @@ export default function PlacementPostDetail() {
           </div>
 
           {/* Author Card */}
-          <div className="flex items-center justify-between p-4 md:p-5 rounded-xl bg-background-200 border border-gray-400 shadow-2xs">
+          <div className="flex flex-row items-center justify-between gap-4 p-4 md:p-5 rounded-xl bg-background-200 border border-gray-400 shadow-2xs">
             <Link
               to={post.author?._id ? `/profile` : '#'}
               className="flex items-center gap-3 group"

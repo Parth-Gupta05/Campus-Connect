@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import ExperienceSection from './ExperienceSection';
 import EducationSection from './EducationSection';
 import ProjectsSection from './ProjectsSection';
@@ -447,6 +448,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
   const [achievements, setAchievements] = useState(profile?.resumeDetails?.achievements || []);
   const [loading, setLoading] = useState(false);
   const [parsing, setParsing] = useState(false);
+  const [importingReadme, setImportingReadme] = useState(false);
 
   useEffect(() => {
     if (initialSectionId) {
@@ -458,6 +460,63 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
       }, 300);
     }
   }, [initialSectionId]);
+
+  const handleImportGithub = async () => {
+    const username = githubUsername?.trim() || profile?.githubUsername?.trim();
+    if (!username) {
+      showToast('Please set your GitHub username in the Connected Profiles section first.', 'error');
+      return;
+    }
+    
+    setImportingReadme(true);
+    try {
+      const fetchReadme = async (branch) => {
+        const response = await fetch(`https://raw.githubusercontent.com/${username}/${username}/${branch}/README.md`);
+        if (response.ok) {
+          return await response.text();
+        }
+        return null;
+      };
+
+      let readmeText = await fetchReadme('main');
+      if (!readmeText) {
+        readmeText = await fetchReadme('master');
+      }
+
+      if (readmeText) {
+        // Basic markdown to HTML conversion for the RichTextEditor
+        let htmlContent = readmeText
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+          .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
+          .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>')
+          .replace(/\*(.*)\*/gim, '<i>$1</i>')
+          .replace(/!\[(.*?)\]\((.*?)\)/gim, "<img alt='$1' src='$2' />")
+          .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
+          .replace(/\n$/gim, '<br />');
+        
+        setAbout(htmlContent);
+        showToast('Successfully imported GitHub README.', 'success');
+      } else {
+        showToast(`No README.md found in ${username}/${username} repository.`, 'error');
+      }
+    } catch (error) {
+      console.error("Error fetching GitHub README:", error);
+      showToast('Failed to fetch GitHub README.', 'error');
+    } finally {
+      setImportingReadme(false);
+    }
+  };
+
+  const handleImportLinkedin = () => {
+    if (profile?.scrapedData?.linkedin?.about) {
+      setAbout(profile.scrapedData.linkedin.about);
+      showToast('Successfully imported from LinkedIn.', 'success');
+    } else {
+      showToast('No LinkedIn about section found. Please ensure your LinkedIn profile was scraped.', 'error');
+    }
+  };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -679,7 +738,28 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
                   <h3 className="text-xs font-semibold text-gray-1000">About Me</h3>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-gray-900 font-medium">Short professional introduction</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-gray-900 font-medium">Short professional introduction</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleImportGithub}
+                        disabled={importingReadme}
+                        className={`text-[10px] font-sans font-medium px-2.5 py-1.5 rounded bg-[#24292e] text-white hover:bg-[#1b1f23] dark:bg-white dark:text-black dark:hover:bg-gray-200 transition-colors flex items-center gap-1.5 shadow-sm border border-transparent ${importingReadme ? 'opacity-50 pointer-events-none' : ''}`}
+                      >
+                        {importingReadme ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FaGithub className="w-3.5 h-3.5" />}
+                        Import GitHub README
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleImportLinkedin}
+                        className="text-[10px] font-sans font-medium px-2.5 py-1.5 rounded bg-[#0a66c2] text-white hover:bg-[#004182] transition-colors flex items-center gap-1.5 shadow-sm border border-transparent"
+                      >
+                        <FaLinkedin className="w-3.5 h-3.5" />
+                        Import LinkedIn
+                      </button>
+                    </div>
+                  </div>
                   <RichTextEditor
                     content={about}
                     onChange={setAbout}
@@ -1408,7 +1488,7 @@ export default function StudentProfile() {
     return (
       <div className="flex-1 relative">
         <div className="hidden md:flex bg-background-100 border-b border-gray-400 h-14 w-full" />
-        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6">
+        <div className="w-full space-y-6">
           <div className="h-8 w-48 bg-gray-200 animate-pulse rounded-md" />
           <div className="h-36 w-full bg-gray-200 animate-pulse rounded-xl" />
           <div className="h-64 w-full bg-gray-200 animate-pulse rounded-xl" />
@@ -1463,6 +1543,8 @@ export default function StudentProfile() {
 
   return (
     <>
+      {createPortal(
+        <>
 
       {/* Onboarding Overlay if profile incomplete */}
       {(!profile.isProfileComplete || !profile.email || !profile.uid) && (
@@ -1720,10 +1802,14 @@ export default function StudentProfile() {
       )}
 
 
+        </>,
+        document.body
+      )}
+
       {/* Main Container */}
       <main className="flex-1 min-w-0">
 
-        <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8">
+        <div className="w-full space-y-8">
 
           {/* ===================================================================
               PROFILE HEADER & IDENTITY OVERVIEW
@@ -1947,7 +2033,7 @@ export default function StudentProfile() {
           {/* ===================================================================
               CANONICAL VERCEL UNDERLINE TAB BAR
               =================================================================== */}
-          <div className="flex items-center gap-6 border-b border-gray-400 text-xs font-medium">
+          <div className="flex items-center gap-6 border-b border-gray-400 text-xs font-medium overflow-x-auto custom-scrollbar no-scrollbar whitespace-nowrap pb-1">
             <button
               type="button"
               onClick={() => setActiveTab('portfolio')}
