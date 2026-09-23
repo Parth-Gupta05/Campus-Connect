@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Club = require('../models/Club');
 const { getgithubdata, getleetcodedata, getLinkedInData, getLinkedInPosts, filterAchievementsWithGemini, getGithubContributions } = require('./algodimension');
 const { deleteCloudinaryAsset } = require('../utils/cloudinaryHelper');
 const cloudinary = require('cloudinary').v2;
@@ -18,7 +19,8 @@ const getProfile = async (req, res) => {
       .populate({
         path: 'assessments',
         select: 'title fileUrl'
-      });
+      })
+      .populate('resumeDetails.certificates.clubId', 'profilePhoto name');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -49,6 +51,7 @@ const getPublicProfile = async (req, res) => {
         path: 'assessments',
         select: 'title fileUrl'
       })
+      .populate('resumeDetails.certificates.clubId', 'profilePhoto name')
       .lean();
       
     if (!user) {
@@ -186,27 +189,47 @@ const searchUsers = async (req, res) => {
     
     const normalizedQ = q.replace(/_/g, '-');
     
-    const users = await User.find({
-      $and: [
-        { role: 'student' },
-        {
-          $or: [
-            { name: { $regex: q, $options: 'i' } },
-            { uid: { $regex: normalizedQ, $options: 'i' } },
-            { email: { $regex: q, $options: 'i' } },
-            { universityEmail: { $regex: q, $options: 'i' } }
-          ]
-        }
-      ]
-    })
-    .select('name uid avatarUrl branch')
-    .limit(10)
-    .lean();
+    const [users, clubs] = await Promise.all([
+      User.find({
+        $and: [
+          { role: 'student' },
+          {
+            $or: [
+              { name: { $regex: q, $options: 'i' } },
+              { uid: { $regex: normalizedQ, $options: 'i' } },
+              { email: { $regex: q, $options: 'i' } },
+              { universityEmail: { $regex: q, $options: 'i' } }
+            ]
+          }
+        ]
+      })
+      .select('name uid avatarUrl branch')
+      .limit(10)
+      .lean(),
+      
+      Club.find({
+        $or: [
+          { name: { $regex: q, $options: 'i' } },
+          { email: { $regex: q, $options: 'i' } },
+        ]
+      })
+      .select('name email profilePhoto role category')
+      .limit(5)
+      .lean()
+    ]);
     
-    res.json(users);
+    const mappedClubs = clubs.map(c => ({
+      _id: c._id,
+      name: c.name,
+      uid: c.category || 'Club',
+      avatarUrl: c.profilePhoto,
+      role: c.role || 'club'
+    }));
+
+    res.json([...users, ...mappedClubs]);
   } catch (error) {
-    console.error('Error searching users:', error);
-    res.status(500).json({ message: 'Server error searching users' });
+    console.error('Error searching users/clubs:', error);
+    res.status(500).json({ message: 'Server error searching' });
   }
 };
 
@@ -394,9 +417,11 @@ const updatePortfolio = async (req, res) => {
           _id: c._id,
           title: c.title || '',
           issuer: c.issuer || '',
+          issuerLogo: c.issuerLogo || (c.issuer ? `https://img.logo.dev/${c.issuer.toLowerCase().replace(/[^a-z0-9]/g, '')}.com?token=${process.env.LOGO_DEV_PUBLISHABLE_KEY || 'pk_XLediPc6TBWJ1C52l9jc7w'}` : ''),
           issueDate: c.issueDate || '',
           credentialUrl: c.credentialUrl || '',
           fileUrl: c.fileUrl || '',
+          category: c.category || 'Other',
           isComplete: !!(c.fileUrl && c.issueDate),
           isVerified: false,
           issuedByClub: false,

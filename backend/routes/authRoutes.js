@@ -730,7 +730,9 @@ router.post('/refresh', (req, res) => {
         { expiresIn: '15m' }
       );
 
-      res.json({ accessToken });
+      const userResponse = user.toObject();
+      delete userResponse.password;
+      res.json({ accessToken, user: userResponse });
     });
   } catch (error) {
     console.error('Refresh error:', error);

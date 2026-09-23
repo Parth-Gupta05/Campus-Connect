@@ -742,6 +742,28 @@ const getComments = async (req, res) => {
 };
 
 // ==========================================
+// 9.5 GET SINGLE COMMENT (For Deep Threading)
+// ==========================================
+const getSingleComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+
+    const comment = await PlacementComment.findById(commentId)
+      .populate('author', 'name email avatarUrl branch graduationYear rollNo uid')
+      .lean();
+
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    res.json(comment);
+  } catch (error) {
+    console.error('Error fetching single comment:', error);
+    res.status(500).json({ message: 'Failed to fetch comment' });
+  }
+};
+
+// ==========================================
 // 10. ADD COMMENT OR NESTED REPLY
 // ==========================================
 const addComment = async (req, res) => {
@@ -962,6 +984,7 @@ module.exports = {
   toggleReaction,
   toggleBookmark,
   getComments,
+  getSingleComment,
   addComment,
   deleteComment,
   getUserPosts,
