@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { Settings2, RefreshCcw, Save, Loader2, User, Eye, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Settings2, RefreshCcw, Save, Loader2, User, Eye, Lock, CheckCircle2, AlertCircle, ChevronDown, PanelLeft } from 'lucide-react';
 import { ProfileThemeProvider } from '../profile/ProfileThemeProvider';
 import PublicProfile from './PublicProfile';
 import { PROFILE_PRESETS, ACCENT_COLORS } from '../config/profilePresets';
@@ -38,7 +38,7 @@ const MOTION_STYLES = [
   { id: 'interactive', label: 'Interactive', desc: 'Playful hover effects' }
 ];
 
-export default function Appearance() {
+export default function Profile() {
   const { user } = useContext(AuthContext);
   
   // Entire customisation state
@@ -72,7 +72,38 @@ export default function Appearance() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isCertificateListOpen, setIsCertificateListOpen] = useState(false);
+  const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(true);
+  const [mobileView, setMobileView] = useState('settings'); // 'settings' | 'preview'
+  const [settingsWidth, setSettingsWidth] = useState(400);
+  const [isDragging, setIsDragging] = useState(false);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+      setSettingsWidth(prev => {
+        const next = prev + e.movementX;
+        return Math.max(250, Math.min(next, 800));
+      });
+    };
+    
+    const handleMouseUp = () => setIsDragging(false);
+    
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    }
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -142,7 +173,7 @@ export default function Appearance() {
         await axios.put('/user/portfolio', profileData.resumeDetails);
       }
       
-      showToast('Profile appearance saved successfully!', 'success');
+      showToast('Profile settings saved successfully!', 'success');
     } catch (err) {
       console.error('Failed to save settings', err);
       showToast('Failed to save settings. Please try again.', 'error');
@@ -178,25 +209,37 @@ export default function Appearance() {
   // ProfileThemeProvider will wrap the preview container and inject the CSS variables directly.
   
   return (
-    <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden md:h-[calc(100vh-56px)]">
-      {/* Settings Panel (Left) */}
-          <div className="w-full md:w-[min(400px,100%)] max-h-[45vh] sm:max-h-[52vh] md:max-h-none border-b md:border-b-0 md:border-r border-gray-300 bg-background-100 overflow-y-auto shrink-0 flex flex-col">
-            <div className="p-6 border-b border-gray-300 flex items-center justify-between sticky top-0 bg-background-100/90 backdrop-blur-md z-10">
-              <div>
-                <h1 className="text-xl font-bold tracking-tight">Appearance</h1>
+    <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-[calc(100vh-56px)] pb-14 md:pb-0 relative">
+      {/* Profile settings panel (Left) */}
+          <div 
+            style={{ '--settings-width': `${settingsWidth}px` }}
+            className={`w-full ${mobileView === 'settings' ? 'flex-1 md:flex-none' : 'hidden md:flex md:flex-none'} md:max-h-none border-b md:border-b-0 md:border-r border-gray-300 bg-background-100 overflow-y-auto shrink-0 flex flex-col relative ${isSettingsPanelOpen ? 'md:w-[var(--settings-width)]' : 'md:w-14'} ${!isDragging ? 'md:transition-[width] md:duration-300 md:ease-geist' : ''}`}
+          >
+            <div className={`border-b border-gray-300 flex items-center sticky top-0 bg-background-100/90 backdrop-blur-md z-10 ${isSettingsPanelOpen ? 'p-6 justify-between' : 'p-6 justify-between md:p-2 md:justify-center'}`}>
+              <div className={isSettingsPanelOpen ? '' : 'md:hidden'}>
+                <h1 className="text-xl font-bold tracking-tight">Profile</h1>
                 <p className="text-xs text-gray-500 mt-1">Customize your public profile</p>
               </div>
-              <button 
+              <button
                 onClick={handleSave} 
                 disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-1000 text-background-100 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                className={`flex items-center gap-1.5 px-3 py-1.5 bg-gray-1000 text-background-100 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors ${isSettingsPanelOpen ? '' : 'md:hidden'}`}
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 {saving ? 'Saving...' : 'Save'}
               </button>
+              <button
+                type="button"
+                onClick={() => setIsSettingsPanelOpen(open => !open)}
+                className="hidden md:flex w-9 h-9 items-center justify-center rounded-md text-gray-700 hover:bg-background-200 hover:text-gray-1000 transition-colors"
+                aria-label={isSettingsPanelOpen ? 'Collapse profile settings' : 'Expand profile settings'}
+                title={isSettingsPanelOpen ? 'Collapse settings panel' : 'Expand settings panel'}
+              >
+                <PanelLeft className={`w-4 h-4 transition-transform duration-300 ease-geist ${isSettingsPanelOpen ? '' : 'rotate-180'}`} />
+              </button>
             </div>
             
-            <div className="p-6 space-y-8 pb-20">
+            <div className={`p-6 space-y-8 pb-20 ${isSettingsPanelOpen ? '' : 'md:hidden'}`}>
               
               {/* Presets */}
               <section className="space-y-3">
@@ -329,36 +372,57 @@ export default function Appearance() {
                     { key: 'showCertificates', label: 'Certifications' },
                     { key: 'showAcademicProgression', label: 'Academic Progression Graph' },
                   ].map(item => (
-                    <label key={item.key} className="flex items-center justify-between text-sm p-2 hover:bg-background-200 rounded-md cursor-pointer">
-                      <span>{item.label}</span>
-                      <input 
-                        type="checkbox" 
-                        className="rounded text-gray-900 border-gray-300 focus:ring-gray-900" 
-                        checked={customization.visibility[item.key]} 
-                        onChange={() => handleVisibilityChange(item.key)} 
-                      />
-                    </label>
+                    <React.Fragment key={item.key}>
+                      <label className="flex items-center justify-between text-sm p-2 hover:bg-background-200 rounded-md cursor-pointer">
+                        <span>{item.label}</span>
+                        <input
+                          type="checkbox"
+                          className="rounded text-gray-900 border-gray-300 focus:ring-gray-900"
+                          checked={customization.visibility[item.key]}
+                          onChange={() => handleVisibilityChange(item.key)}
+                        />
+                      </label>
+
+                      {item.key === 'showCertificates' && customization.visibility.showCertificates && profileData?.resumeDetails?.certificates?.length > 0 && (
+                        <div className="px-2 pb-1">
+                          <button
+                            type="button"
+                            onClick={() => setIsCertificateListOpen(open => !open)}
+                            aria-expanded={isCertificateListOpen}
+                            aria-controls="individual-certifications"
+                            className="w-full flex items-center justify-between gap-3 rounded-lg border border-gray-400 bg-background-100 px-3 py-2 text-left text-xs font-medium text-gray-1000 transition-colors hover:border-gray-600 hover:bg-background-200"
+                          >
+                            <span className="flex items-center gap-2 min-w-0">
+                              <span className="truncate">Individual certifications</span>
+                              <span className="shrink-0 rounded-full bg-background-200 px-1.5 py-0.5 font-mono text-[10px] text-gray-700 border border-gray-400">
+                                {profileData.resumeDetails.certificates.length}
+                              </span>
+                            </span>
+                            <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isCertificateListOpen ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          <div className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${isCertificateListOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                            <div className="min-h-0 overflow-hidden">
+                              <div id="individual-certifications" className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-gray-400 bg-background-100 p-1.5 custom-scrollbar">
+                                {profileData.resumeDetails.certificates.map((cert, index) => (
+                                  <label key={cert._id || index} className="flex items-center justify-between gap-3 rounded-md px-2.5 py-2 text-[13px] hover:bg-background-200 cursor-pointer transition-colors">
+                                    <span className="min-w-0 truncate text-gray-1000" title={cert.title || 'Untitled Certificate'}>{cert.title || 'Untitled Certificate'}</span>
+                                    <input
+                                      type="checkbox"
+                                      className="rounded text-gray-900 border-gray-300 focus:ring-gray-900 w-3.5 h-3.5 shrink-0"
+                                      checked={!cert.isHidden}
+                                      onChange={() => handleCertVisibilityChange(index)}
+                                    />
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </React.Fragment>
                   ))}
                 </div>
-
-                {customization.visibility.showCertificates && profileData?.resumeDetails?.certificates?.length > 0 && (
-                  <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-800">
-                    <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Individual Certifications</h3>
-                    <div className="space-y-1 pl-2 border-l-2 border-gray-200 dark:border-gray-800">
-                      {profileData.resumeDetails.certificates.map((cert, index) => (
-                        <label key={cert._id || index} className="flex items-center justify-between text-[13px] p-1.5 hover:bg-background-200 rounded cursor-pointer">
-                          <span className="truncate pr-4 text-gray-700">{cert.title || 'Untitled Certificate'}</span>
-                          <input 
-                            type="checkbox" 
-                            className="rounded text-gray-900 border-gray-300 focus:ring-gray-900 w-3.5 h-3.5 shrink-0" 
-                            checked={!cert.isHidden} 
-                            onChange={() => handleCertVisibilityChange(index)} 
-                          />
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </section>
               
               <section className="space-y-3 pt-4 border-t border-gray-300">
@@ -389,8 +453,19 @@ export default function Appearance() {
             </div>
           </div>
 
+          {/* Drag Resizer Handle */}
+          {isSettingsPanelOpen && (
+            <div 
+              onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }}
+              className="hidden md:flex w-2 cursor-col-resize shrink-0 items-center justify-center group z-30 transition-colors bg-gray-200/50 dark:bg-gray-900/50 hover:bg-gray-300/50 dark:hover:bg-gray-800/50"
+              title="Drag to resize"
+            >
+              <div className={`w-[2px] h-full transition-colors ${isDragging ? 'bg-blue-500' : 'bg-gray-400 group-hover:bg-blue-500'}`} />
+            </div>
+          )}
+
           {/* Live Preview (Right) */}
-          <div className="flex-1 min-w-0 min-h-[70vh] bg-gray-200/50 dark:bg-gray-950 overflow-y-auto relative isolate">
+          <div className={`${mobileView === 'preview' ? 'flex-1' : 'hidden md:block'} min-w-0 md:flex-1 bg-gray-200/50 dark:bg-gray-950 overflow-y-auto relative isolate`}>
             <div className="sticky top-0 p-3 bg-gray-100/80 backdrop-blur-sm border-b border-gray-300 text-xs font-mono text-gray-500 flex items-center justify-center z-50">
               Live Preview (Read Only)
             </div>
@@ -418,6 +493,23 @@ export default function Appearance() {
                 </div>
               </div>
             </div>
+          </div>
+          {/* Mobile Bottom Bar (Sticky) */}
+          <div className="md:hidden absolute bottom-0 left-0 right-0 h-14 bg-background-100 border-t border-gray-300 flex items-center justify-around z-50 px-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] dark:shadow-none">
+            <button
+              onClick={() => setMobileView('settings')}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 h-full text-[10px] font-medium transition-colors ${mobileView === 'settings' ? 'text-gray-1000' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Settings2 className="w-5 h-5" />
+              Customize
+            </button>
+            <button
+              onClick={() => setMobileView('preview')}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 h-full text-[10px] font-medium transition-colors ${mobileView === 'preview' ? 'text-gray-1000' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Eye className="w-5 h-5" />
+              Preview
+            </button>
           </div>
     </div>
   );

@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from './context/AuthContext';
-import MobileStudentNav from './components/MobileStudentNav';
 import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
@@ -16,6 +15,7 @@ import ClubProfile from './pages/ClubProfile';
 import Events from './pages/Events';
 import PlacementFeed from './pages/PlacementFeed';
 import PlacementPostDetail from './pages/PlacementPostDetail';
+import PlacementCommentThread from './pages/PlacementCommentThread';
 import CreatePlacementPost from './pages/CreatePlacementPost';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -56,22 +56,17 @@ function MainLayout({ children }) {
   const location = useLocation();
   const { user } = useContext(AuthContext);
   const hideSearchRoutes = ['/admin', '/club']; 
-  const showSearch = !hideSearchRoutes.some(path => location.pathname.startsWith(path));
-  const showMobileNav = user && user.role !== 'admin';
-
+  const showSearch = !hideSearchRoutes.some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
   return (
     <div className="flex flex-col md:flex-row min-h-screen md:h-screen md:overflow-hidden bg-background-100 text-gray-1000 font-sans selection:bg-gray-1000 selection:text-background-100 transition-colors duration-200">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col min-h-screen md:min-h-0 md:h-full overflow-hidden">
         <Topbar showSearch={showSearch} />
         <main
-          className={`flex-1 min-w-0 md:overflow-y-auto overflow-x-hidden ${
-            showMobileNav ? 'pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0' : ''
-          }`}
+          className="flex-1 min-w-0 md:overflow-y-auto overflow-x-hidden"
         >
           {children}
         </main>
-        <MobileStudentNav />
       </div>
     </div>
   );
@@ -143,6 +138,14 @@ function App() {
                 <ProtectedRoute allowedRoles={['student']}>
                   <MainLayout>
                     <PlacementPostDetail />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/placements/:postId/comment/:commentId" element={
+                <ProtectedRoute allowedRoles={['student']}>
+                  <MainLayout>
+                    <PlacementCommentThread />
                   </MainLayout>
                 </ProtectedRoute>
               } />

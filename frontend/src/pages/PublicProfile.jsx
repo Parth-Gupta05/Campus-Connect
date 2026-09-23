@@ -294,15 +294,15 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
               <section className="profile-card relative overflow-hidden mt-4">
                 {/* Banner Texture Layer */}
                 {activeCustomization.appearance?.texture && activeCustomization.appearance.texture !== 'none' && (
-                  <div className="absolute inset-0 z-0 h-40 opacity-100 pointer-events-auto">
+                  <div className="absolute inset-0 z-0 h-40 overflow-hidden rounded-t-xl opacity-100 pointer-events-auto max-md:sepia-[.3] max-md:brightness-90">
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--profile-card-bg)] z-10 pointer-events-none" />
-                    {activeCustomization.appearance.texture === 'animated-grid' && <AnimatedGridPattern width={40} height={40} className="[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)] fill-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)]" />}
+                    {activeCustomization.appearance.texture === 'animated-grid' && <AnimatedGridPattern width={40} height={40} className="md:[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)] fill-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)]" />}
                     {activeCustomization.appearance.texture === 'interactive-grid' && (
                       <InteractiveGridPattern
-                        squares={[60, 60]}
+                        squares={[100, 100]}
                         className={cn(
-                          "[mask-image:linear-gradient(to_right,transparent_20%,white_80%)]",
-                          "inset-x-[-20%] inset-y-[-100%] h-[300%] w-[150%] skew-y-12",
+                          "md:[mask-image:linear-gradient(to_right,transparent_20%,white_80%)]",
+                          "absolute w-[3000px] h-[300%] top-[-100%] left-1/2 -translate-x-1/2 skew-y-12 max-w-none",
                           "stroke-[color-mix(in_srgb,var(--profile-accent)_20%,transparent)]"
                         )}
                         squaresClassName=""
@@ -322,18 +322,18 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                           [21, 2], [23, 4], [25, 3], [27, 2], [29, 4], [31, 3], [33, 2]
                         ]}
                         className={cn(
-                          "[mask-image:linear-gradient(to_right,transparent_10%,white_90%)]",
-                          "inset-x-[-10%] inset-y-[-100%] h-[300%] w-[120%] skew-y-6"
+                          "md:[mask-image:linear-gradient(to_right,transparent_10%,white_90%)]",
+                          "absolute w-[2000px] h-[300%] top-[-100%] left-1/2 -translate-x-[40%] skew-y-6 max-w-none"
                         )}
                       />
                     )}
                     {activeCustomization.appearance.texture === 'striped' && (
-                      <StripedPattern className="[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_20%,transparent)]" />
+                      <StripedPattern className="md:[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_20%,transparent)]" />
                     )}
                     {activeCustomization.appearance.texture === 'light-rays' && (
                       <LightRays
                         color="var(--profile-accent)"
-                        className="[mask-image:linear-gradient(to_right,transparent_10%,white_40%,white_70%,transparent)]"
+                        className="md:[mask-image:linear-gradient(to_right,transparent_10%,white_40%,white_70%,transparent)]"
                       />
                     )}
                     {activeCustomization.appearance.texture === 'noise' && (
@@ -347,16 +347,12 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                         interval={90}
                         fadeBottom={0.6}
                         color="var(--profile-accent)"
-                        className="opacity-100 [mask-image:linear-gradient(to_right,transparent_5%,white_60%)]"
+                        className="opacity-100 md:[mask-image:linear-gradient(to_right,transparent_5%,white_60%)]"
                       />
                     )}
                     {activeCustomization.appearance.texture === 'shape-waves' && (
                       <div
-                        className="absolute inset-0 w-full h-full relative"
-                        style={{
-                          maskImage: 'linear-gradient(to right, transparent 0%, transparent 15%, black 40%, black 100%)',
-                          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, transparent 15%, black 40%, black 100%)'
-                        }}
+                        className="absolute inset-0 w-full h-full relative md:[mask-image:linear-gradient(to_right,transparent_0%,transparent_15%,black_40%,black_100%)] md:[webkit-mask-image:linear-gradient(to_right,transparent_0%,transparent_15%,black_40%,black_100%)]"
                       >
                         <ShapeWaves
                           fontFamily='Geist, "Geist Sans", system-ui, sans-serif'
@@ -387,7 +383,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       </div>
                     )}
                     {activeCustomization.appearance.texture === '3d-prism' && (
-                      <div className="absolute inset-y-0 right-0 w-1/2">
+                      <div className="absolute inset-y-0 right-0 w-full md:w-1/2">
                         <Prism />
                       </div>
                     )}
@@ -530,7 +526,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
 
               {/* SGPA Progression Chart */}
               {hasSemesterRecords && visibility.showAcademicProgression !== false && (
-                <div className="profile-card p-6 flex flex-col min-h-[280px]">
+                <div className="profile-card p-6 flex flex-col">
                   <div className="flex justify-between items-start mb-6">
                     <div>
                       <h3 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Academic Progression</h3>
@@ -547,46 +543,49 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       );
                     })()}
                   </div>
-                  <div className="w-full" style={{ height: 220 }}>
-                    <ResponsiveContainer width="100%" height={220}>
-                      <LineChart data={sgpaChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--profile-border)" opacity={0.5} />
-                        <XAxis
-                          dataKey="name"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 11, fill: 'var(--profile-muted-text)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
-                          dy={10}
-                        />
-                        <YAxis
-                          domain={[0, 10]}
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 11, fill: 'var(--profile-muted-text)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
-                          dx={-10}
-                        />
-                        <RechartsTooltip
-                          contentStyle={{
-                            backgroundColor: 'var(--profile-bg)',
-                            borderColor: 'var(--profile-border)',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            color: 'var(--profile-text)'
-                          }}
-                          itemStyle={{ color: 'var(--profile-accent)', fontWeight: 600 }}
-                          cursor={{ stroke: 'var(--profile-border)', strokeWidth: 1, strokeDasharray: '3 3' }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="sgpa"
-                          name="SGPA"
-                          stroke="var(--profile-accent)"
-                          strokeWidth={2}
-                          dot={{ r: 4, fill: 'var(--profile-bg)', stroke: 'var(--profile-accent)', strokeWidth: 2 }}
-                          activeDot={{ r: 6, fill: 'var(--profile-accent)', stroke: 'var(--profile-bg)', strokeWidth: 2 }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                  <div className="w-full overflow-x-auto scrollbar-none">
+                    <div className="h-44 sm:h-52" style={{ minWidth: `${Math.max(sgpaChartData.length * 50, 280)}px` }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={sgpaChartData} margin={{ top: 5, right: 20, bottom: 5, left: -20 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--profile-border)" opacity={0.5} />
+                          <XAxis
+                            dataKey="name"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 11, fill: 'var(--profile-muted-text)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
+                            dy={10}
+                          />
+                          <YAxis
+                            domain={['dataMin - 1', 10]}
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fontSize: 11, fill: 'var(--profile-muted-text)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
+                            dx={-10}
+                            tickCount={5}
+                          />
+                          <RechartsTooltip
+                            contentStyle={{
+                              backgroundColor: 'var(--profile-bg)',
+                              borderColor: 'var(--profile-border)',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              color: 'var(--profile-text)'
+                            }}
+                            itemStyle={{ color: 'var(--profile-accent)', fontWeight: 600 }}
+                            cursor={{ stroke: 'var(--profile-border)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="sgpa"
+                            name="SGPA"
+                            stroke="var(--profile-accent)"
+                            strokeWidth={2}
+                            dot={{ r: 4, fill: 'var(--profile-bg)', stroke: 'var(--profile-accent)', strokeWidth: 2 }}
+                            activeDot={{ r: 6, fill: 'var(--profile-accent)', stroke: 'var(--profile-bg)', strokeWidth: 2 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </div>
               )}
@@ -985,7 +984,23 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                     ))}
                     {certificates.slice(0, isCertsExpanded ? certificates.length : (Math.max(0, 4 - achievements.length))).map((cert, i) => (
                       <div key={`cert-${i}`} className="flex flex-col sm:flex-row gap-3.5 p-4 rounded-xl border border-[var(--profile-card-border)] bg-[var(--profile-bg)] shadow-sm transition-all hover:border-[var(--profile-text)]">
-                        <Award className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5 hidden sm:block" />
+                        <div className="relative w-8 h-8 shrink-0 mt-0.5 hidden sm:flex items-center justify-center">
+                          {(cert.issuerLogo || cert.clubId?.profilePhoto) && (
+                            <img
+                              src={cert.issuerLogo || cert.clubId?.profilePhoto}
+                              alt={cert.issuer || cert.clubId?.name}
+                              className="w-full h-full object-contain rounded-md"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.style.display = 'none';
+                                if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          )}
+                          <div style={{ display: (cert.issuerLogo || cert.clubId?.profilePhoto) ? 'none' : 'flex' }} className="w-full h-full items-center justify-center">
+                            <Building2 className="w-4 h-4 text-[var(--profile-muted-text)]" />
+                          </div>
+                        </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-medium text-[var(--profile-text)] truncate">{cert.title}</h3>
                           <div className="text-xs text-[var(--profile-muted-text)] font-mono mt-1 flex items-center gap-2">
