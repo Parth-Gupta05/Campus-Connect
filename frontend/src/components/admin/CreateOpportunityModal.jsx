@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useToast } from '../../context/ToastContext';
-import { X, Plus, Loader2, Briefcase, MapPin, Calendar, DollarSign, Layers } from 'lucide-react';
+import { X, Plus, Loader2, Briefcase, MapPin, Calendar, DollarSign, Layers, CheckCircle2 } from 'lucide-react';
 import CompanySearchInput from '../CompanySearchInput';
 
 export default function CreateOpportunityModal({ onClose, onCreated }) {

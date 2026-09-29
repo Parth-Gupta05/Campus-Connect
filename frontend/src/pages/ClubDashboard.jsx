@@ -38,6 +38,8 @@ import {
 } from 'recharts';
 import EventAttendees from '../components/EventAttendees';
 import ImageCropperModal from '../components/ImageCropperModal';
+import AnimatedModal from '../components/ui/AnimatedModal';
+import RichTextEditor from '../components/RichTextEditor';
 import { getEventStatus, formatTime12h } from '../utils/eventUtils';
 import { BRANCHES } from '../utils/uidUtils';
 

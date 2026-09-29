@@ -9,8 +9,8 @@ const userRoutes = require('./routes/userRoutes');
 const opportunityRoutes = require('./routes/opportunity');
 const dimensionRouter = require('./routes/algodimension');
 
-const Opportunity=require("./models/Opportunities");
-const Applicant=require("./models/Applicants");
+const Opportunity = require("./models/Opportunities");
+const Applicant = require("./models/Applicants");
 const clubRoutes = require('./routes/clubRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
