@@ -110,10 +110,6 @@ export default function MobileStudentNav() {
     }
   };
 
-  const current =
-    allItems.find(i => i.isActive ? i.isActive(location.pathname) : (i.end ? location.pathname === i.to : location.pathname.startsWith(i.to)))
-    || null;
-
   const menuRef = React.useRef(null);
 
   React.useEffect(() => {

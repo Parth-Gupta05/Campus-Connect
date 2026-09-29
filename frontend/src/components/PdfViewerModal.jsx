@@ -41,7 +41,7 @@ export default function PdfViewerModal({ url, title = 'Document', onClose }) {
     };
   }, [blobUrl]);
 
-  const token = localStorage.getItem('accessToken');
+  const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
 
   const pdfSrc = useMemo(() => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';

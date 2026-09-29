@@ -130,7 +130,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await axios.post('/auth/refresh');
         writeAccessToken(res.data.accessToken, getActiveStorage());
-        setUser(res.data.user);
+        setUser(res.data.user || JSON.parse(atob(res.data.accessToken.split('.')[1])));
       } catch (err) {
         console.log('No valid session found');
         setUser(null);
