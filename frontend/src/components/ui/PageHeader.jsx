@@ -60,7 +60,7 @@ export default function PageHeader({
                 <span>{tab.label}</span>
                 {(tab.count !== undefined || tab.badge !== undefined) && (
                   <span
-                    className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded-full text-[10px] font-mono leading-none transition-colors ${
+                    className={`inline-flex items-center justify-center min-w-[18px] min-h-[16px] px-1.5 py-0.5 rounded-full text-[10px] font-mono leading-none transition-colors shrink-0 whitespace-nowrap ${
                       isActive
                         ? 'bg-gray-1000 text-background-100 font-bold'
                         : 'bg-background-200 text-gray-900 border border-gray-400 font-medium group-hover:text-gray-1000'

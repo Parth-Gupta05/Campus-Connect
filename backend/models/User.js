@@ -145,9 +145,11 @@ const UserSchema = new mongoose.Schema({
     certificates: [{
       title: { type: String, default: '' },
       issuer: { type: String, default: '' },
+      issuerLogo: { type: String, default: '' },
       issueDate: { type: String, default: '' },
       credentialUrl: { type: String, default: '' },
       fileUrl: { type: String, default: '' },
+      category: { type: String, enum: ['Academic', 'Co-curricular', 'Technical', 'Leadership', 'Research', 'Experience', 'Volunteering', 'Participation', 'Other'], default: 'Other' },
       isComplete: { type: Boolean, default: false },
       isVerified: { type: Boolean, default: false },
       issuedByClub: { type: Boolean, default: false },

@@ -31,7 +31,7 @@ export default function Events() {
   const { user } = useContext(AuthContext);
   const { showToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('events'); // 'events' | 'registered' | 'announcements'
+  const [activeTab, setActiveTab] = useState('announcements'); // 'events' | 'registered' | 'announcements'
   const [events, setEvents] = useState([]);
   const [registeredEventRecords, setRegisteredEventRecords] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
@@ -453,7 +453,7 @@ export default function Events() {
                           </div>
                         </div>
 
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-background-200 text-gray-700 border border-gray-400">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-background-200 text-gray-700 border border-gray-400 shrink-0 whitespace-nowrap">
                           <Megaphone className="w-2.5 h-2.5 text-gray-600" />
                           Official Notice
                         </span>

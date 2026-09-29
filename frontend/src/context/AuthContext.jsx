@@ -84,8 +84,7 @@ export const AuthProvider = ({ children }) => {
               const newToken = res.data.accessToken;
               writeAccessToken(newToken, getActiveStorage());
               
-              const payload = JSON.parse(atob(newToken.split('.')[1]));
-              setUser({ id: payload.id, role: payload.role });
+              setUser(res.data.user);
 
               isRefreshing = false;
               onRefreshed(newToken);
@@ -131,8 +130,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await axios.post('/auth/refresh');
         writeAccessToken(res.data.accessToken, getActiveStorage());
-        const payload = JSON.parse(atob(res.data.accessToken.split('.')[1]));
-        setUser({ id: payload.id, role: payload.role });
+        setUser(res.data.user || JSON.parse(atob(res.data.accessToken.split('.')[1])));
       } catch (err) {
         console.log('No valid session found');
         setUser(null);

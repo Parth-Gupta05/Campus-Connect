@@ -253,7 +253,7 @@ export default function AcademicVaultModal({ isOpen, onClose, onDismiss, profile
           </div>
         )}
 
-        {activeTab === 'education' && (
+        {activeTab === 'past' && (
           <div className="space-y-6">
             <div className="bg-background-200 rounded-xl p-4 border border-gray-400 text-sm">
               <div className="font-semibold text-gray-1000 mb-1">Required Past Education</div>

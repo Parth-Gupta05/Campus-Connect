@@ -22,7 +22,7 @@ export const ToastProvider = ({ children }) => {
       {/* Geist Sonner-Style Toast Container */}
       <div 
         aria-live="polite"
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] flex flex-col gap-2 max-w-sm sm:max-w-md w-full pointer-events-none px-3 sm:px-0"
+        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-6 sm:right-6 z-[9999] flex flex-col gap-2 pointer-events-none sm:w-[350px]"
       >
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} onRemove={removeToast} />

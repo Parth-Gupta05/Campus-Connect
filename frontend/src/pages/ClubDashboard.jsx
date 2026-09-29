@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import RichTextEditor from '../components/RichTextEditor';
+import AnimatedModal from '../components/ui/AnimatedModal';
 import {
   Users,
   Calendar,
@@ -38,8 +40,6 @@ import {
 } from 'recharts';
 import EventAttendees from '../components/EventAttendees';
 import ImageCropperModal from '../components/ImageCropperModal';
-import AnimatedModal from '../components/ui/AnimatedModal';
-import RichTextEditor from '../components/RichTextEditor';
 import { getEventStatus, formatTime12h } from '../utils/eventUtils';
 import { BRANCHES } from '../utils/uidUtils';
 

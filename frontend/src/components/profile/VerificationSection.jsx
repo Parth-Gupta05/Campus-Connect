@@ -128,38 +128,69 @@ export default function VerificationSection({ profile, setLinkingAccount, handle
         </p>
       </div>
 
-      {/* LinkedIn Overview Card */}
-      {profile.scrapedData?.linkedin && (
-        <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
-          <div className="flex items-center gap-3 border-b border-gray-400 pb-4">
+      {/* LinkedIn Card */}
+      <div className="rounded-xl border border-gray-400 bg-background-200 p-6 space-y-4 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-400 pb-4">
+          <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#0A66C2]/10 border border-[#0A66C2]/30 flex items-center justify-center">
               <FaLinkedin className="w-4 h-4 text-[#0A66C2]" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-1000">
-                {profile.scrapedData.linkedin.firstName} {profile.scrapedData.linkedin.lastName}
-              </h3>
-              <p className="text-[11px] text-gray-600 font-sans">{profile.scrapedData.linkedin.headline}</p>
+              <h3 className="text-sm font-semibold text-gray-1000">LinkedIn Identity Verification</h3>
+              <p className="text-[11px] text-gray-600 font-mono">
+                {profile.linkedInUrl ? new URL(profile.linkedInUrl).pathname.split('/').filter(Boolean).pop() || 'Connected' : 'Not connected'}
+              </p>
             </div>
           </div>
-          
-          <div className="text-xs text-gray-700 font-sans line-clamp-3 leading-relaxed">
-            {profile.scrapedData.linkedin.summary}
-          </div>
-          
-          <div className="flex items-center justify-between pt-2 border-t border-gray-400">
-             <span className="text-[11px] font-mono text-gray-600">Location: {profile.scrapedData.linkedin.geo?.country}</span>
-             <a
-               href={profile.linkedInUrl}
-               target="_blank"
-               rel="noreferrer"
-               className="text-[11px] font-semibold text-[#0A66C2] hover:underline flex items-center gap-1"
-             >
-               View LinkedIn Profile
-             </a>
+
+          <div>
+            {profile.linkedInVerified ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Verified Account</span>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleGenerateCodeAndVerify('linkedin')}
+                className="h-8 px-3 rounded-md bg-gray-1000 text-background-100 hover:opacity-90 text-xs font-medium transition-opacity cursor-pointer shadow-xs"
+              >
+                Verify Ownership
+              </button>
+            )}
           </div>
         </div>
-      )}
+        
+        {profile.scrapedData?.linkedin ? (
+          <div className="pt-2">
+            <div className="flex items-center gap-2 mb-2">
+              <h4 className="text-xs font-bold text-gray-1000">
+                {profile.scrapedData.linkedin.firstName} {profile.scrapedData.linkedin.lastName}
+              </h4>
+              <span className="text-[10px] text-gray-500 font-mono">|</span>
+              <p className="text-[11px] text-gray-600 font-sans truncate">{profile.scrapedData.linkedin.headline}</p>
+            </div>
+            <div className="text-xs text-gray-700 font-sans line-clamp-2 leading-relaxed mb-3">
+              {profile.scrapedData.linkedin.summary}
+            </div>
+            <div className="flex items-center justify-between pt-3 border-t border-gray-400 border-dashed">
+               <span className="text-[11px] font-mono text-gray-600">Location: {profile.scrapedData.linkedin.geo?.country}</span>
+               <a
+                 href={profile.linkedInUrl}
+                 target="_blank"
+                 rel="noreferrer"
+                 className="text-[11px] font-semibold text-[#0A66C2] hover:underline flex items-center gap-1"
+               >
+                 View LinkedIn Profile
+               </a>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-700 font-sans leading-relaxed">
+            Verifying your LinkedIn identity confirms your professional experience, education history, and skills for recruiter visibility.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

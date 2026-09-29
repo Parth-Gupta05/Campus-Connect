@@ -12,6 +12,7 @@ const {
   toggleReaction,
   toggleBookmark,
   getComments,
+  getSingleComment,
   addComment,
   deleteComment,
   getUserPosts,
@@ -51,6 +52,7 @@ router.post('/:id/bookmark', authMiddleware, toggleBookmark);
 
 // Comments & Replies
 router.get('/:postId/comments', authMiddleware, getComments);
+router.get('/:postId/comments/:commentId', authMiddleware, getSingleComment);
 router.post('/:postId/comments', authMiddleware, addComment);
 router.delete('/comments/:commentId', authMiddleware, deleteComment);
 

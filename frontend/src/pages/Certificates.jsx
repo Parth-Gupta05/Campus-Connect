@@ -25,6 +25,7 @@ import {
   Lock,
   Sparkles
 } from 'lucide-react';
+import CompanySearchInput from '../components/CompanySearchInput';
 
 export default function Certificates() {
   const { user } = useContext(AuthContext);
@@ -37,7 +38,8 @@ export default function Certificates() {
   // Filter & Search state
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'verified' | 'pending'
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('title_asc'); // 'title_asc' | 'title_desc' | 'newest' | 'verified_first'
+  const [sortBy, setSortBy] = useState('title_asc'); // 'title_asc' | 'title_desc' | 'newest' | 'verified_first' | 'category'
+  const [categoryFilter, setCategoryFilter] = useState('All Categories');
 
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,9 +47,11 @@ export default function Certificates() {
   const [formData, setFormData] = useState({
     title: '',
     issuer: '',
+    issuerLogo: '',
     issueDate: '',
     credentialUrl: '',
-    fileUrl: ''
+    fileUrl: '',
+    category: 'Other'
   });
   const [uploadingFile, setUploadingFile] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -139,6 +143,10 @@ export default function Certificates() {
       );
     }
 
+    if (categoryFilter !== 'All Categories') {
+      base = base.filter((c) => c.category === categoryFilter);
+    }
+
     return [...base].sort((a, b) => {
       if (sortBy === 'title_desc') {
         return (b.title || '').localeCompare(a.title || '');
@@ -151,9 +159,12 @@ export default function Certificates() {
       if (sortBy === 'newest') {
         return (b.issueDate || '').localeCompare(a.issueDate || '');
       }
+      if (sortBy === 'category') {
+        return (a.category || '').localeCompare(b.category || '');
+      }
       return (a.title || '').localeCompare(b.title || '');
     });
-  }, [certificates, verifiedCerts, pendingCerts, activeTab, search, sortBy]);
+  }, [certificates, verifiedCerts, pendingCerts, activeTab, search, sortBy, categoryFilter]);
 
   // Modal Open Handler
   const handleOpenModal = (index = null) => {
@@ -166,18 +177,22 @@ export default function Certificates() {
       setFormData({
         title: certificates[index]?.title || '',
         issuer: certificates[index]?.issuer || '',
+        issuerLogo: certificates[index]?.issuerLogo || '',
         issueDate: certificates[index]?.issueDate || '',
         credentialUrl: certificates[index]?.credentialUrl || '',
-        fileUrl: certificates[index]?.fileUrl || ''
+        fileUrl: certificates[index]?.fileUrl || '',
+        category: certificates[index]?.category || 'Other'
       });
     } else {
       setEditingIndex(null);
       setFormData({
         title: '',
         issuer: '',
+        issuerLogo: '',
         issueDate: '',
         credentialUrl: '',
-        fileUrl: ''
+        fileUrl: '',
+        category: 'Other'
       });
     }
     setIsModalOpen(true);
@@ -224,6 +239,7 @@ export default function Certificates() {
     const newCert = {
       title: formData.title.trim(),
       issuer: formData.issuer.trim(),
+      issuerLogo: formData.issuerLogo || '',
       issueDate: formData.issueDate.trim(),
       credentialUrl: formData.credentialUrl.trim(),
       fileUrl: formData.fileUrl.trim(),
@@ -426,6 +442,25 @@ export default function Certificates() {
             {/* Right: Sort & Count Controls */}
             <div className="flex items-center gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-400 sm:border-l sm:pl-3">
               <div className="flex items-center gap-1.5">
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="h-8 px-2.5 bg-background-200 border border-gray-400 rounded-lg text-xs font-medium text-gray-800 hover:border-gray-600 focus:outline-none focus:border-gray-900 transition-colors cursor-pointer"
+                >
+                  <option value="All Categories">All Categories</option>
+                  <option value="Academic">Academic</option>
+                  <option value="Co-curricular">Co-curricular</option>
+                  <option value="Technical">Technical</option>
+                  <option value="Leadership">Leadership</option>
+                  <option value="Research">Research</option>
+                  <option value="Experience">Experience</option>
+                  <option value="Volunteering">Volunteering</option>
+                  <option value="Participation">Participation</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5">
                 <span className="text-[11px] font-mono text-gray-600 hidden md:inline">Sort:</span>
                 <select
                   value={sortBy}
@@ -434,6 +469,7 @@ export default function Certificates() {
                 >
                   <option value="title_asc">Title (A - Z)</option>
                   <option value="title_desc">Title (Z - A)</option>
+                  <option value="category">Category</option>
                   <option value="verified_first">Verified First</option>
                   <option value="newest">Newest Date</option>
                 </select>
@@ -547,7 +583,23 @@ export default function Certificates() {
                         {/* Issuer & Issue Date */}
                         <div className="space-y-1.5 text-xs text-gray-600">
                           <div className="flex items-center gap-1.5">
-                            <Building2 className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+                            <div className="relative flex items-center justify-center w-3.5 h-3.5 shrink-0">
+                              {(cert.issuerLogo || cert.clubId?.profilePhoto) && (
+                                <img
+                                  src={cert.issuerLogo || cert.clubId?.profilePhoto}
+                                  alt={cert.issuer || cert.clubId?.name}
+                                  className="w-full h-full object-contain rounded-sm"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.style.display = 'none';
+                                    if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                                  }}
+                                />
+                              )}
+                              <div style={{ display: (cert.issuerLogo || cert.clubId?.profilePhoto) ? 'none' : 'flex' }} className="w-full h-full items-center justify-center">
+                                <Building2 className="w-3.5 h-3.5 text-gray-600" />
+                              </div>
+                            </div>
                             <span className="font-medium text-gray-800 line-clamp-1">
                               {cert.issuer || 'Unknown Organization'}
                             </span>
@@ -558,6 +610,15 @@ export default function Certificates() {
                               <Calendar className="w-3.5 h-3.5 text-gray-600 shrink-0" />
                               <span className="font-mono text-[11px] text-gray-700">
                                 {cert.issueDate}
+                              </span>
+                            </div>
+                          )}
+
+                          {cert.category && (
+                            <div className="flex items-center gap-1.5">
+                              <Award className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+                              <span className="font-mono text-[11px] text-gray-700">
+                                {cert.category}
                               </span>
                             </div>
                           )}
@@ -774,14 +835,36 @@ export default function Certificates() {
                   <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-gray-700">
                     Issuing Organization *
                   </label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.issuer}
-                    onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
-                    className="w-full h-9 px-3 bg-background-200 border border-gray-400 rounded-lg text-xs text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors"
-                    placeholder="e.g. Amazon Web Services, Coursera, HackerRank"
+                  <CompanySearchInput
+                    value={{
+                      name: formData.issuer,
+                      logoUrl: formData.issuerLogo
+                    }}
+                    onChange={(val) => setFormData({ ...formData, issuer: val?.name || '', issuerLogo: val?.logoUrl || '' })}
                   />
+                </div>
+
+                {/* Category */}
+                <div className="space-y-1">
+                  <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-gray-700">
+                    Category *
+                  </label>
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full h-9 px-3 bg-background-200 border border-gray-400 rounded-lg text-xs text-gray-1000 focus:outline-none focus:border-gray-900 transition-colors cursor-pointer"
+                  >
+                    <option value="Academic">Academic</option>
+                    <option value="Co-curricular">Co-curricular</option>
+                    <option value="Technical">Technical</option>
+                    <option value="Leadership">Leadership</option>
+                    <option value="Research">Research</option>
+                    <option value="Experience">Experience</option>
+                    <option value="Volunteering">Volunteering</option>
+                    <option value="Participation">Participation</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
 
                 {/* Issue Date with Calendar Date Picker */}

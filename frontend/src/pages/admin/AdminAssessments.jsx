@@ -48,8 +48,8 @@ export default function AdminAssessments() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background-100">
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-6 md:p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+        <div className="max-w-7xl mx-auto w-full space-y-8">
           
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>

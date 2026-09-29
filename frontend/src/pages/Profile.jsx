@@ -74,7 +74,36 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [isCertificateListOpen, setIsCertificateListOpen] = useState(false);
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(true);
+  const [mobileView, setMobileView] = useState('settings'); // 'settings' | 'preview'
+  const [settingsWidth, setSettingsWidth] = useState(400);
+  const [isDragging, setIsDragging] = useState(false);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+      setSettingsWidth(prev => {
+        const next = prev + e.movementX;
+        return Math.max(250, Math.min(next, 800));
+      });
+    };
+    
+    const handleMouseUp = () => setIsDragging(false);
+    
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    }
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -180,9 +209,12 @@ export default function Profile() {
   // ProfileThemeProvider will wrap the preview container and inject the CSS variables directly.
   
   return (
-    <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden md:h-[calc(100vh-56px)]">
+    <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden h-[calc(100vh-56px)] pb-14 md:pb-0 relative">
       {/* Profile settings panel (Left) */}
-          <div className={`w-full max-h-[45vh] sm:max-h-[52vh] md:max-h-none border-b md:border-b-0 md:border-r border-gray-300 bg-background-100 overflow-y-auto shrink-0 flex flex-col md:transition-[width] md:duration-300 md:ease-geist ${isSettingsPanelOpen ? 'md:w-[min(400px,100%)]' : 'md:w-14'}`}>
+          <div 
+            style={{ '--settings-width': `${settingsWidth}px` }}
+            className={`w-full ${mobileView === 'settings' ? 'flex-1 md:flex-none' : 'hidden md:flex md:flex-none'} md:max-h-none border-b md:border-b-0 md:border-r border-gray-300 bg-background-100 overflow-y-auto shrink-0 flex flex-col relative ${isSettingsPanelOpen ? 'md:w-[var(--settings-width)]' : 'md:w-14'} ${!isDragging ? 'md:transition-[width] md:duration-300 md:ease-geist' : ''}`}
+          >
             <div className={`border-b border-gray-300 flex items-center sticky top-0 bg-background-100/90 backdrop-blur-md z-10 ${isSettingsPanelOpen ? 'p-6 justify-between' : 'p-6 justify-between md:p-2 md:justify-center'}`}>
               <div className={isSettingsPanelOpen ? '' : 'md:hidden'}>
                 <h1 className="text-xl font-bold tracking-tight">Profile</h1>
@@ -421,8 +453,19 @@ export default function Profile() {
             </div>
           </div>
 
+          {/* Drag Resizer Handle */}
+          {isSettingsPanelOpen && (
+            <div 
+              onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }}
+              className="hidden md:flex w-2 cursor-col-resize shrink-0 items-center justify-center group z-30 transition-colors bg-gray-200/50 dark:bg-gray-900/50 hover:bg-gray-300/50 dark:hover:bg-gray-800/50"
+              title="Drag to resize"
+            >
+              <div className={`w-[2px] h-full transition-colors ${isDragging ? 'bg-blue-500' : 'bg-gray-400 group-hover:bg-blue-500'}`} />
+            </div>
+          )}
+
           {/* Live Preview (Right) */}
-          <div className="flex-1 min-w-0 min-h-[70vh] bg-gray-200/50 dark:bg-gray-950 overflow-y-auto relative isolate">
+          <div className={`${mobileView === 'preview' ? 'flex-1' : 'hidden md:block'} min-w-0 md:flex-1 bg-gray-200/50 dark:bg-gray-950 overflow-y-auto relative isolate`}>
             <div className="sticky top-0 p-3 bg-gray-100/80 backdrop-blur-sm border-b border-gray-300 text-xs font-mono text-gray-500 flex items-center justify-center z-50">
               Live Preview (Read Only)
             </div>
@@ -450,6 +493,23 @@ export default function Profile() {
                 </div>
               </div>
             </div>
+          </div>
+          {/* Mobile Bottom Bar (Sticky) */}
+          <div className="md:hidden absolute bottom-0 left-0 right-0 h-14 bg-background-100 border-t border-gray-300 flex items-center justify-around z-50 px-2 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] dark:shadow-none">
+            <button
+              onClick={() => setMobileView('settings')}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 h-full text-[10px] font-medium transition-colors ${mobileView === 'settings' ? 'text-gray-1000' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Settings2 className="w-5 h-5" />
+              Customize
+            </button>
+            <button
+              onClick={() => setMobileView('preview')}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 h-full text-[10px] font-medium transition-colors ${mobileView === 'preview' ? 'text-gray-1000' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Eye className="w-5 h-5" />
+              Preview
+            </button>
           </div>
     </div>
   );

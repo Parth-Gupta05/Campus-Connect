@@ -792,90 +792,96 @@ export default function StudentDashboard() {
             </div>
 
             {/* Canonical Vercel Underline Tab Bar */}
-            <div className="flex items-center gap-6 border-b border-gray-400 text-xs font-medium overflow-x-auto no-scrollbar">
-              <button
-                type="button"
-                onClick={() => setActiveTab('overview')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  activeTab === 'overview'
-                    ? 'border-gray-1000 text-gray-1000 font-semibold'
-                    : 'border-transparent text-gray-700 hover:text-gray-1000'
-                }`}
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>Overview</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('profile')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  activeTab === 'profile'
-                    ? 'border-gray-1000 text-gray-1000 font-semibold'
-                    : 'border-transparent text-gray-700 hover:text-gray-1000'
-                }`}
-              >
-                <Edit3 className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>Profile</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('coding')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  activeTab === 'coding'
-                    ? 'border-gray-1000 text-gray-1000 font-semibold'
-                    : 'border-transparent text-gray-700 hover:text-gray-1000'
-                }`}
-              >
-                <Terminal className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>Coding &amp; Repos</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('campus')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  activeTab === 'campus'
-                    ? 'border-gray-1000 text-gray-1000 font-semibold'
-                    : 'border-transparent text-gray-700 hover:text-gray-1000'
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>Campus &amp; Clubs</span>
-                {upcomingEvents.length > 0 && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('vault')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  activeTab === 'vault'
-                    ? 'border-gray-1000 text-gray-1000 font-semibold'
-                    : 'border-transparent text-gray-700 hover:text-gray-1000'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>Resume Vault</span>
-                <span className={`px-1.5 py-0.2 rounded-full font-mono text-[10px] ${
-                  resumes.length >= 5 
-                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' 
-                    : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                }`}>
-                  {resumes.length}/5
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('academic-vault')}
-                className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  activeTab === 'academic-vault'
-                    ? 'border-gray-1000 text-gray-1000 font-semibold'
-                    : 'border-transparent text-gray-700 hover:text-gray-1000'
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>Academic Vault</span>
-                {!isVaultComplete && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
-              </button>
+            <div className="relative border-b border-gray-400">
+              <div className="flex items-center gap-3 sm:gap-6 text-[11px] sm:text-xs font-medium overflow-x-auto no-scrollbar px-2 py-[1px]">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('overview')}
+                  className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap ${
+                    activeTab === 'overview'
+                      ? 'border-gray-1000 text-gray-1000 font-semibold'
+                      : 'border-transparent text-gray-700 hover:text-gray-1000'
+                  }`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+                  <span>Overview</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('profile')}
+                  className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap ${
+                    activeTab === 'profile'
+                      ? 'border-gray-1000 text-gray-1000 font-semibold'
+                      : 'border-transparent text-gray-700 hover:text-gray-1000'
+                  }`}
+                >
+                  <Edit3 className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+                  <span>Profile</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('coding')}
+                  className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap ${
+                    activeTab === 'coding'
+                      ? 'border-gray-1000 text-gray-1000 font-semibold'
+                      : 'border-transparent text-gray-700 hover:text-gray-1000'
+                  }`}
+                >
+                  <Terminal className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+                  <span className="hidden sm:inline">Coding &amp; Repos</span>
+                  <span className="sm:hidden">Coding</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('campus')}
+                  className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap ${
+                    activeTab === 'campus'
+                      ? 'border-gray-1000 text-gray-1000 font-semibold'
+                      : 'border-transparent text-gray-700 hover:text-gray-1000'
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+                  <span className="hidden sm:inline">Campus &amp; Clubs</span>
+                  <span className="sm:hidden">Campus</span>
+                  {upcomingEvents.length > 0 && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('vault')}
+                  className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap ${
+                    activeTab === 'vault'
+                      ? 'border-gray-1000 text-gray-1000 font-semibold'
+                      : 'border-transparent text-gray-700 hover:text-gray-1000'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+                  <span className="hidden sm:inline">Resume Vault</span>
+                  <span className="sm:hidden">Resumes</span>
+                  <span className={`shrink-0 px-1.5 py-0.2 rounded-full font-mono text-[10px] ${
+                    resumes.length >= 5 
+                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold' 
+                      : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                  }`}>
+                    {resumes.length}/5
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('academic-vault')}
+                  className={`pb-3 transition-colors border-b-2 -mb-px cursor-pointer flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap ${
+                    activeTab === 'academic-vault'
+                      ? 'border-gray-1000 text-gray-1000 font-semibold'
+                      : 'border-transparent text-gray-700 hover:text-gray-1000'
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+                  <span className="inline">Academic Vault</span>
+                  {!isVaultComplete && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />}
+                </button>
+              </div>
+              <div className="pointer-events-none absolute right-0 top-0 bottom-[2px] w-8 sm:w-10 bg-gradient-to-r from-transparent to-background-100 z-10" aria-hidden />
             </div>
           </section>
 
@@ -2144,10 +2150,10 @@ export default function StudentDashboard() {
                 </div>
                 <button
                   onClick={() => setShowAcademicVaultModal(true)}
-                  className="h-8 px-4 bg-gray-1000 text-background-100 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5"
+                  className="h-8 px-4 bg-gray-1000 text-background-100 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  Add Record
+                  <Plus className="w-3.5 h-3.5 shrink-0" />
+                  <span>Add Record</span>
                 </button>
               </div>
 

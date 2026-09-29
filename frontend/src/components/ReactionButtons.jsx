@@ -172,45 +172,47 @@ export default function ReactionButtons({
 
   // Expanded View for Post Detail
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-background-200 border border-gray-400 text-gray-1000">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] font-mono uppercase tracking-wider text-gray-600 mr-1">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-background-200 border border-gray-400 text-gray-1000">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full min-w-0">
+        <span className="text-[10px] font-mono uppercase tracking-wider text-gray-600 shrink-0">
           Reactions:
         </span>
-        {reactionConfig.map((r) => {
-          const Icon = r.icon;
-          const count = reactionCounts[r.id] || 0;
-          const isActive = myReaction === r.id;
-          return (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => handleToggleReaction(r.id)}
-              className={`h-8 px-3 rounded-md border text-xs font-medium transition-all shadow-2xs flex items-center gap-2 cursor-pointer ${
-                isActive
-                  ? `${r.activeBg} font-semibold`
-                  : 'border-gray-400 bg-background-100 text-gray-800 hover:text-gray-1000 hover:bg-gray-200'
-              }`}
-            >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? r.accentText : 'text-gray-500'}`} strokeWidth={1.5} />
-              <span>{r.label}</span>
-              {count > 0 && (
-                <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono border ${
-                  isActive ? 'bg-background-100/40 border-current' : 'bg-background-200 border-gray-400 text-gray-700'
-                }`}>
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mb-1 sm:pb-0 sm:mb-0 w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {reactionConfig.map((r) => {
+            const Icon = r.icon;
+            const count = reactionCounts[r.id] || 0;
+            const isActive = myReaction === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => handleToggleReaction(r.id)}
+                className={`h-8 px-3 rounded-md border text-xs font-medium transition-all shadow-2xs flex items-center gap-2 cursor-pointer shrink-0 ${
+                  isActive
+                    ? `${r.activeBg} font-semibold`
+                    : 'border-gray-400 bg-background-100 text-gray-800 hover:text-gray-1000 hover:bg-gray-200'
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 ${isActive ? r.accentText : 'text-gray-500'}`} strokeWidth={1.5} />
+                <span>{r.label}</span>
+                {count > 0 && (
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                    isActive ? 'bg-background-100/40 border-current' : 'bg-background-200 border-gray-400 text-gray-700'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0 border-t border-gray-400 sm:border-none pt-3 sm:pt-0 w-full sm:w-auto">
         <button
           type="button"
           onClick={handleToggleBookmark}
-          className={`h-8 px-3.5 rounded-md border text-xs font-medium transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer ${
+          className={`flex-1 sm:flex-none h-8 px-3.5 rounded-md border text-xs font-medium transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer ${
             isBookmarked
               ? 'border-gray-1000 bg-gray-1000 text-background-100 font-semibold'
               : 'border-gray-400 bg-background-100 text-gray-800 hover:text-gray-1000 hover:bg-gray-200'
@@ -223,7 +225,7 @@ export default function ReactionButtons({
         <button
           type="button"
           onClick={handleShare}
-          className="h-8 px-3.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+          className="flex-1 sm:flex-none h-8 px-3.5 rounded-md border border-gray-400 bg-background-100 text-xs font-medium text-gray-800 hover:text-gray-1000 hover:bg-gray-200 transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
           <span>Share</span>

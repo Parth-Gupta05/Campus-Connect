@@ -187,7 +187,7 @@ export default function PlacementFilterBar({
               </button>
 
               {isCompanyDropdownOpen && (
-                <div className="absolute right-0 sm:left-0 top-full mt-1.5 w-56 max-h-60 overflow-y-auto bg-background-100 border border-gray-400 rounded-xl shadow-2xl z-50 p-1 text-gray-1000 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute left-0 sm:left-0 top-full mt-1.5 w-[calc(100vw-2rem)] max-w-[14rem] sm:max-w-[16rem] overflow-y-auto bg-background-100 border border-gray-400 rounded-xl shadow-2xl z-50 p-1 text-gray-1000 animate-in fade-in zoom-in-95 duration-100 max-h-60">
                   <button
                     type="button"
                     onClick={() => {
@@ -242,7 +242,7 @@ export default function PlacementFilterBar({
 
             {/* High-End Multi-Section Filters Popover Panel */}
             {isFilterPopoverOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-h-[80vh] overflow-y-auto bg-background-100 border border-gray-400 rounded-xl shadow-2xl z-50 p-4 space-y-4 text-gray-1000 animate-in fade-in zoom-in-95 duration-150 custom-scrollbar">
+              <div className="absolute right-[-10px] sm:right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-xs sm:max-w-md max-h-[80vh] overflow-y-auto bg-background-100 border border-gray-400 rounded-xl shadow-2xl z-50 p-4 space-y-4 text-gray-1000 animate-in fade-in zoom-in-95 duration-150 custom-scrollbar">
                 <div className="flex items-center justify-between pb-2 border-b border-gray-400">
                   <div className="flex items-center gap-2">
                     <SlidersHorizontal className="w-4 h-4 text-gray-1000" />
@@ -417,10 +417,10 @@ export default function PlacementFilterBar({
             <button
               type="button"
               onClick={() => handleFilterChange('sort', 'recent')}
-              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer border ${
                 filters.sort === 'recent' || !filters.sort
-                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border border-gray-400'
-                  : 'text-gray-700 hover:text-gray-1000'
+                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border-gray-400'
+                  : 'text-gray-700 hover:text-gray-1000 border-transparent'
               }`}
               title="Sort by latest"
             >
@@ -430,10 +430,10 @@ export default function PlacementFilterBar({
             <button
               type="button"
               onClick={() => handleFilterChange('sort', 'popular')}
-              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer border ${
                 filters.sort === 'popular'
-                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border border-gray-400'
-                  : 'text-gray-700 hover:text-gray-1000'
+                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border-gray-400'
+                  : 'text-gray-700 hover:text-gray-1000 border-transparent'
               }`}
               title="Sort by reactions"
             >
@@ -443,10 +443,10 @@ export default function PlacementFilterBar({
             <button
               type="button"
               onClick={() => handleFilterChange('sort', 'discussed')}
-              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer border ${
                 filters.sort === 'discussed'
-                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border border-gray-400'
-                  : 'text-gray-700 hover:text-gray-1000'
+                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border-gray-400'
+                  : 'text-gray-700 hover:text-gray-1000 border-transparent'
               }`}
               title="Sort by comments"
             >
@@ -456,10 +456,10 @@ export default function PlacementFilterBar({
             <button
               type="button"
               onClick={() => handleFilterChange('sort', 'salary_high')}
-              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              className={`h-full flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium transition-all cursor-pointer border ${
                 filters.sort === 'salary_high'
-                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border border-gray-400'
-                  : 'text-gray-700 hover:text-gray-1000'
+                  ? 'bg-background-100 text-gray-1000 font-semibold shadow-2xs border-gray-400'
+                  : 'text-gray-700 hover:text-gray-1000 border-transparent'
               }`}
               title="Sort by top package"
             >

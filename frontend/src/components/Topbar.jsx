@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import NotificationSidebar from './NotificationSidebar';
+import MobileStudentNav from './MobileStudentNav';
 import { Search, Bell, Loader2, User, LogOut, ShieldAlert, Building2, LayoutDashboard } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import BrandLogo from './BrandLogo';
@@ -117,7 +118,7 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
           >
             <BrandLogo className="w-7 h-7 shrink-0" />
           </Link>
-          <div className="relative min-w-0 w-full max-w-[9rem] sm:max-w-[11rem] md:max-w-xs lg:max-w-md flex-1 sm:mr-4" ref={searchRef}>
+          <div className="relative min-w-0 w-full max-w-[14rem] sm:max-w-xs md:max-w-md lg:max-w-lg flex-1 sm:mr-4" ref={searchRef}>
             <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none" strokeWidth={1.5} />
             <input 
               className="w-full pl-8 sm:pl-9 pr-9 sm:pr-12 py-1.5 text-[13px] sm:text-sm bg-background-200 border border-gray-400 rounded-lg focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 font-sans text-gray-1000 placeholder:text-gray-600 transition-colors" 
@@ -147,7 +148,11 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
                         <button
                           onClick={() => {
                             setShowDropdown(false);
-                            navigate(`/student/${result.uid}`);
+                            if (result.role === 'club') {
+                              navigate(`/clubs/${result._id}`);
+                            } else {
+                              navigate(`/student/${result.uid}`);
+                            }
                           }}
                           className="w-full text-left px-4 py-2 hover:bg-background-200 flex items-center gap-3 transition-colors"
                         >
@@ -155,12 +160,17 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
                             {result.avatarUrl ? (
                               <img src={result.avatarUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              result.name?.slice(0,2).toUpperCase() || 'ST'
+                              result.name?.slice(0,2).toUpperCase() || (result.role === 'club' ? 'CB' : 'ST')
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-gray-1000 truncate">{result.name}</p>
-                            <p className="text-[10px] text-gray-600 font-mono truncate">{result.uid} {result.branch && `· ${result.branch}`}</p>
+                            <p className="text-sm font-medium text-gray-1000 truncate flex items-center gap-1.5">
+                              {result.name}
+                              {result.role === 'club' && <Building2 className="w-3.5 h-3.5 text-gray-500" />}
+                            </p>
+                            <p className="text-[10px] text-gray-600 font-mono truncate">
+                              {result.role === 'club' ? result.uid : `${result.uid} ${result.branch ? `· ${result.branch}` : ''}`}
+                            </p>
                           </div>
                         </button>
                       </li>
@@ -178,11 +188,13 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
         )}
         
         <div className="flex items-center gap-1 sm:gap-2.5 shrink-0 min-w-0">
-          <ThemeSwitcher small={true} />
+          <div className="hidden md:block">
+            <ThemeSwitcher small={true} />
+          </div>
 
           {isAuthenticated && (
             <button 
-              onClick={() => setIsNotificationOpen(true)} 
+              onClick={() => setIsNotificationOpen(true)}
               aria-label="View notifications"
               className="relative flex items-center justify-center p-1.5 sm:p-2 hover:bg-gray-200 rounded-md transition-colors text-gray-900 hover:text-gray-1000 cursor-pointer"
             >
@@ -196,7 +208,7 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
           )}
 
           {isAuthenticated && (
-            <div ref={accountRef} className="relative shrink-0">
+            <div ref={accountRef} className="relative shrink-0 hidden md:block">
               <button 
                 onClick={() => setShowAccountMenu((v) => !v)}
                 aria-label={showAccountMenu ? 'Close account menu' : 'Open account menu'}
@@ -205,7 +217,11 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
                 className="flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 hover:bg-gray-200 rounded-md transition-colors text-gray-900 hover:text-gray-1000 cursor-pointer"
               >
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-200 border border-gray-400 overflow-hidden shrink-0 flex items-center justify-center text-[11px] sm:text-xs font-semibold text-gray-700">
-                  <User className="w-4 h-4 sm:w-4.5 sm:h-4.5" strokeWidth={1.75} />
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-4 h-4 sm:w-4.5 sm:h-4.5" strokeWidth={1.75} />
+                  )}
                 </div>
               </button>
 
@@ -216,8 +232,12 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
                 >
                   <div className="px-3.5 py-3 border-b border-gray-400 bg-background-200/50 min-w-0">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-gray-1000 text-background-100 flex items-center justify-center text-xs font-bold shrink-0">
-                        {roleLabel?.slice(0,2).toUpperCase() || 'U'}
+                      <div className="w-9 h-9 rounded-full bg-gray-1000 text-background-100 flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+                        {user?.avatarUrl ? (
+                          <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          roleLabel?.slice(0,2).toUpperCase() || 'U'
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-1000 truncate">
@@ -268,6 +288,8 @@ export default function Topbar({ showSearch = true, defaultSearchQuery = '' }) {
               )}
             </div>
           )}
+
+          {isAuthenticated && <MobileStudentNav />}
         </div>
       </header>
 
