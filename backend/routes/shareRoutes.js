@@ -133,7 +133,7 @@ router.get('/placement/:id', async (req, res) => {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const redirectUrl = `${frontendUrl}/placements/${id}`;
-    const title = post.title || \`\${post.company?.name || 'Company'} - \${post.role || 'Role'}\`;
+    const title = post.title || `${post.company?.name || 'Company'} - ${post.role || 'Role'}`;
     
     // Attempt to use the company logo, otherwise fallback to author avatar, otherwise default
     const companyName = post.company?.name || 'Company';
@@ -143,41 +143,41 @@ router.get('/placement/:id', async (req, res) => {
     const authorName = post.author?.name || 'a student';
     const description = post.content 
       ? post.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
-      : \`Placement experience shared by \${authorName} at \${companyName}.\`;
+      : `Placement experience shared by ${authorName} at ${companyName}.`;
 
-    const html = \`
+    const html = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>\${title} | Campus Connect</title>
+        <title>${title} | Campus Connect</title>
         
         <!-- Open Graph / Facebook / LinkedIn -->
         <meta property="og:type" content="article">
-        <meta property="og:url" content="\${redirectUrl}">
-        <meta property="og:title" content="\${title}">
-        <meta property="og:description" content="\${description}">
-        <meta property="og:image" content="\${avatar}">
+        <meta property="og:url" content="${redirectUrl}">
+        <meta property="og:title" content="${title}">
+        <meta property="og:description" content="${description}">
+        <meta property="og:image" content="${avatar}">
 
         <!-- Twitter -->
         <meta property="twitter:card" content="summary_large_image">
-        <meta property="twitter:url" content="\${redirectUrl}">
-        <meta property="twitter:title" content="\${title}">
-        <meta property="twitter:description" content="\${description}">
-        <meta property="twitter:image" content="\${avatar}">
+        <meta property="twitter:url" content="${redirectUrl}">
+        <meta property="twitter:title" content="${title}">
+        <meta property="twitter:description" content="${description}">
+        <meta property="twitter:image" content="${avatar}">
 
         <!-- Client-side Redirect -->
-        <meta http-equiv="refresh" content="0; url=\${redirectUrl}">
+        <meta http-equiv="refresh" content="0; url=${redirectUrl}">
         <script>
-          window.location.href = "\${redirectUrl}";
+          window.location.href = "${redirectUrl}";
         </script>
       </head>
       <body>
-        <p>Redirecting to <a href="\${redirectUrl}">\${title}</a>...</p>
+        <p>Redirecting to <a href="${redirectUrl}">${title}</a>...</p>
       </body>
       </html>
-    \`;
+    `;
 
     res.send(html);
   } catch (error) {
