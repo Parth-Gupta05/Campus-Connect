@@ -1713,7 +1713,7 @@ export default function StudentDashboard() {
                           <p className="text-xs text-gray-700 font-mono mt-0.5">{edu.degree} · {edu.fieldOfStudy}</p>
                         </div>
                         <div className="text-right font-mono text-xs text-gray-700">
-                          {edu.grade && <span className="font-semibold text-teal-700 mr-2">{edu.grade} CGPA</span>}
+                          {edu.grade && <span className="font-semibold text-teal-700 mr-2">{edu.grade}{['High School (10th Std)', '11th and 12th or Diploma'].includes(edu.level) ? '%' : ' CGPA'}</span>}
                           <span>{edu.startYear ? `${edu.startYear} - ${edu.endYear || 'Present'}` : ''}</span>
                         </div>
                       </div>
