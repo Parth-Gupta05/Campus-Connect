@@ -278,28 +278,28 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
 
   return (
     <ProfileThemeProvider customization={activeCustomization}>
-      <div className={`flex min-h-screen bg-[var(--profile-bg)] text-[var(--profile-text)] selection:bg-[var(--profile-accent)] selection:text-[var(--profile-bg)] ${isAuthenticated && !previewUid ? 'flex-col md:flex-row md:h-screen md:overflow-hidden' : ''}`}>
+      <div className={`@container flex min-h-screen bg-[var(--profile-bg)] text-[var(--profile-text)] selection:bg-[var(--profile-accent)] selection:text-[var(--profile-bg)] ${isAuthenticated && !previewUid ? 'flex-col @md:flex-row @md:h-screen @md:overflow-hidden' : ''}`}>
         {isAuthenticated && !previewUid && <Sidebar />}
-        <main className={`flex-1 min-w-0 bg-transparent relative isolate ${isAuthenticated && !previewUid ? 'md:overflow-y-auto' : ''}`}>
+        <main className={`flex-1 min-w-0 bg-transparent relative isolate ${isAuthenticated && !previewUid ? '@md:overflow-y-auto' : ''}`}>
           <div className="profile-pattern-overlay" />
           <div className="relative z-10">
             {!previewUid && (
               <Topbar showSearch={isAuthenticated} defaultSearchQuery={profile?.name || ''} />
             )}
 
-            <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8 pb-20">
+            <div className="max-w-6xl w-full mx-auto p-4 @sm:p-8 space-y-8 pb-20">
               {/* Profile Header */}
               <section className="profile-card relative overflow-hidden mt-4">
                 {/* Banner Texture Layer */}
                 {activeCustomization.appearance?.texture && activeCustomization.appearance.texture !== 'none' && (
-                  <div className="absolute inset-0 z-0 h-40 overflow-hidden rounded-t-xl opacity-100 pointer-events-auto max-md:sepia-[.3] max-md:brightness-90">
+                  <div className="absolute inset-0 z-0 h-40 overflow-hidden rounded-t-xl opacity-100 pointer-events-auto @max-md:sepia-[.3] @max-md:brightness-90">
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--profile-card-bg)] z-10 pointer-events-none" />
-                    {activeCustomization.appearance.texture === 'animated-grid' && <AnimatedGridPattern width={40} height={40} className="md:[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)] fill-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)]" />}
+                    {activeCustomization.appearance.texture === 'animated-grid' && <AnimatedGridPattern width={40} height={40} className="@md:[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)] fill-[color-mix(in_srgb,var(--profile-accent)_30%,transparent)]" />}
                     {activeCustomization.appearance.texture === 'interactive-grid' && (
                       <InteractiveGridPattern
                         squares={[100, 100]}
                         className={cn(
-                          "md:[mask-image:linear-gradient(to_right,transparent_20%,white_80%)]",
+                          "@md:[mask-image:linear-gradient(to_right,transparent_20%,white_80%)]",
                           "absolute w-[3000px] h-[300%] top-[-100%] left-1/2 -translate-x-1/2 skew-y-12 max-w-none",
                           "stroke-[color-mix(in_srgb,var(--profile-accent)_20%,transparent)]"
                         )}
@@ -320,18 +320,18 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                           [21, 2], [23, 4], [25, 3], [27, 2], [29, 4], [31, 3], [33, 2]
                         ]}
                         className={cn(
-                          "md:[mask-image:linear-gradient(to_right,transparent_10%,white_90%)]",
+                          "@md:[mask-image:linear-gradient(to_right,transparent_10%,white_90%)]",
                           "absolute w-[2000px] h-[300%] top-[-100%] left-1/2 -translate-x-[40%] skew-y-6 max-w-none"
                         )}
                       />
                     )}
                     {activeCustomization.appearance.texture === 'striped' && (
-                      <StripedPattern className="md:[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_20%,transparent)]" />
+                      <StripedPattern className="@md:[mask-image:linear-gradient(to_right,transparent_10%,white_80%)] stroke-[color-mix(in_srgb,var(--profile-accent)_20%,transparent)]" />
                     )}
                     {activeCustomization.appearance.texture === 'light-rays' && (
                       <LightRays
                         color="var(--profile-accent)"
-                        className="md:[mask-image:linear-gradient(to_right,transparent_10%,white_40%,white_70%,transparent)]"
+                        className="@md:[mask-image:linear-gradient(to_right,transparent_10%,white_40%,white_70%,transparent)]"
                       />
                     )}
                     {activeCustomization.appearance.texture === 'noise' && (
@@ -345,12 +345,12 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                         interval={90}
                         fadeBottom={0.6}
                         color="var(--profile-accent)"
-                        className="opacity-100 md:[mask-image:linear-gradient(to_right,transparent_5%,white_60%)]"
+                        className="opacity-100 @md:[mask-image:linear-gradient(to_right,transparent_5%,white_60%)]"
                       />
                     )}
                     {activeCustomization.appearance.texture === 'shape-waves' && (
                       <div
-                        className="absolute inset-0 w-full h-full relative md:[mask-image:linear-gradient(to_right,transparent_0%,transparent_15%,black_40%,black_100%)] md:[webkit-mask-image:linear-gradient(to_right,transparent_0%,transparent_15%,black_40%,black_100%)]"
+                        className="absolute inset-0 w-full h-full relative @md:[mask-image:linear-gradient(to_right,transparent_0%,transparent_15%,black_40%,black_100%)] @md:[webkit-mask-image:linear-gradient(to_right,transparent_0%,transparent_15%,black_40%,black_100%)]"
                       >
                         <ShapeWaves
                           fontFamily='Geist, "Geist Sans", system-ui, sans-serif'
@@ -381,7 +381,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       </div>
                     )}
                     {activeCustomization.appearance.texture === '3d-prism' && (
-                      <div className="absolute inset-y-0 right-0 w-full md:w-1/2">
+                      <div className="absolute inset-y-0 right-0 w-full @md:w-1/2">
                         <Prism />
                       </div>
                     )}
@@ -389,7 +389,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                 )}
 
                 <div className="p-6 relative z-10 space-y-6 pointer-events-none">
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+                  <div className="flex flex-col @sm:flex-row items-center @sm:items-start gap-5 text-center @sm:text-left">
                     <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-800 border-2 border-[var(--profile-card-border)] flex items-center justify-center shrink-0 overflow-hidden shadow-2xs relative z-20 pointer-events-auto">
                       {profile.avatarUrl ? (
                         <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
@@ -400,7 +400,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       )}
                     </div>
                     <div className="space-y-1.5 flex-1 min-w-0 pt-1">
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                      <div className="flex flex-wrap items-center justify-center @sm:justify-start gap-2">
                         <h1 className="text-xl font-semibold text-[var(--profile-text)] tracking-tight">{profile.name}</h1>
                         {profile.uid && (
                           <span className="px-2 py-0.5 rounded-full bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] text-[10px] font-mono text-[var(--profile-muted-text)]">
@@ -411,7 +411,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       <p className="text-xs text-[var(--profile-muted-text)] font-sans pointer-events-auto">
                         {education.length > 0 ? `${education[0].degree} · ${education[0].institution}` : 'Campus Connect Student'}
                       </p>
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-3 pointer-events-auto">
+                      <div className="flex flex-wrap items-center justify-center @sm:justify-start gap-2.5 pt-3 pointer-events-auto">
                         {profile.githubUsername && profile.githubVerified && (
                           <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-md bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] text-[var(--profile-muted-text)] hover:text-[var(--profile-accent)] hover:border-[var(--profile-accent)] transition-colors">
                             <FaGithub className="w-3.5 h-3.5" />
@@ -444,9 +444,9 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
 
               {/* 4-Column Clean Metrics Strip */}
               {showMetricsStrip && (
-                <div className="flex flex-wrap profile-card divide-y md:divide-y-0 md:divide-x divide-[var(--profile-card-border)] overflow-hidden">
+                <div className="flex flex-wrap profile-card divide-y @md:divide-y-0 @md:divide-x divide-[var(--profile-card-border)] overflow-hidden">
                   {showProblemsSolved && (
-                    <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
+                    <div className="flex-1 min-w-[50%] @md:min-w-0 p-5 flex flex-col justify-center">
                       <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">Problems Solved</div>
                       <div className="text-2xl font-bold font-sans text-[var(--profile-text)] mt-1">
                         {leetcode?.profile ? (
@@ -462,7 +462,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                   )}
 
                   {showPublicRepos && (
-                    <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
+                    <div className="flex-1 min-w-[50%] @md:min-w-0 p-5 flex flex-col justify-center">
                       <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">Public Repos</div>
                       <div className="text-2xl font-bold font-sans text-[var(--profile-text)] mt-1">
                         {github?.profile && privacy.githubTotalStars !== false ? (
@@ -475,7 +475,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                   )}
 
                   {showGlobalRank && (
-                    <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
+                    <div className="flex-1 min-w-[50%] @md:min-w-0 p-5 flex flex-col justify-center">
                       <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">LeetCode Global Rank</div>
                       <div className="text-2xl font-bold font-sans text-[var(--profile-text)] mt-1">
                         {leetcode?.profile?.ranking ? (
@@ -491,7 +491,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                   )}
 
                   {showCgpa && (
-                    <div className="flex-1 min-w-[50%] md:min-w-0 p-5 flex flex-col justify-center">
+                    <div className="flex-1 min-w-[50%] @md:min-w-0 p-5 flex flex-col justify-center">
                       <div className="text-[11px] font-mono text-[var(--profile-muted-text)] uppercase tracking-wider">Academic CGPA</div>
                       <div className="text-2xl font-bold font-sans text-[var(--profile-accent)] mt-1 flex items-baseline">
                         {studentCgpa ? (
@@ -542,7 +542,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                     })()}
                   </div>
                   <div className="w-full overflow-x-auto scrollbar-none">
-                    <div className="h-44 sm:h-52" style={{ minWidth: `${Math.max(sgpaChartData.length * 50, 280)}px` }}>
+                    <div className="h-44 @sm:h-52" style={{ minWidth: `${Math.max(sgpaChartData.length * 50, 280)}px` }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={sgpaChartData} margin={{ top: 5, right: 20, bottom: 5, left: -20 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--profile-border)" opacity={0.5} />
@@ -591,13 +591,13 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
               {/* Activity Heatmap Card */}
               {((privacy.githubHeatmap !== false && profile.githubVerified) || (privacy.leetcodeHeatmap !== false && profile.leetcodeVerified)) && (
                 <div className="profile-card p-6 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3">
                     <div>
                       <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Verified Activity Stream</h2>
                       <p className="text-xs text-[var(--profile-muted-text)] font-mono mt-0.5">Commits and coding problem submissions across the last 365 days</p>
                     </div>
 
-                    <div className="inline-flex p-0.5 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] self-start sm:self-auto">
+                    <div className="inline-flex p-0.5 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] self-start @sm:self-auto">
                       {privacy.githubHeatmap !== false && profile.githubVerified && (
                         <button
                           type="button"
@@ -668,7 +668,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
           )}
 
               {/* Top Repositories & Resume Vault */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6">
                 {/* Top Repositories Preview */}
                 {visibility.showGithub !== false && profile.githubVerified && (
                   <div className="profile-card p-6 space-y-3">
@@ -755,7 +755,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
               {/* LeetCode Achievements (Badges, Contest Rating, etc) */}
               {privacy.leetcodeAchievements !== false && leetcode?.profile && profile.leetcodeVerified && (
                 <div className="profile-card p-6 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--profile-card-border)] pb-4">
+                  <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 border-b border-[var(--profile-card-border)] pb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] flex items-center justify-center shrink-0">
                         <SiLeetcode className="w-4 h-4 text-[#ffa116]" />
@@ -821,9 +821,9 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
               )}
 
               {(hasLeftColumn || hasRightColumn) && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 @lg:grid-cols-3 gap-6">
                   {hasLeftColumn && (
-                    <div className={`space-y-6 ${hasRightColumn ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
+                    <div className={`space-y-6 ${hasRightColumn ? '@lg:col-span-2' : '@lg:col-span-3'}`}>
                       {/* Experience */}
                       {hasExperience && (
                         <section className="profile-card p-6">
@@ -859,7 +859,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                             <FolderGit2 className="w-4 h-4 text-[var(--profile-muted-text)]" />
                             <h2 className="text-sm font-semibold text-[var(--profile-text)] tracking-tight">Projects</h2>
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 @sm:grid-cols-2 gap-4">
                             {projects.map((proj, i) => (
                               <div key={i} className="group relative isolate p-4 rounded-lg bg-[var(--profile-card-bg)] border border-[var(--profile-card-border)] flex flex-col h-full hover:border-[var(--profile-accent)] transition-colors overflow-hidden">
 
@@ -890,7 +890,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                   )}
 
                   {hasRightColumn && (
-                    <div className={`space-y-6 ${hasLeftColumn ? 'lg:col-span-1' : 'lg:col-span-3'}`}>
+                    <div className={`space-y-6 ${hasLeftColumn ? '@lg:col-span-1' : '@lg:col-span-3'}`}>
                       {/* Education */}
                       {hasEducation && (
                         <section className="profile-card p-5">
@@ -945,7 +945,7 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
                     {achievements.slice(0, isCertsExpanded ? achievements.length : 4).map((ach, i) => (
                       <div key={`ach-${i}`} className="flex gap-3.5 p-4 rounded-xl border border-[var(--profile-card-border)] bg-[var(--profile-bg)] shadow-sm transition-all hover:border-[var(--profile-text)]">
                         <div className="w-1.5 rounded-full bg-amber-500/50 shrink-0 mb-1 mt-1"></div>
@@ -956,38 +956,40 @@ export default function PublicProfile({ previewUid = null, previewCustomization 
                       </div>
                     ))}
                     {certificates.slice(0, isCertsExpanded ? certificates.length : (Math.max(0, 4 - achievements.length))).map((cert, i) => (
-                      <div key={`cert-${i}`} className="flex flex-col sm:flex-row gap-3.5 p-4 rounded-xl border border-[var(--profile-card-border)] bg-[var(--profile-bg)] shadow-sm transition-all hover:border-[var(--profile-text)]">
-                        <div className="relative w-8 h-8 shrink-0 mt-0.5 hidden sm:flex items-center justify-center">
-                          {(cert.issuerLogo || cert.clubId?.profilePhoto) && (
-                            <img
-                              src={cert.issuerLogo || cert.clubId?.profilePhoto}
-                              alt={cert.issuer || cert.clubId?.name}
-                              className="w-full h-full object-contain rounded-md"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.style.display = 'none';
-                                if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                          )}
-                          <div style={{ display: (cert.issuerLogo || cert.clubId?.profilePhoto) ? 'none' : 'flex' }} className="w-full h-full items-center justify-center">
-                            <Building2 className="w-4 h-4 text-[var(--profile-muted-text)]" />
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-medium text-[var(--profile-text)] truncate">{cert.title}</h3>
-                          <div className="text-xs text-[var(--profile-muted-text)] font-mono mt-1 flex items-center gap-2">
-                            <span className="truncate">{cert.issuer}</span>
-                            {cert.issueDate && (
-                              <>
-                                <span>&bull;</span>
-                                <span className="shrink-0">{cert.issueDate}</span>
-                              </>
+                      <div key={`cert-${i}`} className="flex flex-col @sm:flex-row gap-3.5 p-4 rounded-xl border border-[var(--profile-card-border)] bg-[var(--profile-bg)] shadow-sm transition-all hover:border-[var(--profile-text)]">
+                        <div className="flex gap-3.5 flex-1 min-w-0">
+                          <div className="relative w-8 h-8 shrink-0 mt-0.5 flex items-center justify-center">
+                            {(cert.issuerLogo || cert.clubId?.profilePhoto) && (
+                              <img
+                                src={cert.issuerLogo || cert.clubId?.profilePhoto}
+                                alt={cert.issuer || cert.clubId?.name}
+                                className="w-full h-full object-contain rounded-md"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.style.display = 'none';
+                                  if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
                             )}
+                            <div style={{ display: (cert.issuerLogo || cert.clubId?.profilePhoto) ? 'none' : 'flex' }} className="w-full h-full items-center justify-center">
+                              <Building2 className="w-4 h-4 text-[var(--profile-muted-text)]" />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-[var(--profile-text)] truncate">{cert.title}</h3>
+                            <div className="text-xs text-[var(--profile-muted-text)] font-mono mt-1 flex items-center gap-2">
+                              <span className="truncate">{cert.issuer}</span>
+                              {cert.issueDate && (
+                                <>
+                                  <span>&bull;</span>
+                                  <span className="shrink-0">{cert.issueDate}</span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                         {cert.credentialUrl && (
-                          <a href={formatExternalUrl(cert.credentialUrl)} target="_blank" rel="noreferrer" className="text-xs font-mono text-emerald-600 hover:bg-emerald-500/10 px-3 py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 sm:self-center whitespace-nowrap mt-3 sm:mt-0 border border-emerald-500/20">
+                          <a href={formatExternalUrl(cert.credentialUrl)} target="_blank" rel="noreferrer" className="text-xs font-mono text-emerald-600 hover:bg-emerald-500/10 px-3 py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 @sm:self-center whitespace-nowrap mt-3 @sm:mt-0 border border-emerald-500/20">
                             View <ExternalLink className="w-3 h-3" />
                           </a>
                         )}

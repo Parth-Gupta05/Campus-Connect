@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { Settings2, RefreshCcw, Save, Loader2, User, Eye, Lock, CheckCircle2, AlertCircle, ChevronDown, PanelLeft } from 'lucide-react';
+import { Settings2, RefreshCcw, Save, Loader2, User, Eye, Lock, CheckCircle2, AlertCircle, ChevronDown, PanelLeft, Smartphone, Monitor } from 'lucide-react';
 import { ProfileThemeProvider } from '../profile/ProfileThemeProvider';
 import PublicProfile from './PublicProfile';
 import { PROFILE_PRESETS, ACCENT_COLORS } from '../config/profilePresets';
@@ -77,6 +77,7 @@ export default function Profile() {
   const [mobileView, setMobileView] = useState('settings'); // 'settings' | 'preview'
   const [settingsWidth, setSettingsWidth] = useState(400);
   const [isDragging, setIsDragging] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState('desktop'); // 'desktop' | 'mobile'
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -466,12 +467,34 @@ export default function Profile() {
 
           {/* Live Preview (Right) */}
           <div className={`${mobileView === 'preview' ? 'flex-1' : 'hidden md:block'} min-w-0 md:flex-1 bg-gray-200/50 dark:bg-gray-950 overflow-y-auto relative isolate`}>
-            <div className="sticky top-0 p-3 bg-gray-100/80 backdrop-blur-sm border-b border-gray-300 text-xs font-mono text-gray-500 flex items-center justify-center z-50">
-              Live Preview (Read Only)
+            <div className="sticky top-0 p-2 bg-gray-100/80 backdrop-blur-sm border-b border-gray-300 text-xs font-mono text-gray-500 flex items-center justify-between z-50 px-4">
+              <div className="w-24 hidden sm:block"></div> {/* Spacer for balance */}
+              <span>Live Preview (Read Only)</span>
+              <div className="flex items-center gap-1 bg-gray-200/50 dark:bg-gray-900/50 p-1 rounded-lg border border-gray-300 dark:border-gray-800">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={`p-1.5 rounded-md transition-all cursor-pointer ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-800 shadow-sm text-gray-1000 dark:text-gray-100 border border-gray-200 dark:border-gray-700/50' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent'}`}
+                  title="Desktop View"
+                >
+                  <Monitor className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={`p-1.5 rounded-md transition-all cursor-pointer ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-800 shadow-sm text-gray-1000 dark:text-gray-100 border border-gray-200 dark:border-gray-700/50' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent'}`}
+                  title="Mobile View"
+                >
+                  <Smartphone className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="p-4 sm:p-8 min-h-full">
-              <div className="bg-background-100 rounded-xl shadow-2xl border border-gray-400 overflow-hidden relative" style={{ minHeight: '1000px' }}>
-                <div className="w-full h-full transform origin-top left-0 overflow-y-auto">
+            <div className={`p-4 sm:p-8 min-h-full flex ${previewDevice === 'mobile' ? 'justify-center bg-gray-300/20 dark:bg-gray-900/50' : ''}`}>
+              <div 
+                className={`bg-background-100 shadow-2xl border border-gray-400 overflow-hidden relative transition-all duration-300 ease-in-out origin-top flex flex-col ${previewDevice === 'mobile' ? 'w-[375px] rounded-[2rem] border-8 border-gray-800 dark:border-gray-950 my-auto' : 'w-full rounded-xl'}`} 
+                style={previewDevice === 'mobile' ? { height: '812px', minHeight: '812px' } : { minHeight: '1000px' }}
+              >
+                <div className={`w-full h-full transform origin-top left-0 flex-1 ${previewDevice === 'mobile' ? 'overflow-y-auto no-scrollbar' : 'overflow-y-auto'}`}>
                   {profileData?.uid ? (
                     (() => {
                       const getFilteredPreviewProfileData = () => {
