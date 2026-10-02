@@ -216,7 +216,7 @@ export default function Profile() {
             style={{ '--settings-width': `${settingsWidth}px` }}
             className={`w-full ${mobileView === 'settings' ? 'flex-1 md:flex-none' : 'hidden md:flex md:flex-none'} md:max-h-none border-b md:border-b-0 md:border-r border-gray-300 bg-background-100 overflow-y-auto shrink-0 flex flex-col relative ${isSettingsPanelOpen ? 'md:w-[var(--settings-width)]' : 'md:w-14'} ${!isDragging ? 'md:transition-[width] md:duration-300 md:ease-geist' : ''}`}
           >
-            <div className={`border-b border-gray-300 flex items-center sticky top-0 bg-background-100/90 backdrop-blur-md z-10 ${isSettingsPanelOpen ? 'p-6 justify-between' : 'p-6 justify-between md:p-2 md:justify-center'}`}>
+            <div className={`border-b border-gray-300 flex items-center sticky top-0 bg-white/90 dark:bg-black/90 backdrop-blur-md z-10 ${isSettingsPanelOpen ? 'p-6 justify-between' : 'p-6 justify-between md:p-2 md:justify-center'}`}>
               <div className={isSettingsPanelOpen ? '' : 'md:hidden'}>
                 <h1 className="text-xl font-bold tracking-tight">Profile</h1>
                 <p className="text-xs text-gray-500 mt-1">Customize your public profile</p>
@@ -458,7 +458,7 @@ export default function Profile() {
           {isSettingsPanelOpen && (
             <div 
               onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }}
-              className="hidden md:flex w-2 cursor-col-resize shrink-0 items-center justify-center group z-30 transition-colors bg-gray-200/50 dark:bg-gray-900/50 hover:bg-gray-300/50 dark:hover:bg-gray-800/50"
+              className="hidden md:flex w-2 cursor-col-resize shrink-0 items-center justify-center group z-30 transition-colors bg-slate-200/50 dark:bg-slate-900/50 hover:bg-slate-300/50 dark:hover:bg-slate-800/50"
               title="Drag to resize"
             >
               <div className={`w-[2px] h-full transition-colors ${isDragging ? 'bg-blue-500' : 'bg-gray-400 group-hover:bg-blue-500'}`} />
@@ -466,15 +466,15 @@ export default function Profile() {
           )}
 
           {/* Live Preview (Right) */}
-          <div className={`${mobileView === 'preview' ? 'flex-1' : 'hidden md:block'} min-w-0 md:flex-1 bg-gray-200/50 dark:bg-gray-950 overflow-y-auto relative isolate`}>
-            <div className="sticky top-0 p-2 bg-gray-100/80 backdrop-blur-sm border-b border-gray-300 text-xs font-mono text-gray-500 flex items-center justify-between z-50 px-4">
+          <div className={`${mobileView === 'preview' ? 'flex-1' : 'hidden md:block'} min-w-0 md:flex-1 bg-slate-100 dark:bg-[#0a0a0a] overflow-y-auto relative isolate`}>
+            <div className="sticky top-0 p-2 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gray-300 dark:border-gray-800 text-xs font-mono text-gray-500 flex items-center justify-between z-50 px-4">
               <div className="w-24 hidden sm:block"></div> {/* Spacer for balance */}
               <span>Live Preview (Read Only)</span>
-              <div className="flex items-center gap-1 bg-gray-200/50 dark:bg-gray-900/50 p-1 rounded-lg border border-gray-300 dark:border-gray-800">
+              <div className="flex items-center gap-1 bg-slate-200/50 dark:bg-slate-800/80 p-1 rounded-lg border border-gray-300 dark:border-gray-600">
                 <button
                   type="button"
                   onClick={() => setPreviewDevice('desktop')}
-                  className={`p-1.5 rounded-md transition-all cursor-pointer ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-800 shadow-sm text-gray-1000 dark:text-gray-100 border border-gray-200 dark:border-gray-700/50' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent'}`}
+                  className={`p-1.5 rounded-md transition-all cursor-pointer ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-1000 dark:text-gray-100 border border-gray-200 dark:border-gray-500' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent'}`}
                   title="Desktop View"
                 >
                   <Monitor className="w-4 h-4" />
@@ -482,16 +482,16 @@ export default function Profile() {
                 <button
                   type="button"
                   onClick={() => setPreviewDevice('mobile')}
-                  className={`p-1.5 rounded-md transition-all cursor-pointer ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-800 shadow-sm text-gray-1000 dark:text-gray-100 border border-gray-200 dark:border-gray-700/50' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent'}`}
+                  className={`p-1.5 rounded-md transition-all cursor-pointer ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-1000 dark:text-gray-100 border border-gray-200 dark:border-gray-500' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent'}`}
                   title="Mobile View"
                 >
                   <Smartphone className="w-4 h-4" />
                 </button>
               </div>
             </div>
-            <div className={`p-4 sm:p-8 min-h-full flex ${previewDevice === 'mobile' ? 'justify-center bg-gray-300/20 dark:bg-gray-900/50' : ''}`}>
+            <div className={`p-4 sm:p-8 min-h-full flex ${previewDevice === 'mobile' ? 'justify-center bg-slate-300/20 dark:bg-slate-900/50' : ''}`}>
               <div 
-                className={`bg-background-100 shadow-2xl border border-gray-400 overflow-hidden relative transition-all duration-300 ease-in-out origin-top flex flex-col ${previewDevice === 'mobile' ? 'w-[375px] rounded-[2rem] border-8 border-gray-800 dark:border-gray-950 my-auto' : 'w-full rounded-xl'}`} 
+                className={`bg-background-100 shadow-2xl border border-gray-400 overflow-hidden relative transition-all duration-300 ease-in-out origin-top flex flex-col ${previewDevice === 'mobile' ? 'w-[375px] rounded-[2rem] border-8 border-gray-800 dark:border-gray-700 my-auto' : 'w-full rounded-xl'}`}  
                 style={previewDevice === 'mobile' ? { height: '812px', minHeight: '812px' } : { minHeight: '1000px' }}
               >
                 <div className={`w-full h-full transform origin-top left-0 flex-1 ${previewDevice === 'mobile' ? 'overflow-y-auto no-scrollbar' : 'overflow-y-auto'}`}>
