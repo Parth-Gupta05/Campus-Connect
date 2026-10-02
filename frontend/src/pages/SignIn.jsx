@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   Lock,
@@ -33,15 +33,15 @@ export default function SignIn() {
   const { user, login } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') navigate('/admin');
-      else if (user.role === 'club') navigate('/club');
-      else navigate('/dashboard');
+      const from = location.state?.from?.pathname || (user.role === 'admin' ? '/admin' : user.role === 'club' ? '/club' : '/dashboard');
+      navigate(from, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, location]);
 
   // Forgot Password States
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -263,7 +263,7 @@ export default function SignIn() {
             {/* Switch to Sign Up */}
             <div className="mt-8 pt-6 border-t border-gray-400 text-center text-xs text-gray-900">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-blue-700 font-medium hover:underline">
+              <Link to="/signup" state={{ from: location.state?.from }} className="text-blue-700 font-medium hover:underline">
                 Sign up
               </Link>
             </div>

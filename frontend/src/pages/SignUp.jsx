@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -40,17 +40,17 @@ export default function SignUp() {
   const [parsedProfileData, setParsedProfileData] = useState(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, login } = useContext(AuthContext);
   const { showToast } = useToast();
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') navigate('/admin');
-      else if (user.role === 'club') navigate('/club');
-      else navigate('/dashboard');
+      const from = location.state?.from?.pathname || (user.role === 'admin' ? '/admin' : user.role === 'club' ? '/club' : '/dashboard');
+      navigate(from, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, location]);
 
   const [verifiedUid, setVerifiedUid] = useState(null);
 
@@ -269,7 +269,7 @@ export default function SignUp() {
             {/* Switch to Sign In */}
             <div className="mt-6 pt-6 border-t border-gray-400 text-center text-xs text-gray-900">
               Already have an account?{' '}
-              <Link to="/signin" className="text-blue-700 font-medium hover:underline">
+              <Link to="/signin" state={{ from: location.state?.from }} className="text-blue-700 font-medium hover:underline">
                 Sign in
               </Link>
             </div>
