@@ -1533,8 +1533,9 @@ export default function StudentProfile() {
       showToast('UID is missing, cannot share profile', 'error');
       return;
     }
-    // Support parsing like 23-COMPA10-27 to make it URL friendly, or just use the exact UID
-    const publicUrl = `${window.location.origin}/student/${profile.uid.toUpperCase()}`;
+    // Use the backend /api/share route for rich link previews (Open Graph)
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const publicUrl = `${apiUrl}/api/share/student/${profile.uid.toUpperCase()}`;
     try {
       await navigator.clipboard.writeText(publicUrl);
       showToast('Public profile link copied to clipboard!', 'success');

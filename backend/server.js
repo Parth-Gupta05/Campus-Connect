@@ -18,6 +18,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const placementRoutes = require('./routes/placementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const aicteRoutes = require('./routes/aicteRoutes');
+const shareRoutes = require('./routes/shareRoutes');
 
 // Initialize Cron Jobs
 require('./cron/assessmentProcessor');
@@ -53,6 +54,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/placements', placementRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/aicte', aicteRoutes);
+app.use('/api/share', shareRoutes);
 
 app.get('/', (req, res) => {
   res.send('Backend is running!');
