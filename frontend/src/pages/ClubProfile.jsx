@@ -117,7 +117,9 @@ export default function ClubProfile() {
 
   const handleShare = () => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const publicUrl = `${apiUrl}/api/share/club/${id}`;
+      navigator.clipboard.writeText(publicUrl);
       showToast('Club link copied to clipboard!', 'success');
     }
   };

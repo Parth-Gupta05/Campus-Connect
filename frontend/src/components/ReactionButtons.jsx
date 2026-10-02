@@ -82,7 +82,8 @@ export default function ReactionButtons({
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/placements/${postId}`;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const url = `${apiUrl}/api/share/placement/${postId}`;
     try {
       await navigator.clipboard.writeText(url);
       showToast('Post link copied to clipboard!', 'success');
