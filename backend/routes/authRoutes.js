@@ -243,7 +243,9 @@ router.post('/register', async (req, res) => {
         email: user.email,
         universityEmail: user.universityEmail,
         uid: user.uid,
-        role: user.role
+        role: user.role,
+        avatarUrl: user.avatarUrl,
+        name: user.name
       }
     });
   } catch (error) {
@@ -313,6 +315,8 @@ router.post('/login', loginLimiter, async (req, res) => {
               universityEmail: user.universityEmail,
               uid: user.uid,
               role: user.role,
+              avatarUrl: user.avatarUrl,
+              name: user.name,
               isMissingCredential: isClub ? false : (!user.email || !user.uid)
             }
           });
@@ -414,6 +418,8 @@ router.post('/link-account', otpLimiter, async (req, res) => {
         email: user.email,
         uid: user.uid,
         role: user.role,
+        avatarUrl: user.avatarUrl,
+        name: user.name,
         isMissingCredential: !user.email || !user.uid
       }
     });
@@ -492,6 +498,8 @@ router.post('/link-account', otpLimiter, async (req, res) => {
         universityEmail: user.universityEmail,
         uid: user.uid,
         role: user.role,
+        avatarUrl: user.avatarUrl,
+        name: user.name,
         isMissingCredential: isClub ? false : (!user.email || !user.uid)
       }
     });
@@ -606,6 +614,8 @@ router.post('/link-account', otpLimiter, async (req, res) => {
         email: user.email,
         uid: user.uid,
         role: user.role,
+        avatarUrl: user.avatarUrl,
+        name: user.name,
         isMissingCredential: !user.email || !user.uid
       }
     });
@@ -684,6 +694,8 @@ router.post('/verify-link-otp', otpLimiter, async (req, res) => {
         email: user.email,
         uid: user.uid,
         role: user.role,
+        avatarUrl: user.avatarUrl,
+        name: user.name,
         isMissingCredential: !user.email || !user.uid
       }
     });

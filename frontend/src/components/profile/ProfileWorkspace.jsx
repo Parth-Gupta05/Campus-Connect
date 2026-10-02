@@ -1310,7 +1310,7 @@ function ResumeEditorModal({ profile, onComplete, onClose, onPreviewPdf, initial
 // 3. MAIN STUDENT PROFILE PAGE
 // =============================================================================
 export default function StudentProfile() {
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -1379,6 +1379,7 @@ export default function StudentProfile() {
       try {
         const res = await axios.get('/user/profile');
         setProfile(res.data);
+        setUser(res.data);
       } catch (err) {
         console.error('Failed to fetch profile', err);
       } finally {
@@ -1452,6 +1453,7 @@ export default function StudentProfile() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setProfile(res.data.user);
+      setUser(prev => ({ ...prev, avatarUrl: res.data.user.avatarUrl }));
       showToast('Profile picture updated successfully!', 'success');
     } catch (err) {
       console.error('Error uploading avatar:', err);
@@ -1548,7 +1550,13 @@ export default function StudentProfile() {
 
       {/* Onboarding Overlay if profile incomplete */}
       {(!profile.isProfileComplete || !profile.email || !profile.uid) && (
-        <ProfileSetupOverlay onComplete={setProfile} user={profile} />
+        <ProfileSetupOverlay 
+          onComplete={(updatedUser) => {
+            setProfile(updatedUser);
+            setUser(updatedUser);
+          }} 
+          user={profile} 
+        />
       )}
 
       {/* Resume Editor Modal */}
@@ -1557,7 +1565,10 @@ export default function StudentProfile() {
           initialSectionId={typeof showEditor === 'string' ? showEditor : null}
           profile={profile}
           onClose={() => setShowEditor(false)}
-          onComplete={(updatedProfile) => setProfile(updatedProfile)}
+          onComplete={(updatedProfile) => {
+            setProfile(updatedProfile);
+            setUser(updatedProfile);
+          }}
           onPreviewPdf={() => setShowPdf(true)}
         />
       )}
